@@ -10,6 +10,6 @@ namespace eilang
         }
 
         public string Name { get; }
-        public List<Function> Functions {get;} = new List<Function>();
+        public Dictionary<string, Function> Functions {get;} = new Dictionary<string, Function>();
     }
 }

@@ -11,9 +11,9 @@ namespace eilang
         public string Ident { get; }
         public AstExpression Value { get; }
 
-        public override void Accept(IVisitor visitor, Function function)
+        public override void Accept(IVisitor visitor, Function function, Module mod)
         {
-            visitor.Visit(this, function);
+            visitor.Visit(this, function, mod);
         }
     }
 }

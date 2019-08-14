@@ -4,8 +4,8 @@ namespace eilang
 {
     public class Module
     {
-        public List<Function> Functions {get;} = new List<Function>();
-        public List<Class> Classes {get;} = new List<Class>();
+        public Dictionary<string, Function> Functions {get;} = new Dictionary<string, Function>();
+        public Dictionary<string, Class> Classes {get;} = new Dictionary<string, Class>();
         public string Name { get; }
         public Module(string name)
         {

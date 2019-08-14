@@ -8,6 +8,7 @@ namespace eilang
     public class Env
     {
         public Module Global {get; set;}
+        public Dictionary<string, Module> Modules {get;} = new Dictionary<string, Module>();
         public Dictionary<string, ExportedFunction> ExportedFuncs { get; } = new Dictionary<string, ExportedFunction>();
     }
 }

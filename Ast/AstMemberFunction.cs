@@ -9,9 +9,9 @@ namespace eilang
         {
         }
 
-        public void Accept(IVisitor visitor, Class clas)
+        public void Accept(IVisitor visitor, Class clas, Module mod)
         {
-            visitor.Visit(this, clas);
+            visitor.Visit(this, clas, mod);
         }
     }
 }

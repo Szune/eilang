@@ -11,11 +11,11 @@ namespace eilang
                 visitable.Accept(visitor);
         }
 
-        public static void Accept<T>(this IEnumerable<T> visitables, IVisitor visitor, Function function) 
+        public static void Accept<T>(this IEnumerable<T> visitables, IVisitor visitor, Function function, Module mod) 
             where T : IVisitableInFunction
         {
             foreach(var visitable in visitables)
-                visitable.Accept(visitor, function);
+                visitable.Accept(visitor, function, mod);
         }
 
         public static void Accept<T>(this IEnumerable<T> visitables, IVisitor visitor, Module mod) 
@@ -25,11 +25,11 @@ namespace eilang
                 visitable.Accept(visitor, mod);
         }
 
-        public static void Accept<T>(this IEnumerable<T> visitables, IVisitor visitor, Class clas) 
+        public static void Accept<T>(this IEnumerable<T> visitables, IVisitor visitor, Class clas, Module mod) 
             where T : IVisitableInClass
         {
             foreach(var visitable in visitables)
-                visitable.Accept(visitor, clas);
+                visitable.Accept(visitor, clas, mod);
         }
     }
 }

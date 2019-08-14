@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace eilang
@@ -12,9 +13,9 @@ namespace eilang
         public string Name { get; }
         public List<AstExpression> Arguments { get; }
 
-        public override void Accept(IVisitor visitor, Function function)
-        {
-            visitor.Visit(this, function);
+
+        public override void Accept(IVisitor visitor, Function function, Module module){
+            visitor.Visit(this, function, module);
         }
     }
 }

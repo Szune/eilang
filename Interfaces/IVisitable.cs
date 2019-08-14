@@ -7,12 +7,12 @@ namespace eilang
 
     public interface IVisitableInFunction
     {
-        void Accept(IVisitor visitor, Function function);
+        void Accept(IVisitor visitor, Function function, Module mod);
     }
 
     public interface IVisitableInClass
     {
-        void Accept(IVisitor visitor, Class clas);
+        void Accept(IVisitor visitor, Class clas, Module mod);
     }
 
     public interface IVisitableInModule

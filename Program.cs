@@ -8,16 +8,17 @@ namespace eilang
         static void Main(string[] args)
         {
             var code = @"
-println(123);
-println(7.890);
-println(-456);
-println('global');
 modu prog {
     typ app {
         fun main() {
+            println(123);
+            println(7.890);
+            println(-456);
+            println('global');
             var test = 'hello world';
             test = 'hello new world!';
             println(test);
+            outer();
         }
     }
     fun hello_world() {
@@ -27,7 +28,7 @@ modu prog {
 fun outer() {
     println('hello world from outer!');
 }
-outer();";
+";
             var lexer = new Lexer(code);
             var parser = new Parser(lexer);
             var ast = parser.Parse();
@@ -37,9 +38,10 @@ outer();";
 
             var env = new Env();
             env.ExportedFuncs.Add("println", PrintLine);
-            Compiler.Compile(env, ast, Console.Out);
-            var interpreter = new Interpreter(env);
 
+            Compiler.Compile(env, ast, logger: Console.Out);
+
+            var interpreter = new Interpreter(env, logger: Console.Out);
             interpreter.Interpret();
         }
 

@@ -1,4 +1,4 @@
-namespace eilang
+﻿namespace eilang
 {
     public class AstStringConstant : AstExpression
     {
@@ -9,9 +9,9 @@ namespace eilang
             String = str;
         }
 
-        public override void Accept(IVisitor visitor, Function function)
+        public override void Accept(IVisitor visitor, Function function, Module mod)
         {
-            visitor.Visit(this, function);
+            visitor.Visit(this, function, mod);
         }
     }
 }

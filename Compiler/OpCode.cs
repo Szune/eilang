@@ -13,5 +13,6 @@ namespace eilang
         /// </summary>
         ECALL = 6,
         REF = 7,
+        RET = 8,
     }
 }

@@ -1,6 +1,6 @@
 namespace eilang
 {
-    internal class AstIntegerConstant : AstExpression
+    public class AstIntegerConstant : AstExpression
     {
         public AstIntegerConstant(int inte)
         {
@@ -8,5 +8,10 @@ namespace eilang
         }
 
         public int Integer { get; }
+
+        public override void Accept(IVisitor visitor, Function function)
+        {
+            visitor.Visit(this, function);
+        }
     }
 }

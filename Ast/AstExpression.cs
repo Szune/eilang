@@ -1,7 +1,7 @@
 namespace eilang
 {
-    public class AstExpression
+    public abstract class AstExpression : IVisitableInFunction
     {
-        
+        public abstract void Accept(IVisitor visitor, Function function);
     }
 }

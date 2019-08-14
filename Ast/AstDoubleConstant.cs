@@ -1,6 +1,6 @@
 namespace eilang
 {
-    internal class AstDoubleConstant : AstExpression
+    public class AstDoubleConstant : AstExpression
     {
         public AstDoubleConstant(double doubl)
         {
@@ -8,5 +8,10 @@ namespace eilang
         }
 
         public double Double { get; }
+
+        public override void Accept(IVisitor visitor, Function function)
+        {
+            visitor.Visit(this, function);
+        }
     }
 }

@@ -72,12 +72,34 @@ namespace eilang
                 switch (_buffer[0].Type)
                 {
                     case TokenType.Function:
-                        ParseFunction(clas);
+                        ParseMemberFunction(clas);
                         break;
                 }
             }
             Require(TokenType.RightBrace);
             ast.Classes.Add(clas);
+        }
+
+        private void ParseMemberFunction(AstClass clas)
+        {
+            Require(TokenType.Function);
+            var ident = Require(TokenType.Identifier).Text;
+            Require(TokenType.LeftParenthesis);
+            var args = new List<string>();
+            while(!Match(TokenType.RightParenthesis))
+            {
+                var arg = Require(TokenType.Identifier).Text;
+                args.Add(arg);
+                if(Match(TokenType.Comma))
+                {
+                    Require(TokenType.Comma);
+                }
+            }
+            Require(TokenType.RightParenthesis);
+            var fun = new AstMemberFunction(ident, args);
+            // parse code block
+            ParseBlock(fun);
+            clas.Functions.Add(fun);
         }
 
         private void ParseFunction(IHaveFunction ast) {

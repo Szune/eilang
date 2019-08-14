@@ -11,5 +11,10 @@ namespace eilang
 
         public string Name { get; }
         public List<AstExpression> Arguments { get; }
+
+        public override void Accept(IVisitor visitor, Function function)
+        {
+            visitor.Visit(this, function);
+        }
     }
 }

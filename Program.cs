@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace eilang
 {
-    class Program
+   class Program
     {
         static void Main(string[] args)
         {
@@ -33,6 +33,12 @@ outer();";
             
             var walker = new AstWalker(ast);
             walker.PrintAst();
+
+            var env = new Env();
+            Compiler.Compile(env, ast, Console.Out);
+            var interpreter = new Interpreter(env);
+
+            interpreter.Interpret();
             //Console.WriteLine($"Module: {ast.Modules[0].Name}");
             // var tokens = new List<Token>();
             // Token tok;

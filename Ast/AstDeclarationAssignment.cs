@@ -7,5 +7,10 @@ namespace eilang
         {
             
         }
+
+        public override void Accept(IVisitor visitor, Function function)
+        {
+            visitor.Visit(this, function);
+        }
     }
 }

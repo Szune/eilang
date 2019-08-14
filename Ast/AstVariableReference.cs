@@ -8,5 +8,10 @@ namespace eilang
         }
 
         public string Ident { get; }
+
+        public override void Accept(IVisitor visitor, Function function)
+        {
+            visitor.Visit(this, function);
+        }
     }
 }

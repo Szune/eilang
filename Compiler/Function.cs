@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace eilang
@@ -13,5 +14,12 @@ namespace eilang
             Arguments = arguments;
         }
         public List<Bytecode> Code {get;} = new List<Bytecode>();
+
+        public void Write(OpCode op, IValue arg0 = null, IValue arg1 = null, IValue arg2 = null)
+        {
+            Code.Add(new Bytecode(op, arg0, arg1, arg2));
+        }
+
+        public int Length => Code.Count;
     }
 }

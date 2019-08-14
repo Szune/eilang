@@ -10,6 +10,7 @@ namespace eilang
             var code = @"
 println(123);
 println(7.890);
+println(-456);
 println('global');
 modu prog {
     typ app {
@@ -30,24 +31,36 @@ outer();";
             var lexer = new Lexer(code);
             var parser = new Parser(lexer);
             var ast = parser.Parse();
-            
+
             var walker = new AstWalker(ast);
             walker.PrintAst();
 
             var env = new Env();
+            env.ExportedFuncs.Add("println", PrintLine);
             Compiler.Compile(env, ast, Console.Out);
             var interpreter = new Interpreter(env);
 
             interpreter.Interpret();
-            //Console.WriteLine($"Module: {ast.Modules[0].Name}");
-            // var tokens = new List<Token>();
-            // Token tok;
-            // while((tok = lexer.NextToken()).Type != TokenType.EOF)
-            //     tokens.Add(tok);
-            // Console.WriteLine($"Code: {code}");
-            // foreach (var token in tokens)
-            //     Console.WriteLine($"{token.Type}: {token.Text}");
+        }
 
+        private static IValue PrintLine(IValueFactory factory, IValue val)
+        {
+                switch(val.Type)
+                {
+                    case TypeOfValue.String:
+                        Console.WriteLine(val.Get<string>());
+                        break;
+                    case TypeOfValue.Double:
+                        Console.WriteLine(val.Get<double>());
+                        break;
+                    case TypeOfValue.Integer:
+                        Console.WriteLine(val.Get<int>());
+                        break;
+                    default:
+                        throw new InvalidOperationException("println does not work with " + val.Type);
+
+                } 
+                return factory.Void();
         }
     }
 }

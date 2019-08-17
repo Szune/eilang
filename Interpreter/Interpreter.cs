@@ -50,7 +50,7 @@ namespace eilang
                         _scopes.Peek().SetVariable(bc.Arg0.Get<string>(), setVal);
                         break;
                     case OpCode.CALL:
-                        _frames.Push(new CallFrame(_env.Global.Functions[bc.Arg0.Get<string>()]));
+                        _frames.Push(new CallFrame(_env.Functions[$"{Compiler.GlobalFunctionAndModuleName}::{bc.Arg0.Get<string>()}"]));
                         var currentScope = _scopes.Peek();
                         _scopes.Push(new Scope(currentScope));
                         break;
@@ -65,6 +65,11 @@ namespace eilang
                         _frames.Pop();
                         _scopes.Pop();
                         break;
+                    case OpCode.INIT:
+                        if(!_env.Classes.TryGetValue(bc.Arg0.Get<string>(), out var clas))
+                            throw new InvalidOperationException($"Class not found {clas}");
+                        _stack.Push(_valueFactory.Instance(new Instance(new Scope(), clas)));
+                        break;
                     case OpCode.ECALL:
                         var argLength = _stack.Pop().Get<int>();
                         if(argLength == 1)
@@ -76,6 +81,18 @@ namespace eilang
                         {
                             throw new NotImplementedException();
                         }
+                        break;
+                    case OpCode.TYPEGET:
+                        var type = _stack.Peek().Get<Instance>().Owner;
+                        _stack.Push(_valueFactory.Class(type));
+                        break;
+                    case OpCode.MCALL:
+                        var callingClass = _stack.Pop().Get<Class>();
+                        var callingInstance = _stack.Pop().Get<Instance>();
+                        if (!callingClass.Functions.TryGetValue(bc.Arg0.Get<string>(), out var membFunc))
+                            throw new InvalidOperationException($"Member function {bc.Arg0.Get<string>()} not found in class {callingClass.FullName}");
+                        _frames.Push(new CallFrame(membFunc));
+                        _scopes.Push(callingInstance.Scope);
                         break;
                     default:
                         throw new NotImplementedException(bc.Op.ToString());
@@ -123,42 +140,28 @@ namespace eilang
 
             const string main = "main";
 
-            if(_env.Modules.ContainsKey("prog"))
+            if (_env.Classes.TryGetValue("prog::app", out var app))
             {
-                var prog = _env.Modules["prog"];
-                if(prog.Classes.ContainsKey("app"))
+                if(app.Functions.TryGetValue(main, out var m))
                 {
-                    var app = prog.Classes["app"];
-                    if(app.Functions.ContainsKey(main))
-                    {
-                        return app.Functions[main];
-                    }
+                    return m;
                 }
-                else if(prog.Functions.ContainsKey(main))
-                {
-                    return prog.Functions[main];
-                }
-                else
-                {
-                    goto LastIf;
-                }
+                // SHIFT + ALTGR + 9 == »
+                // SHIFT + ALTGR + 8 == «
             }
-            else if (_env.Global.Classes.ContainsKey("app"))
+            else if (_env.Functions.TryGetValue($"prog::{main}", out var m))
             {
-                var app = _env.Global.Classes["app"];
-                if(app.Functions.ContainsKey(main))
-                {
-                    return app.Functions["main"];
-                }
+                return m;
             }
-
-            LastIf:
-            if (_env.Global.Functions.ContainsKey(main))
+            else if (_env.Classes.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::app", out var globApp) && globApp.Functions.TryGetValue(main, out var ma))
             {
-                return _env.Global.Functions["main"];
+                return ma;
+            } 
+            else if (_env.Functions.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::{main}", out var globMain))
+            {
+                return globMain;
             }
-
-            var func = _env.Global.Functions[Compiler.GlobalFunctionAndModuleName];
+            var func = _env.Functions[$"{Compiler.GlobalFunctionAndModuleName}::{Compiler.GlobalFunctionAndModuleName}"];
             func.Write(OpCode.RET);
             return func;
         }

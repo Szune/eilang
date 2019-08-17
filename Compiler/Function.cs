@@ -7,7 +7,7 @@ namespace eilang
     {
         public string Name {get;}
         public string Module { get; }
-        public string FullName => $"{Module}.{Name}";
+        public virtual string FullName => $"{Module}::{Name}";
         public List<string> Arguments { get; }
 
         public Function(string name, string module, List<string> arguments)

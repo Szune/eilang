@@ -43,11 +43,18 @@ namespace eilang
                 switch (_buffer[0])
                 {
                     case ' ':
-                        while(_buffer[0] == ' ') {
+                        while(_buffer[0] == ' ')
+                        {
                             Consume();
                         }
                         continue;
                     case '\t':
+                        break;
+                    case '#': // comments
+                        while (_buffer[0] != '\n')
+                        {
+                            Consume();
+                        }
                         break;
                     case '\r':
                         break;
@@ -62,7 +69,15 @@ namespace eilang
                     case '"':
                         return new Token(TokenType.String, _line, _col, text: GetString('"'));
                     case ':':
-                        token = GetToken(TokenType.Colon);
+                        if (_buffer[1] == ':')
+                        {
+                            token = GetToken(TokenType.DoubleColon);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.Colon);
+                        }
                         break;
                     case ';':
                         token = GetToken(TokenType.Semicolon);
@@ -84,6 +99,12 @@ namespace eilang
                         break;
                     case ',':
                         token = GetToken(TokenType.Comma);
+                        break;
+                    case '.':
+                        token = GetToken(TokenType.Dot);
+                        break;
+                    case '*':
+                        token = GetToken(TokenType.Asterisk);
                         break;
                     default:
                         if (IsIdentifierStart(_buffer[0]))

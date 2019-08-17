@@ -20,8 +20,12 @@ namespace eilang
         Colon,
         Semicolon,
         Equals,
+        Dot,
+        Asterisk,
+        DoubleColon,
         EOF
     }
+    
     public class Token
     {
         public TokenType Type { get; }

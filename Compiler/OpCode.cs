@@ -14,5 +14,9 @@ namespace eilang
         ECALL = 6,
         REF = 7,
         RET = 8,
+        MCALL = 9,
+        INIT = 10,
+        MREF = 11,
+        TYPEGET = 12,
     }
 }

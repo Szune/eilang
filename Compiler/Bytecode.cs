@@ -10,9 +10,14 @@ namespace eilang
             Arg2 = arg2;
         }
 
-        public OpCode Op { get; }
+        public OpCode Op { get; private set; }
         public IValue Arg0 { get; }
         public IValue Arg1 { get; }
         public IValue Arg2 { get; }
+
+        public void Overwrite(OpCode op)
+        {
+            Op = op;
+        }
     }
 }

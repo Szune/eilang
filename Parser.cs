@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 
 namespace eilang
 {
@@ -7,6 +8,7 @@ namespace eilang
     {
         private readonly Lexer _lexer;
         private readonly Token[] _buffer = { new Token(), new Token() };
+        private bool _inMemberAssignment;
 
         public Parser(Lexer lexer)
         {
@@ -142,12 +144,20 @@ namespace eilang
                     // ParseIf(ast);
                     // return;
                 case TokenType.Var:
+                    if (_inMemberAssignment)
+                    {
+                        throw new ParserException($"Unexpected variable declaration containing another member variable assignment at line {_buffer[0].Line}, col {_buffer[0].Col}");
+                    }
                     ParseDeclarationAssignment(ast);
                     return;
                 case TokenType.Identifier:
                     switch(_buffer[1].Type)
                     {
                         case TokenType.Equals:
+                            if (_inMemberAssignment)
+                            {
+                                throw new ParserException($"Unexpected variable assignment containing another member variable assignment at line {_buffer[0].Line}, col {_buffer[0].Col}");
+                            }
                             ParseAssignment(ast);
                             return;
                         default:
@@ -164,6 +174,77 @@ namespace eilang
                     return;
             }
             throw new NotImplementedException();
+        }
+
+        private AstExpression ParseMemberReferenceOrMemberFunctionCallOrMemberVariableAssignment()
+        {
+            var firstIdentifier = Require(TokenType.Identifier).Text;
+            var identifiers = new List<string> {firstIdentifier};
+            
+            while (Match(TokenType.Dot))
+            {
+                Require(TokenType.Dot);
+                var nextIdentifier = Require(TokenType.Identifier).Text;
+                identifiers.Add(nextIdentifier);
+                if (Match(TokenType.Semicolon))
+                {
+                    return new AstMemberVariableReference(identifiers);
+                }
+                else if (Match(TokenType.LeftParenthesis))
+                {
+                    return ParseMemberFunctionCall(identifiers);
+                }
+                else if (Match(TokenType.Equals))
+                {
+                    if (_inMemberAssignment)
+                    {
+                        throw new ParserException($"Unexpected member variable assignment containing another member variable assignment at line {_buffer[0].Line}, col {_buffer[0].Col}");
+                    }
+                    _inMemberAssignment = true;
+                    var assignVal = ParseRightExpression();
+                    var assignment = new AstMemberVariableAssignment(identifiers, assignVal);
+                    _inMemberAssignment = false;
+                    return assignment;
+                }
+            }
+            throw new ParserException($"Unexpected token {_buffer[0].Type} at line {_buffer[0].Line}, col {_buffer[0].Col}");
+        }
+
+        private AstExpression ParseClassInitialization()
+        {
+            var identifiers = new List<Reference>();
+            var firstIdentifier = Require(TokenType.Identifier).Text;
+            identifiers.Add(new Reference(firstIdentifier, Match(TokenType.DoubleColon)));
+            
+            if (Match(TokenType.DoubleColon))
+                Require(TokenType.DoubleColon);
+            else if (Match(TokenType.Dot))
+                Require(TokenType.Dot);
+            
+            while(!Match(TokenType.LeftParenthesis))
+            {
+                var ident = Require(TokenType.Identifier).Text;
+                identifiers.Add(new Reference(ident, Match(TokenType.DoubleColon)));
+                if (Match(TokenType.DoubleColon))
+                    Require(TokenType.DoubleColon);
+                else if (Match(TokenType.Dot))
+                    Require(TokenType.Dot);
+            }
+            var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
+            return new AstClassInitialization(identifiers, args);
+        }
+
+        private AstFunctionCall ParseFunctionCall()
+        {
+            var function = Require(TokenType.Identifier).Text;
+            var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
+            return new AstFunctionCall(function, args);
+        }
+        
+        private AstMemberFunctionCall ParseMemberFunctionCall(List<string> identifiers)
+        {
+            var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
+            return new AstMemberFunctionCall(identifiers, args);
         }
 
         private void ParseAssignment(IHaveExpression ast)
@@ -198,11 +279,18 @@ namespace eilang
                 case TokenType.Double:
                     var doubl = Require(TokenType.Double).Double;
                     return new AstDoubleConstant(doubl);
+                case TokenType.Asterisk:
+                    Require(TokenType.Asterisk);
+                    return ParseClassInitialization();
                 case TokenType.Identifier:
                     switch(_buffer[1].Type)
                     {
                         case TokenType.LeftParenthesis:
                             return ParseFunctionCall();
+                        case TokenType.Dot:
+                            return ParseMemberReferenceOrMemberFunctionCallOrMemberVariableAssignment();
+                        case TokenType.DoubleColon:
+                            return ParseModuleAccess();
                     }
                     var ident = Require(TokenType.Identifier).Text;
                     return new AstVariableReference(ident);
@@ -210,12 +298,11 @@ namespace eilang
             throw new NotImplementedException();
         }
 
-        private AstFunctionCall ParseFunctionCall()
+        private AstExpression ParseModuleAccess()
         {
-            var function = Require(TokenType.Identifier).Text;
-            var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
-            return new AstFunctionCall(function, args);
+            throw new NotImplementedException();
         }
+
 
         private List<AstExpression> ParseArgumentList(TokenType listStart, TokenType listEnd)
         {

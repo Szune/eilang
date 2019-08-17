@@ -14,5 +14,9 @@ namespace eilang
         void Visit(AstStringConstant constant, Function function, Module mod);
         void Visit(AstIntegerConstant constant, Function function, Module mod);
         void Visit(AstModule module);
+        void Visit(AstMemberVariableReference member, Function function, Module mod);
+        void Visit(AstMemberVariableAssignment member, Function function, Module mod);
+        void Visit(AstMemberFunctionCall memberFunc, Function function, Module mod);
+        void Visit(AstClassInitialization init, Function function, Module mod);
     }
 }

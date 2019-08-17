@@ -9,13 +9,32 @@ namespace eilang
         {
             
             string code = @"
+typ test {
+    fun do() {
+        var p = 'memememe';
+        println(p);
+        println('do!!!');
+    }
+}
+
 fun main() {
+    var t = *test();
+    t.do();
+    var pep = *meh::neh();
+    pep.mep();
     var x = 'test';
     println(x);
     println('hello world');
     println(-1235.1993);
 }
-            ";
+
+modu meh {
+    typ neh {
+        fun mep() {
+            println('eaeh');
+        }
+    }
+}";
             
             var lexer = new Lexer(code);
             var parser = new Parser(lexer);

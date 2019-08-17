@@ -6,6 +6,8 @@ namespace eilang
         String,
         Integer,
         Double,
+        Class,
+        Instance,
         Void
     }
 

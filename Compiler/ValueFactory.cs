@@ -5,6 +5,8 @@ namespace eilang
         IValue String(string str);
         IValue Integer(int inte);
         IValue Double(double doub);
+        IValue Instance(Instance instance);
+        IValue Class(Class clas);
         IValue Void();
     }
 
@@ -24,6 +26,16 @@ namespace eilang
         public IValue String(string str)
         {
             return new Value(TypeOfValue.String, str);
+        }
+
+        public IValue Class(Class clas)
+        {
+            return new Value(TypeOfValue.Class, clas);
+        }
+
+        public IValue Instance(Instance instance)
+        {
+            return new Value(TypeOfValue.Instance, instance);
         }
         
         public IValue Void()

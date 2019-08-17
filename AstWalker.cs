@@ -105,6 +105,14 @@ namespace eilang
                     case AstIntegerConstant inte:
                         Console.WriteLine($"{prefix}{expr.GetType().Name} {inte.Integer}");
                         break;
+                    case AstMemberFunctionCall amfa:
+                        Console.WriteLine($"{prefix}{expr.GetType().Name} {string.Join(".", amfa.Identifiers)}");
+                        PrintExpressions(amfa.Arguments, indent + 1);
+                        break;
+                    case AstMemberVariableAssignment amva:
+                        break;
+                    case AstMemberVariableReference astMemberVariableReference:
+                        break;
                     case AstDoubleConstant doub:
                         Console.WriteLine($"{prefix}{expr.GetType().Name} {doub.Double}");
                         break;
@@ -116,12 +124,30 @@ namespace eilang
                         Console.WriteLine($"{prefix}{expr.GetType().Name} {aa.Ident}");
                         PrintExpressions(new List<AstExpression>{aa.Value}, indent + 1);
                         break;
+                    case AstClassInitialization aci:
+                        Console.WriteLine($"{prefix}{expr.GetType().Name} {GetFullName(aci.Identifiers)}");
+                        PrintExpressions(aci.Arguments, indent + 1);
+                        break;
                     default:
                         Console.WriteLine($"{prefix}{expr.GetType().Name}");
                         break;
 
                 }
             }
+        }
+
+        private string GetFullName(List<Reference> idents)
+        {
+            if(idents.Count == 1)
+                return $"{Compiler.GlobalFunctionAndModuleName}::{idents[0].Ident}";
+            var full = idents[0].Ident + (idents[0].IsModule ? "::" : ".");
+            for (int i = 1; i < idents.Count - 2; i++)
+            {
+                full += idents[i].Ident + (idents[i].IsModule ? "::" : ".");
+            }
+
+            full += idents[idents.Count - 1].Ident;
+            return full;
         }
     }
 }

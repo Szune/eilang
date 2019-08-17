@@ -12,7 +12,7 @@ namespace eilang
 
         public string Name { get; }
         public string Module { get; }
-        public string FullName => $"{Module}.{Name}";
-        public Dictionary<string, Function> Functions {get;} = new Dictionary<string, Function>();
+        public string FullName => $"{Module}::{Name}";
+        public Dictionary<string, MemberFunction> Functions {get;} = new Dictionary<string, MemberFunction>();
     }
 }

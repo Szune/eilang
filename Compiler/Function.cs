@@ -6,11 +6,14 @@ namespace eilang
     public class Function
     {
         public string Name {get;}
+        public string Module { get; }
+        public string FullName => $"{Module}.{Name}";
         public List<string> Arguments { get; }
 
-        public Function(string name, List<string> arguments)
+        public Function(string name, string module, List<string> arguments)
         {
             Name = name;
+            Module = module;
             Arguments = arguments;
         }
         public List<Bytecode> Code {get;} = new List<Bytecode>();

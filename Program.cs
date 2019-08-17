@@ -7,7 +7,35 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-            var code = @"
+            
+            string code = @"
+fun main() {
+    var x = 'test';
+    println(x);
+    println('hello world');
+    println(-1235.1993);
+}
+            ";
+            
+            var lexer = new Lexer(code);
+            var parser = new Parser(lexer);
+            var ast = parser.Parse();
+
+            var walker = new AstWalker(ast);
+            walker.PrintAst();
+
+            var env = new Env();
+            env.ExportedFuncs.Add("println", PrintLine);
+
+            Compiler.Compile(env, ast, logger: Console.Out);
+
+            var interpreter = new Interpreter(env, logger: Console.Out);
+            interpreter.Interpret();
+        }
+
+        private static string testcode()
+        {
+            return @"
 modu prog {
     typ app {
         fun main() {
@@ -29,20 +57,6 @@ fun outer() {
     println('hello world from outer!');
 }
 ";
-            var lexer = new Lexer(code);
-            var parser = new Parser(lexer);
-            var ast = parser.Parse();
-
-            var walker = new AstWalker(ast);
-            walker.PrintAst();
-
-            var env = new Env();
-            env.ExportedFuncs.Add("println", PrintLine);
-
-            Compiler.Compile(env, ast, logger: Console.Out);
-
-            var interpreter = new Interpreter(env, logger: Console.Out);
-            interpreter.Interpret();
         }
 
         private static IValue PrintLine(IValueFactory factory, IValue val)

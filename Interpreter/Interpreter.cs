@@ -10,6 +10,7 @@ namespace eilang
         private readonly IValueFactory _valueFactory;
         private readonly Stack<CallFrame> _frames = new Stack<CallFrame>();
         private readonly Stack<IValue> _stack = new Stack<IValue>();
+        private readonly Stack<Scope> _scopes = new Stack<Scope>();
         private readonly TextWriter _logger;
 
         public Interpreter(Env env, IValueFactory valueFactory = null, TextWriter logger = null)
@@ -28,33 +29,41 @@ namespace eilang
             Log("Interpreting...");
             var start = GetStartFunction();
             _frames.Push(new CallFrame(start));
+            _scopes.Push(new Scope());
 
             while(_frames.Count > 0)
             {
                 var frame = _frames.Peek();
                 var bc = frame.Function[frame.Address];
+                
                 switch(bc.Op)
                 {
                     case OpCode.PUSH:
                         _stack.Push(bc.Arg0);
                         break;
                     case OpCode.DEF:
+                        var defVal = _stack.Pop();
+                        _scopes.Peek().DefineVariable(bc.Arg0.Get<string>(), defVal);
                         break;
-                        throw new NotImplementedException();
                     case OpCode.SET:
+                        var setVal = _stack.Pop();
+                        _scopes.Peek().SetVariable(bc.Arg0.Get<string>(), setVal);
                         break;
-                        throw new NotImplementedException();
                     case OpCode.CALL:
                         _frames.Push(new CallFrame(_env.Global.Functions[bc.Arg0.Get<string>()]));
+                        var currentScope = _scopes.Peek();
+                        _scopes.Push(new Scope(currentScope));
                         break;
                     case OpCode.REF:
+                        var refVal = _scopes.Peek().GetVariable(bc.Arg0.Get<string>());
+                        _stack.Push(refVal);
                         break;
-                        throw new NotImplementedException();
                     case OpCode.POP:
                         _stack.Pop();
                         break;
                     case OpCode.RET:
                         _frames.Pop();
+                        _scopes.Pop();
                         break;
                     case OpCode.ECALL:
                         var argLength = _stack.Pop().Get<int>();
@@ -72,6 +81,7 @@ namespace eilang
                         throw new NotImplementedException(bc.Op.ToString());
                 }
                 frame.Address++;
+                
             }
 
         }
@@ -130,7 +140,7 @@ namespace eilang
                 }
                 else
                 {
-                    goto lastif;
+                    goto LastIf;
                 }
             }
             else if (_env.Global.Classes.ContainsKey("app"))
@@ -140,21 +150,17 @@ namespace eilang
                 {
                     return app.Functions["main"];
                 }
-                else
-                {
-                    goto lastif;
-                }
             }
 
-            lastif:
+            LastIf:
             if (_env.Global.Functions.ContainsKey(main))
             {
                 return _env.Global.Functions["main"];
             }
-            else
-            {
-                return _env.Global.Functions[Compiler.GlobalFunctionAndModuleName];
-            }
+
+            var func = _env.Global.Functions[Compiler.GlobalFunctionAndModuleName];
+            func.Write(OpCode.RET);
+            return func;
         }
     }
 }

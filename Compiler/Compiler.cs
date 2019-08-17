@@ -35,7 +35,7 @@ namespace eilang
             Log("Compiling...");
             Log("Compiling ast root");
             _env.Global = new Module(GlobalFunctionAndModuleName);
-            var func = new Function(GlobalFunctionAndModuleName, new List<string>());
+            var func = new Function(GlobalFunctionAndModuleName, GlobalFunctionAndModuleName, new List<string>());
             _env.Global.Functions.Add(func.Name, func);
             root.Modules.Accept(this);
             root.Classes.Accept(this, _env.Global);
@@ -57,7 +57,7 @@ namespace eilang
         public void Visit(AstClass clas, Module mod)
         {
             Log($"Compiling class declaration '{clas.Name}'");
-            var newClass = new Class(clas.Name);
+            var newClass = new Class(clas.Name, mod.Name);
             clas.Functions.Accept(this, newClass, mod);
             mod.Classes.Add(newClass.Name, newClass);
         }
@@ -118,7 +118,7 @@ namespace eilang
         public void Visit(AstFunction func, Module mod)
         {
             Log($"Compiling function declaration '{func.Name}'");
-            var newFunc = new Function(func.Name, func.Arguments);
+            var newFunc = new Function(func.Name, mod.Name, func.Arguments);
             func.Expressions.Accept(this, newFunc, mod);
             if(newFunc.Length < 1)
             {
@@ -135,7 +135,7 @@ namespace eilang
         public void Visit(AstMemberFunction memberFunc, Class clas, Module mod)
         {
             Log($"Compiling member function declaration '{memberFunc.Name}'");
-            var func = new Function(memberFunc.Name, memberFunc.Arguments);
+            var func = new Function(memberFunc.Name, clas.FullName, memberFunc.Arguments);
             memberFunc.Expressions.Accept(this, func, mod);
             if(func.Length < 1)
             {

@@ -23,6 +23,7 @@ namespace eilang
         Dot,
         Asterisk,
         DoubleColon,
+        Constructor,
         EOF
     }
     

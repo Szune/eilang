@@ -75,15 +75,12 @@ namespace eilang
                     case TokenType.Function:
                         ParseMemberFunction(clas);
                         break;
+                    case TokenType.Constructor:
+                        ParseConstructor(clas);
+                        break;
+                        
                     case TokenType.Identifier:
-                        if (_buffer[1].Match(TokenType.LeftParenthesis))
-                        {
-                            ParseConstructor(clas);
-                        }
-                        else
-                        {
-                            ParseMemberVariableList(clas);
-                        }
+                        ParseMemberVariableList(clas);
                         break;
                     default:
                         throw new ParserException($"Unknown token {_buffer[0].Type} in class {ident}'s scope");
@@ -95,7 +92,18 @@ namespace eilang
 
         private void ParseConstructor(AstClass clas)
         {
-            throw new NotImplementedException();
+            Require(TokenType.Constructor);
+            Require(TokenType.LeftParenthesis);
+            var args = new List<string>();
+            while (!Match(TokenType.RightParenthesis) && !Match(TokenType.EOF))
+            {
+                var ident = Require(TokenType.Identifier).Text;
+                args.Add(ident);
+                if (Match(TokenType.Comma))
+                    Require(TokenType.Comma);
+            }
+            
+            clas.Constructors.Add(new AstMemberFunction($".ctor::{clas.Name}", args));
         }
 
         private void ParseMemberVariable(AstClass clas)

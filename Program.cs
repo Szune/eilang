@@ -29,8 +29,8 @@ typ test {
     #TODO: implement constructors :(
 
     #t: (int a, int b);
-    #test(s, d, i);
-    #test() {
+    #ctor(s, d, i);
+    #ctor() {
     #    p = *point(1,2);
     #}
     

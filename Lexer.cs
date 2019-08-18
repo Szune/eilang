@@ -43,7 +43,7 @@ namespace eilang
                 switch (_buffer[0])
                 {
                     case ' ':
-                        while(_buffer[0] == ' ')
+                        while(_buffer[0] == ' ' && !IsEOF)
                         {
                             Consume();
                         }
@@ -51,7 +51,7 @@ namespace eilang
                     case '\t':
                         break;
                     case '#': // comments
-                        while (_buffer[0] != '\n')
+                        while (_buffer[0] != '\n' && !IsEOF)
                         {
                             Consume();
                         }
@@ -138,7 +138,7 @@ namespace eilang
             sb.Append(_buffer[0]); // append first digit/minus
             var decimalPoint = false;
             Consume();
-            while (IsNumber(_buffer[0]) || (!decimalPoint && _buffer[0] == deci))
+            while (IsNumber(_buffer[0]) || (!decimalPoint && _buffer[0] == deci) && !IsEOF)
             {
                 if(_buffer[0] == deci)
                 {

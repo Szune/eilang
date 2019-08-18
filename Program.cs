@@ -9,10 +9,36 @@ namespace eilang
         {
             
             string code = @"
+modu math {
+    typ rand {
+        fun xyz() {
+            println('math::rand.xyz()');
+        }
+    }
+}
+typ point {
+    x,y: int;
+}
 typ test {
+    s: string;
+    d: double;
+    i: int;
+    p: point;
+    r: math::rand;
+
+    #TODO: implement constructors :(
+
+    #t: (int a, int b);
+    #test(s, d, i);
+    #test() {
+    #    p = *point(1,2);
+    #}
+    
     fun do() {
-        var p = 'memememe';
-        println(p);
+        println(s);
+        r.xyz();
+        var m = 'memememe';
+        println(m);
         println('do!!!');
     }
 }

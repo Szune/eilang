@@ -8,6 +8,7 @@ namespace eilang
             Name = name;
         }
         public List<AstMemberFunction> Functions { get; } = new List<AstMemberFunction>();
+        public List<AstMemberVariableDeclaration> Variables { get; } = new List<AstMemberVariableDeclaration>();
         public string Name { get; }
 
         public void Accept(IVisitor visitor, Module mod)

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
 
 namespace eilang
 {
@@ -48,7 +47,7 @@ namespace eilang
             var module = new AstModule(ident);
             root.Modules.Add(module);
             Require(TokenType.LeftBrace);
-            while(!Match(TokenType.RightBrace))
+            while(!Match(TokenType.RightBrace) && !Match(TokenType.EOF))
             {
                 switch (_buffer[0].Type)
                 {
@@ -69,17 +68,88 @@ namespace eilang
             var ident = Require(TokenType.Identifier).Text;
             var clas = new AstClass(ident);
             Require(TokenType.LeftBrace);
-            while (!Match(TokenType.RightBrace))
+            while (!Match(TokenType.RightBrace) && !Match(TokenType.EOF))
             {
                 switch (_buffer[0].Type)
                 {
                     case TokenType.Function:
                         ParseMemberFunction(clas);
                         break;
+                    case TokenType.Identifier:
+                        if (_buffer[1].Match(TokenType.LeftParenthesis))
+                        {
+                            ParseConstructor(clas);
+                        }
+                        else
+                        {
+                            ParseMemberVariableList(clas);
+                        }
+                        break;
+                    default:
+                        throw new ParserException($"Unknown token {_buffer[0].Type} in class {ident}'s scope");
                 }
             }
             Require(TokenType.RightBrace);
             ast.Classes.Add(clas);
+        }
+
+        private void ParseConstructor(AstClass clas)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ParseMemberVariable(AstClass clas)
+        {
+            var ident = Require(TokenType.Identifier).Text;
+            Require(TokenType.Colon);
+            var type = GetModuledClassName();
+            if (Match(TokenType.Semicolon)) // no initialization
+            {
+                Require(TokenType.Semicolon);
+                clas.Variables.Add(new AstMemberVariableDeclaration(ident, type));
+                return;
+            }
+            
+            Require(TokenType.Equals);
+
+            var initExpr = ParseRightExpression();
+            clas.Variables.Add(new AstMemberVariableDeclarationWithInit(ident, type, initExpr));
+
+        }
+
+        private void ParseMemberVariableList(AstClass clas)
+        {
+            if (!_buffer[1].Match(TokenType.Comma))
+            {
+                ParseMemberVariable(clas);
+                return;
+            }
+
+            var idents = new List<string>();
+            do
+            {
+                var ident = Require(TokenType.Identifier).Text;
+                idents.Add(ident);
+                if(Match(TokenType.Comma))
+                    Require(TokenType.Comma);
+            } while (Match(TokenType.Identifier));
+
+            Require(TokenType.Colon);
+            var type = GetModuledClassName();
+            
+            if (Match(TokenType.Semicolon)) // no initialization
+            {
+                Require(TokenType.Semicolon);
+                foreach(var ide in idents)
+                    clas.Variables.Add(new AstMemberVariableDeclaration(ide, type));
+                return;
+            }
+
+            Require(TokenType.Equals);
+
+            var initExpr = ParseRightExpression();
+            foreach(var ide in idents)
+                clas.Variables.Add(new AstMemberVariableDeclarationWithInit(ide, type, initExpr));
         }
 
         private void ParseMemberFunction(AstClass clas)
@@ -88,7 +158,7 @@ namespace eilang
             var ident = Require(TokenType.Identifier).Text;
             Require(TokenType.LeftParenthesis);
             var args = new List<string>();
-            while(!Match(TokenType.RightParenthesis))
+            while(!Match(TokenType.RightParenthesis) && !Match(TokenType.EOF))
             {
                 var arg = Require(TokenType.Identifier).Text;
                 args.Add(arg);
@@ -109,7 +179,7 @@ namespace eilang
             var ident = Require(TokenType.Identifier).Text;
             Require(TokenType.LeftParenthesis);
             var args = new List<string>();
-            while(!Match(TokenType.RightParenthesis))
+            while(!Match(TokenType.RightParenthesis) && !Match(TokenType.EOF))
             {
                 var arg = Require(TokenType.Identifier).Text;
                 args.Add(arg);
@@ -128,7 +198,7 @@ namespace eilang
         private void ParseBlock(AstFunction fun)
         {
             Require(TokenType.LeftBrace);
-            while (!Match(TokenType.RightBrace))
+            while (!Match(TokenType.RightBrace) && !Match(TokenType.EOF))
             {
                 ParseLeftExpression(fun);
             }
@@ -181,7 +251,7 @@ namespace eilang
             var firstIdentifier = Require(TokenType.Identifier).Text;
             var identifiers = new List<string> {firstIdentifier};
             
-            while (Match(TokenType.Dot))
+            while (Match(TokenType.Dot) && !Match(TokenType.EOF))
             {
                 Require(TokenType.Dot);
                 var nextIdentifier = Require(TokenType.Identifier).Text;
@@ -210,26 +280,10 @@ namespace eilang
             throw new ParserException($"Unexpected token {_buffer[0].Type} at line {_buffer[0].Line}, col {_buffer[0].Col}");
         }
 
+
         private AstExpression ParseClassInitialization()
         {
-            var identifiers = new List<Reference>();
-            var firstIdentifier = Require(TokenType.Identifier).Text;
-            identifiers.Add(new Reference(firstIdentifier, Match(TokenType.DoubleColon)));
-            
-            if (Match(TokenType.DoubleColon))
-                Require(TokenType.DoubleColon);
-            else if (Match(TokenType.Dot))
-                Require(TokenType.Dot);
-            
-            while(!Match(TokenType.LeftParenthesis))
-            {
-                var ident = Require(TokenType.Identifier).Text;
-                identifiers.Add(new Reference(ident, Match(TokenType.DoubleColon)));
-                if (Match(TokenType.DoubleColon))
-                    Require(TokenType.DoubleColon);
-                else if (Match(TokenType.Dot))
-                    Require(TokenType.Dot);
-            }
+            var identifiers = GetIdentifierList();
             var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
             return new AstClassInitialization(identifiers, args);
         }
@@ -308,7 +362,7 @@ namespace eilang
         {
             Require(listStart);
             var args = new List<AstExpression>();
-            while(!Match(listEnd))
+            while(!Match(listEnd) && !Match(TokenType.EOF))
             {
                 args.Add(ParseRightExpression());
                 if(Match(TokenType.Comma))
@@ -318,6 +372,49 @@ namespace eilang
             }
             Require(listEnd);
             return args;
+        }
+        
+        
+        private List<Reference> GetIdentifierList()
+        {
+            var identifiers = new List<Reference>();
+            var firstIdentifier = Require(TokenType.Identifier).Text;
+            identifiers.Add(new Reference(firstIdentifier, Match(TokenType.DoubleColon)));
+            
+            if (Match(TokenType.DoubleColon))
+                Require(TokenType.DoubleColon);
+            else if (Match(TokenType.Dot))
+                Require(TokenType.Dot);
+            
+            while(Match(TokenType.Identifier) && !Match(TokenType.EOF))
+            {
+                var ident = Require(TokenType.Identifier).Text;
+                identifiers.Add(new Reference(ident, Match(TokenType.DoubleColon)));
+                if (Match(TokenType.DoubleColon))
+                    Require(TokenType.DoubleColon);
+                else if (Match(TokenType.Dot))
+                    Require(TokenType.Dot);
+            }
+
+            return identifiers;
+        }
+
+        private string GetModuledClassName()
+        {
+            var name = Require(TokenType.Identifier).Text;
+            if (!Match(TokenType.DoubleColon))
+            {
+                return name;
+            }
+
+            while (Match(TokenType.DoubleColon))
+            {
+                Require(TokenType.DoubleColon);
+                name += "::";
+                name += Require(TokenType.Identifier).Text;
+            }
+
+            return name;
         }
 
         private Token Consume()
@@ -337,7 +434,7 @@ namespace eilang
         {
             var consumed = Consume();
             if (consumed.Type != type)
-                throw new ParserException($"Unexpected token {consumed.Type}, expected {type}");
+                throw new ParserException($"Unexpected token {consumed.Type}, expected {type} at line {consumed.Line}, col {consumed.Col}");
             return consumed;
         }
     }

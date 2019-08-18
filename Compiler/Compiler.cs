@@ -98,6 +98,16 @@ namespace eilang
             function.Write(OpCode.INIT, _valueFactory.String(fullName));
         }
 
+        public void Visit(AstMemberVariableDeclaration member, Class function, Module mod)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(AstMemberVariableDeclarationWithInit member, Class function, Module mod)
+        {
+            throw new NotImplementedException();
+        }
+
 
         public void Visit(AstClass clas, Module mod)
         {

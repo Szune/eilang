@@ -8,11 +8,14 @@ namespace eilang
         {
             Name = name;
             Module = module;
+            CtorForMembersWithValues = new MemberFunction(".ctorForInit", "na", new List<string>(), this);
         }
 
         public string Name { get; }
         public string Module { get; }
         public string FullName => $"{Module}::{Name}";
         public Dictionary<string, MemberFunction> Functions {get;} = new Dictionary<string, MemberFunction>();
+        public List<MemberFunction> Constructors {get;} = new List<MemberFunction>();
+        public MemberFunction CtorForMembersWithValues { get; } 
     }
 }

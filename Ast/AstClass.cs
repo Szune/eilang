@@ -8,7 +8,7 @@ namespace eilang
             Name = name;
         }
         public List<AstMemberFunction> Functions { get; } = new List<AstMemberFunction>();
-        public List<AstMemberFunction> Constructors { get; } = new List<AstMemberFunction>();
+        public List<AstConstructor> Constructors { get; } = new List<AstConstructor>();
         public List<AstMemberVariableDeclaration> Variables { get; } = new List<AstMemberVariableDeclaration>();
         public string Name { get; }
 

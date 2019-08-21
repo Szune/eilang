@@ -24,6 +24,9 @@ namespace eilang
         Asterisk,
         DoubleColon,
         Constructor,
+        Plus,
+        True,
+        False,
         EOF
     }
     

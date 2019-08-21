@@ -20,5 +20,6 @@ namespace eilang
         void Visit(AstClassInitialization init, Function function, Module mod);
         void Visit(AstMemberVariableDeclaration member, Class function, Module mod);
         void Visit(AstMemberVariableDeclarationWithInit member, Class function, Module mod);
+        void Visit(AstConstructor ctor, Class function, Module mod);
     }
 }

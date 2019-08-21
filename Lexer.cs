@@ -21,6 +21,9 @@ namespace eilang
                 {"modu", TokenType.Module},
                 {"fun", TokenType.Function},
                 {"var", TokenType.Var},
+                {"ctor", TokenType.Constructor},
+                {"true", TokenType.True},
+                {"false", TokenType.False}
             };
         }
 
@@ -99,6 +102,9 @@ namespace eilang
                         break;
                     case ',':
                         token = GetToken(TokenType.Comma);
+                        break;
+                    case '+':
+                        token = GetToken(TokenType.Plus);
                         break;
                     case '.':
                         token = GetToken(TokenType.Dot);

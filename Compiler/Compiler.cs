@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace eilang
 {
@@ -98,14 +97,28 @@ namespace eilang
             function.Write(OpCode.INIT, _valueFactory.String(fullName));
         }
 
-        public void Visit(AstMemberVariableDeclaration member, Class function, Module mod)
+        public void Visit(AstMemberVariableDeclaration member, Class clas, Module mod)
         {
-            throw new NotImplementedException();
+            clas.CtorForMembersWithValues.Write(OpCode.PUSH, _valueFactory.Void());
+            clas.CtorForMembersWithValues.Write(OpCode.DEF, _valueFactory.String(member.Ident));
         }
 
-        public void Visit(AstMemberVariableDeclarationWithInit member, Class function, Module mod)
+        public void Visit(AstMemberVariableDeclarationWithInit member, Class clas, Module mod)
         {
-            throw new NotImplementedException();
+            member.InitExpr.Accept(this, clas.CtorForMembersWithValues, mod);
+            clas.CtorForMembersWithValues.Write(OpCode.DEF, _valueFactory.String(member.Ident));
+        }
+
+        public void Visit(AstConstructor ctor, Class clas, Module mod)
+        {
+            var newCtor = new MemberFunction(ctor.Name, "", ctor.Arguments, clas);
+            foreach (var arg in ctor.Arguments)
+            {
+                newCtor.Write(OpCode.DEF, _valueFactory.String(arg));
+            }
+
+            newCtor.Write(OpCode.RET);
+            clas.Constructors.Add(newCtor);
         }
 
 
@@ -113,7 +126,10 @@ namespace eilang
         {
             Log($"Compiling class declaration '{clas.Name}'");
             var newClass = new Class(clas.Name, mod.Name);
+            clas.Variables.Accept(this, newClass, mod);
+            newClass.CtorForMembersWithValues.Write(OpCode.RET);
             clas.Functions.Accept(this, newClass, mod);
+            clas.Constructors.Accept(this, newClass, mod);
             _env.Classes.Add(newClass.FullName, newClass);
         }
 

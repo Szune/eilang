@@ -7,7 +7,59 @@ namespace eilang
     {
         static void Main(string[] args)
         {
+
+            string code = @"
+typ point {
+    x,y: int;
+    ctor(x,y);
+    fun print() {
+        #println(x + ' ' + y);
+        println(x);
+        println(y);
+    }
+}
+typ test {
+    s: string;
+    i: int;
+    d: double;
+    p: point;
+    ctor(s,i,d,p);
+
+    fun print() {
+        println('s is:');
+        println(s);
+        println('i is:');
+        println(i);
+        println('d is:');
+        println(d);
+        println('p is:');
+        p.print();
+    }
+}
+
+fun main() {
+    var falls = *test('mega',10, 5.9, *point(3,4));
+    falls.print();
+}";
             
+            var lexer = new Lexer(code);
+            var parser = new Parser(lexer);
+            var ast = parser.Parse();
+
+            var walker = new AstWalker(ast);
+            walker.PrintAst();
+
+            var env = new Env();
+            env.ExportedFuncs.Add("println", PrintLine);
+
+            Compiler.Compile(env, ast, logger: Console.Out);
+
+            var interpreter = new Interpreter(env, logger: Console.Out);
+            interpreter.Interpret();
+        }
+
+        private static string oldtestcode()
+        {
             string code = @"
 modu math {
     typ rand {
@@ -20,11 +72,11 @@ typ point {
     x,y: int;
 }
 typ test {
-    s: string;
-    d: double;
-    i: int;
-    p: point;
-    r: math::rand;
+    classString: string = 'hello from classString!';
+    classDouble: double;
+    classInt: int;
+    classPoint: point;
+    classRandom: math::rand = *math::rand();
 
     #TODO: implement constructors :(
 
@@ -35,8 +87,10 @@ typ test {
     #}
     
     fun do() {
-        println(s);
-        r.xyz();
+        println(classString);
+        classRandom.xyz();
+        classInt = 10;
+        println(classInt);
         var m = 'memememe';
         println(m);
         println('do!!!');
@@ -61,21 +115,7 @@ modu meh {
         }
     }
 }";
-            
-            var lexer = new Lexer(code);
-            var parser = new Parser(lexer);
-            var ast = parser.Parse();
-
-            var walker = new AstWalker(ast);
-            walker.PrintAst();
-
-            var env = new Env();
-            env.ExportedFuncs.Add("println", PrintLine);
-
-            Compiler.Compile(env, ast, logger: Console.Out);
-
-            var interpreter = new Interpreter(env, logger: Console.Out);
-            interpreter.Interpret();
+            return code;
         }
 
         private static string testcode()

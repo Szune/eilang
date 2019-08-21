@@ -6,6 +6,7 @@ namespace eilang
         String,
         Integer,
         Double,
+        Bool,
         Class,
         Instance,
         Void
@@ -15,6 +16,7 @@ namespace eilang
     {
         TypeOfValue Type { get; }
         T Get<T>();
+        object Debug { get; }
     }
 
     public class Value : IValue
@@ -26,6 +28,7 @@ namespace eilang
         }
         public TypeOfValue Type {get;}
         private readonly object _value;
+        public object Debug => _value;
 
         public T Get<T>()
         {

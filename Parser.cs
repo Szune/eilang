@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace eilang
 {
@@ -102,8 +103,10 @@ namespace eilang
                 if (Match(TokenType.Comma))
                     Require(TokenType.Comma);
             }
-            
-            clas.Constructors.Add(new AstMemberFunction($".ctor::{clas.Name}", args));
+
+            Require(TokenType.RightParenthesis);
+            Require(TokenType.Semicolon);
+            clas.Constructors.Add(new AstConstructor($".ctor::{clas.Name}", args));
         }
 
         private void ParseMemberVariable(AstClass clas)
@@ -121,6 +124,7 @@ namespace eilang
             Require(TokenType.Equals);
 
             var initExpr = ParseRightExpression();
+            Require(TokenType.Semicolon);
             clas.Variables.Add(new AstMemberVariableDeclarationWithInit(ident, type, initExpr));
 
         }
@@ -156,6 +160,7 @@ namespace eilang
             Require(TokenType.Equals);
 
             var initExpr = ParseRightExpression();
+            Require(TokenType.Semicolon);
             foreach(var ide in idents)
                 clas.Variables.Add(new AstMemberVariableDeclarationWithInit(ide, type, initExpr));
         }

@@ -5,6 +5,8 @@ namespace eilang
         IValue String(string str);
         IValue Integer(int inte);
         IValue Double(double doub);
+        IValue True();
+        IValue False();
         IValue Instance(Instance instance);
         IValue Class(Class clas);
         IValue Void();
@@ -12,10 +14,22 @@ namespace eilang
 
     public class ValueFactory : IValueFactory
     {
-        private static readonly Value _empty = new Value(TypeOfValue.Void, null);
+        private static readonly Value _empty = new Value(TypeOfValue.Void, "Void");
+        private static readonly Value _true = new Value(TypeOfValue.Bool, true);
+        private static readonly Value _false = new Value(TypeOfValue.Bool, false);
         public IValue Double(double doub)
         {
             return new Value(TypeOfValue.Double, doub);
+        }
+
+        public IValue True()
+        {
+            return _true;
+        }
+
+        public IValue False()
+        {
+            return _false;
         }
 
         public IValue Integer(int inte)

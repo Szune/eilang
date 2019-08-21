@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace eilang
 {
@@ -9,7 +10,7 @@ namespace eilang
         private readonly Env _env;
         private readonly IValueFactory _valueFactory;
         private readonly Stack<CallFrame> _frames = new Stack<CallFrame>();
-        private readonly Stack<IValue> _stack = new Stack<IValue>();
+        private readonly StackWithoutNullItems<IValue> _stack = new StackWithoutNullItems<IValue>();
         private readonly Stack<Scope> _scopes = new Stack<Scope>();
         private readonly TextWriter _logger;
 
@@ -24,6 +25,23 @@ namespace eilang
             _logger?.WriteLine(msg);
         }
 
+        private void PrintBc(Bytecode bc)
+        {
+            if (_logger == null)
+                return;
+            var args = new List<object>();
+            var stack = "";
+            if (_stack.TryPeek(out var peeky))
+                stack = $"{peeky.Debug}";
+            if(bc.Arg0 != null)
+                args.Add(bc.Arg0.Debug);
+            if(bc.Arg1 != null)
+                args.Add(bc.Arg1.Debug);
+            if(bc.Arg2 != null)
+                args.Add(bc.Arg2.Debug);
+            Log($"Op: {bc.Op}, args: {string.Join(", ", args)}, top of stack: {stack}");
+        }
+
         public void Interpret()
         {
             Log("Interpreting...");
@@ -35,7 +53,8 @@ namespace eilang
             {
                 var frame = _frames.Peek();
                 var bc = frame.Function[frame.Address];
-                
+
+                PrintBc(bc);
                 switch(bc.Op)
                 {
                     case OpCode.PUSH:
@@ -56,6 +75,8 @@ namespace eilang
                         break;
                     case OpCode.REF:
                         var refVal = _scopes.Peek().GetVariable(bc.Arg0.Get<string>());
+                        if(refVal == null)
+                            throw new InvalidOperationException($"Variable '{bc.Arg0.Get<string>()}' could not be found.");
                         _stack.Push(refVal);
                         break;
                     case OpCode.POP:
@@ -66,9 +87,41 @@ namespace eilang
                         _scopes.Pop();
                         break;
                     case OpCode.INIT:
+                        var argCount = _stack.Pop().Get<int>();
                         if(!_env.Classes.TryGetValue(bc.Arg0.Get<string>(), out var clas))
                             throw new InvalidOperationException($"Class not found {clas}");
-                        _stack.Push(_valueFactory.Instance(new Instance(new Scope(), clas)));
+                        var instScope = new Scope();
+                        var newInstance = new Instance(instScope, clas);
+                        // figure out which constructor to call (should probably do that in the parser though)
+                        var ctor = clas.Constructors.FirstOrDefault(c => c.Arguments.Count == argCount);
+                        if (ctor == null && argCount > 0)
+                            throw new InvalidOperationException(
+                                $"No constructor exists which takes {argCount} arguments.");
+                        else if(ctor == null && argCount == 0)
+                            ctor = clas.CtorForMembersWithValues;
+                        _frames.Push(new CallFrame(ctor));
+                        _scopes.Push(instScope);
+                        if (argCount == 0)
+                        {
+                            _stack.Push(_valueFactory.Instance(newInstance));
+                        }
+                        else
+                        {
+                            var args = new List<IValue>();
+                            // get args from stack
+                            for (int i = 0; i < argCount; i++)
+                            {
+                                args.Add(_stack.Pop());
+                            }
+                            // push instance to return
+                            _stack.Push(_valueFactory.Instance(newInstance));
+                            
+                            // push args for constructor
+                            for (int i = 0; i < argCount; i++)
+                            {
+                                _stack.Push(args[i]);
+                            }
+                        }
                         break;
                     case OpCode.ECALL:
                         var argLength = _stack.Pop().Get<int>();

@@ -24,5 +24,8 @@ namespace eilang
         void Visit(AstBinaryMathOperation math, Function function, Module mod);
         void Visit(AstTrue tr, Function function, Module mod);
         void Visit(AstFalse fa, Function function, Module mod);
+        void Visit(AstBlock block, Function function, Module mod);
+        void Visit(AstIf aIf, Function function, Module mod);
+        void Visit(AstCompare compare, Function function, Module mod);
     }
 }

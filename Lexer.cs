@@ -17,6 +17,7 @@ namespace eilang
         {
             _keywords = new Dictionary<string, TokenType>{
                 {"if", TokenType.If},
+                {"else", TokenType.Else},
                 {"typ", TokenType.Class},
                 {"modu", TokenType.Module},
                 {"fun", TokenType.Function},
@@ -91,8 +92,28 @@ namespace eilang
                     case ')':
                         token = GetToken(TokenType.RightParenthesis);
                         break;
+                    case '!':
+                        if (_buffer[1] == '=')
+                        {
+                            token = GetToken(TokenType.NotEquals);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.Not);
+                        }
+                        break;
                     case '=':
-                        token = GetToken(TokenType.Equals);
+                        if (_buffer[1] == '=')
+                        {
+                            token = GetToken(TokenType.EqualsEquals);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.Equals);
+                        }
+
                         break;
                     case '{':
                         token = GetToken(TokenType.LeftBrace);
@@ -117,6 +138,42 @@ namespace eilang
                         break;
                     case '*':
                         token = GetToken(TokenType.Asterisk);
+                        break;
+                    case '&':
+                        if (_buffer[1] == '&')
+                        {
+                            token = GetToken(TokenType.And);
+                            Consume();
+                        }
+                        break;
+                    case '|':
+                        if (_buffer[1] == '|')
+                        {
+                            token = GetToken(TokenType.Or);
+                            Consume();
+                        }
+                        break;
+                    case '<':
+                        if (_buffer[1] == '=')
+                        {
+                            token = GetToken(TokenType.LessThanEquals);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.LessThan);
+                        }
+                        break;
+                    case '>':
+                        if (_buffer[1] == '=')
+                        {
+                            token = GetToken(TokenType.GreaterThanEquals);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.GreaterThan);
+                        }
                         break;
                     default:
                         if (IsIdentifierStart(_buffer[0]))

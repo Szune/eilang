@@ -23,7 +23,10 @@ namespace eilang
             Code.Add(new Bytecode(op, arg0, arg1, arg2));
         }
 
-        public Bytecode this[int index] =>  Code[index];
+        public Bytecode this[int index] {
+            get => Code[index];
+            set => Code[index] = value;
+        }
 
         public int Length => Code.Count;
     }

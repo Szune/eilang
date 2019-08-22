@@ -133,6 +133,105 @@ namespace eilang
             clas.Constructors.Add(newCtor);
         }
 
+        public void Visit(AstBinaryMathOperation math, Function function, Module mod)
+        {
+            math.Left.Accept(this, function, mod);
+            math.Right.Accept(this, function, mod);
+            switch (math.Op)
+            {
+                case BinaryMath.Plus:
+                    function.Write(OpCode.ADD);
+                    break;
+                case BinaryMath.Minus:
+                    function.Write(OpCode.SUB);
+                    break;
+                case BinaryMath.Times:
+                    function.Write(OpCode.MUL);
+                    break;
+                case BinaryMath.Division:
+                    function.Write(OpCode.DIV);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            
+        }
+
+        public void Visit(AstTrue tr, Function function, Module mod)
+        {
+            function.Write(OpCode.PUSH, _valueFactory.True());
+        }
+
+        public void Visit(AstFalse fa, Function function, Module mod)
+        {
+            function.Write(OpCode.PUSH, _valueFactory.False());
+        }
+
+        public void Visit(AstBlock block, Function function, Module mod)
+        {
+            block.Expressions.Accept(this, function, mod);
+        }
+
+        public void Visit(AstIf aIf, Function function, Module mod)
+        {
+            aIf.Condition.Accept(this, function, mod);
+            function.Write(OpCode.JMPF, _valueFactory.Integer(0));
+            var jmpfOpCodeIndex = function.Code.Count - 1;
+            
+            aIf.IfExpr.Accept(this, function, mod);
+            function.Write(OpCode.JMP, _valueFactory.Integer(0));
+            var jmpOpCodeIndex = function.Code.Count - 1;
+            var ifEndIndex = function.Code.Count;
+            function[jmpfOpCodeIndex] = new Bytecode(OpCode.JMPF, _valueFactory.Integer(ifEndIndex));
+
+            if (aIf.ElseExpr != null)
+            {
+                aIf.ElseExpr.Accept(this, function, mod);
+                var elseEndIndex = function.Code.Count;
+                function[jmpOpCodeIndex] = new Bytecode(OpCode.JMP, _valueFactory.Integer(elseEndIndex));
+            }
+            else
+            {
+                function[jmpOpCodeIndex] = new Bytecode(OpCode.JMP, _valueFactory.Integer(ifEndIndex));
+            }
+        }
+
+        public void Visit(AstCompare compare, Function function, Module mod)
+        {
+            compare.Left.Accept(this, function, mod);
+            compare.Right.Accept(this, function, mod);
+
+            switch (compare.Comparison)
+            {
+                case Compare.Or:
+                    function.Write(OpCode.OR);
+                    break;
+                case Compare.And:
+                    function.Write(OpCode.AND);
+                    break;
+                case Compare.EqualsEquals:
+                    function.Write(OpCode.EQ);
+                    break;
+                case Compare.NotEquals:
+                    function.Write(OpCode.NEQ);
+                    break;
+                case Compare.LessThan:
+                    function.Write(OpCode.LT);
+                    break;
+                case Compare.GreaterThan:
+                    function.Write(OpCode.GT);
+                    break;
+                case Compare.LessThanEquals:
+                    function.Write(OpCode.LTE);
+                    break;
+                case Compare.GreaterThanEquals:
+                    function.Write(OpCode.GTE);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
 
         public void Visit(AstClass clas, Module mod)
         {

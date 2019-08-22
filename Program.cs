@@ -7,7 +7,66 @@ namespace eilang
     {
         static void Main(string[] args)
         {
+            var code = @"
+fun main() {
+    var x = 1;
+    if(1 == 2) {
+        println('1 == 1');
+    } else {
+        println('1 != 2');
+    }
+}";
+            
+//    if(x == 2) {
+//        println('x == 2');
+//    } else if (x == 3) {
+//        println('x == 2');
+//    } else if (x == 4) {
+//        println('x == 4');
+//    } else if (x == 5) {
+//        println('x == 5');
+//    } else {
+//        println('x == ' + x + ' (from variable)');
+//    }
+            var lexer = new Lexer(code);
+            var parser = new Parser(lexer);
+            var ast = parser.Parse();
+
+            var walker = new AstWalker(ast);
+            walker.PrintAst();
+
+            var env = new Env();
+            env.ExportedFuncs.Add("println", PrintLine);
+
+            Compiler.Compile(env, ast, logger: Console.Out);
+
+            var interpreter = new Interpreter(env, logger: Console.Out);
+            interpreter.Interpret();
+        }
+
+        private static string booltestcode()
+        {
             string code = @"
+fun main() {
+    if(true == true) {
+        println('true == true');
+    } else {
+        println('true is not true');
+    }
+
+    if(1 == 1 && true == true || 2 == 3) {
+        println('1 == 1 && true == true');
+    } else {
+        println('true is false');
+    }
+
+}";
+            return code;
+        }
+
+        private static string testcodewithifadditionetc()
+        {
+            return @"
 typ point {
     x,y: int;
     ctor(x,y);
@@ -46,27 +105,12 @@ fun main() {
     falls.p.print();
     println(falls.p.x);
 
-    #if(10 > 7) {
-    #    do();
-    #} else {
-    #    doOther();
-    #}
+    if(7 <= 10) {
+        println('7 is less than or equal to 10');
+    } else {
+        println('7 is greater than 10?!');
+    }
 }";
-            
-            var lexer = new Lexer(code);
-            var parser = new Parser(lexer);
-            var ast = parser.Parse();
-
-            var walker = new AstWalker(ast);
-            walker.PrintAst();
-
-            var env = new Env();
-            env.ExportedFuncs.Add("println", PrintLine);
-
-            Compiler.Compile(env, ast, logger: Console.Out);
-
-            var interpreter = new Interpreter(env, logger: Console.Out);
-            interpreter.Interpret();
         }
 
         private static string oldtestcode()

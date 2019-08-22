@@ -12,6 +12,15 @@ namespace eilang
         Integer,
         Double,
         If,
+        Else,
+        Or,
+        And,
+        EqualsEquals,
+        NotEquals,
+        LessThan,
+        GreaterThan,
+        LessThanEquals,
+        GreaterThanEquals,
         Class,
         Module,
         Function,
@@ -29,6 +38,7 @@ namespace eilang
         False,
         Minus,
         Slash,
+        Not,
         EOF
     }
     

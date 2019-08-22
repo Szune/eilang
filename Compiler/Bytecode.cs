@@ -2,7 +2,7 @@ namespace eilang
 {
     public class Bytecode
     {
-        public Bytecode(OpCode op, IValue arg0, IValue arg1, IValue arg2)
+        public Bytecode(OpCode op, IValue arg0 = null, IValue arg1 = null, IValue arg2 = null)
         {
             Op = op;
             Arg0 = arg0;

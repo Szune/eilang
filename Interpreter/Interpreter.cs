@@ -22,7 +22,8 @@ namespace eilang
             _logger = logger;
         }
 
-        private void Log(string msg){
+        private void Log(string msg)
+        {
             _logger?.WriteLine(msg);
         }
 
@@ -34,11 +35,11 @@ namespace eilang
             var stack = "";
             if (_stack.TryPeek(out var peeky))
                 stack = $"{peeky.Debug}";
-            if(bc.Arg0 != null)
+            if (bc.Arg0 != null)
                 args.Add(bc.Arg0.Debug);
-            if(bc.Arg1 != null)
+            if (bc.Arg1 != null)
                 args.Add(bc.Arg1.Debug);
-            if(bc.Arg2 != null)
+            if (bc.Arg2 != null)
                 args.Add(bc.Arg2.Debug);
             Log($"Op: {bc.Op}, args: {string.Join(", ", args)}, top of stack: {stack}");
         }
@@ -50,13 +51,13 @@ namespace eilang
             _frames.Push(new CallFrame(start));
             _scopes.Push(new Scope());
 
-            while(_frames.Count > 0)
+            while (_frames.Count > 0)
             {
                 var frame = _frames.Peek();
                 var bc = frame.Function[frame.Address];
 
                 PrintBc(bc);
-                switch(bc.Op)
+                switch (bc.Op)
                 {
                     case OpCode.PUSH:
                         _stack.Push(bc.Arg0);
@@ -69,15 +70,467 @@ namespace eilang
                         var setVal = _stack.Pop();
                         _scopes.Peek().SetVariable(bc.Arg0.Get<string>(), setVal);
                         break;
+
+                    case OpCode.EQ:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Bool:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Bool:
+                                            _stack.Push(left.Get<bool>() == right.Get<bool>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        default:
+                                            _stack.Push(_valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(left.Get<int>() == right.Get<int>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        default:
+                                            _stack.Push(_valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                                case TypeOfValue.String:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.String:
+                                            _stack.Push(left.Get<string>() == right.Get<string>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        default:
+                                            _stack.Push(_valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                                default:
+                                    _stack.Push(_valueFactory.False());
+                                    break;
+                            }
+                        }
+                        break;
+                    
+                    case OpCode.NEQ:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Bool:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Bool:
+                                            _stack.Push(left.Get<bool>() != right.Get<bool>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        default:
+                                            _stack.Push(_valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(left.Get<int>() != right.Get<int>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        default:
+                                            _stack.Push(_valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                                case TypeOfValue.String:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.String:
+                                            _stack.Push(left.Get<string>() != right.Get<string>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        default:
+                                            _stack.Push(_valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                                default:
+                                    _stack.Push(_valueFactory.False());
+                                    break;
+                            }
+                        }
+                        break;
+                    
+                    case OpCode.GT:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(left.Get<int>() > right.Get<int>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(left.Get<int>() > right.Get<double>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                                case TypeOfValue.Double:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Double:
+                                            _stack.Push(left.Get<double>() > right.Get<double>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(left.Get<double>() > right.Get<int>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                            }
+                        }
+                        break;
+
+                    case OpCode.GTE:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(left.Get<int>() >= right.Get<int>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(left.Get<int>() >= right.Get<double>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                                case TypeOfValue.Double:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Double:
+                                            _stack.Push(left.Get<double>() >= right.Get<double>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(left.Get<double>() >= right.Get<int>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                            }
+                        }
+                        break;
+                    
+                    
+                    case OpCode.LT:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(left.Get<int>() < right.Get<int>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(left.Get<int>() < right.Get<double>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                                case TypeOfValue.Double:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Double:
+                                            _stack.Push(left.Get<double>() < right.Get<double>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(left.Get<double>() < right.Get<int>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                            }
+                        }
+                        break;
+
+                    case OpCode.LTE:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(left.Get<int>() <= right.Get<int>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(left.Get<int>() <= right.Get<double>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                                case TypeOfValue.Double:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Double:
+                                            _stack.Push(left.Get<double>() <= right.Get<double>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(left.Get<double>() <= right.Get<int>()
+                                                ? _valueFactory.True()
+                                                : _valueFactory.False());
+                                            break;
+                                    }
+                                    break;
+                            }
+                        }
+                        break;
+
+                    case OpCode.ADD:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.Integer(left.Get<int>() + right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.Double(left.Get<int>() + right.Get<double>()));
+                                            break;
+                                        case TypeOfValue.String:
+                                            _stack.Push(_valueFactory.String(left.Get<int>() + right.Get<string>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '+' operator.");
+                                    }
+                                    break;
+                                case TypeOfValue.Double:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.Double(left.Get<double>() + right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.Double(left.Get<double>() + right.Get<double>()));
+                                            break;
+                                        case TypeOfValue.String:
+                                            _stack.Push(_valueFactory.String(left.Get<double>() + right.Get<string>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '+' operator.");
+                                    }
+                                    break;
+                                case TypeOfValue.String:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.String:
+                                            _stack.Push(_valueFactory.String(left.Get<string>() + right.Get<string>()));
+                                            break;
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.String(left.Get<string>() + right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.String(left.Get<string>() + right.Get<double>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '+' operator.");
+                                    }
+                                    break;
+                                default:
+                                    throw new InterpreterException("Invalid values used with '+' operator.");
+                            }
+                        }
+                        break;
+                    
+                    case OpCode.SUB:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.Integer(left.Get<int>() - right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.Double(left.Get<int>() - right.Get<double>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '-' operator.");
+                                    }
+
+                                    break;
+                                case TypeOfValue.Double:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.Double(left.Get<double>() - right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.Double(left.Get<double>() - right.Get<double>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '-' operator.");
+                                    }
+                                    break;
+                                default:
+                                    throw new InterpreterException("Invalid values used with '-' operator.");
+                            }
+                        }
+                        break;
+
+                    case OpCode.MUL:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.Integer(left.Get<int>() * right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.Double(left.Get<int>() * right.Get<double>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '*' operator.");
+                                    }
+                                    break;
+                                case TypeOfValue.Double:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.Double(left.Get<double>() * right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.Double(left.Get<double>() * right.Get<double>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '*' operator.");
+                                    }
+                                    break;
+                                default:
+                                    throw new InterpreterException("Invalid values used with '*' operator.");
+                            }
+                        }
+                        break;
+                    
+                    case OpCode.DIV:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.Integer(left.Get<int>() / right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.Double(left.Get<int>() / right.Get<double>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '/' operator.");
+                                    }
+                                    break;
+                                case TypeOfValue.Double:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.Double(left.Get<double>() / right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.Double(left.Get<double>() / right.Get<double>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '/' operator.");
+                                    }
+                                    break;
+                                default:
+                                    throw new InterpreterException("Invalid values used with '/' operator.");
+                            }
+                        }
+                        break;
+                    
+                    case OpCode.JMPF:
+                        var jmpf = _stack.Pop().Get<bool>();
+                        if (jmpf == false)
+                            frame.Address = bc.Arg0.Get<int>() - 1;
+                        // + 1 because we need to adjust for the address++ at the start of the loop
+                        break;
+                    case OpCode.JMP:
+                        frame.Address = bc.Arg0.Get<int>() - 1;
+                        break;
                     case OpCode.CALL:
-                        _frames.Push(new CallFrame(_env.Functions[$"{Compiler.GlobalFunctionAndModuleName}::{bc.Arg0.Get<string>()}"]));
+                        _frames.Push(new CallFrame(
+                            _env.Functions[$"{Compiler.GlobalFunctionAndModuleName}::{bc.Arg0.Get<string>()}"]));
                         var currentScope = _scopes.Peek();
                         _scopes.Push(new Scope(currentScope));
                         break;
                     case OpCode.REF:
                         var refVal = _scopes.Peek().GetVariable(bc.Arg0.Get<string>());
-                        if(refVal == null)
-                            throw new InvalidOperationException($"Variable '{bc.Arg0.Get<string>()}' could not be found.");
+                        if (refVal == null)
+                            throw new InvalidOperationException(
+                                $"Variable '{bc.Arg0.Get<string>()}' could not be found.");
                         _stack.Push(refVal);
                         break;
                     case OpCode.POP:
@@ -89,7 +542,7 @@ namespace eilang
                         break;
                     case OpCode.INIT:
                         var argCount = _stack.Pop().Get<int>();
-                        if(!_env.Classes.TryGetValue(bc.Arg0.Get<string>(), out var clas))
+                        if (!_env.Classes.TryGetValue(bc.Arg0.Get<string>(), out var clas))
                             throw new InvalidOperationException($"Class not found {clas}");
                         var instScope = new Scope();
                         var newInstance = new Instance(instScope, clas);
@@ -98,7 +551,7 @@ namespace eilang
                         if (ctor == null && argCount > 0)
                             throw new InvalidOperationException(
                                 $"No constructor exists which takes {argCount} arguments.");
-                        else if(ctor == null && argCount == 0)
+                        else if (ctor == null && argCount == 0)
                             ctor = clas.CtorForMembersWithValues;
                         _frames.Push(new CallFrame(ctor));
                         _scopes.Push(instScope);
@@ -114,19 +567,21 @@ namespace eilang
                             {
                                 args.Add(_stack.Pop());
                             }
+
                             // push instance to return
                             _stack.Push(_valueFactory.Instance(newInstance));
-                            
+
                             // push args for constructor
                             for (int i = 0; i < argCount; i++)
                             {
                                 _stack.Push(args[i]);
                             }
                         }
+
                         break;
                     case OpCode.ECALL:
                         var argLength = _stack.Pop().Get<int>();
-                        if(argLength == 1)
+                        if (argLength == 1)
                         {
                             var val = _stack.Pop();
                             _env.ExportedFuncs[bc.Arg0.Get<string>()](_valueFactory, val);
@@ -135,6 +590,7 @@ namespace eilang
                         {
                             throw new NotImplementedException();
                         }
+
                         break;
                     case OpCode.TYPEGET:
                         var type = _stack.Peek().Get<Instance>().Owner;
@@ -144,9 +600,10 @@ namespace eilang
                         var callingClass = _stack.Pop().Get<Class>();
                         var callingInstance = _stack.Pop().Get<Instance>();
                         if (!callingClass.Functions.TryGetValue(bc.Arg0.Get<string>(), out var membFunc))
-                            throw new InvalidOperationException($"Member function {bc.Arg0.Get<string>()} not found in class {callingClass.FullName}");
+                            throw new InvalidOperationException(
+                                $"Member function {bc.Arg0.Get<string>()} not found in class {callingClass.FullName}");
                         _frames.Push(new CallFrame(membFunc));
-                        _scopes.Push(callingInstance.Scope);
+                        _scopes.Push(new Scope(callingInstance.Scope));
                         break;
                     case OpCode.MREF:
                         var inst = _stack.Pop().Get<Instance>();
@@ -158,13 +615,30 @@ namespace eilang
                         var mSetInst = _stack.Pop().Get<Instance>();
                         mSetInst.Scope.SetVariable(bc.Arg0.Get<string>(), mSetVal);
                         break;
+                    case OpCode.AND:
+                    {
+                        var right = _stack.Pop();
+                        var left = _stack.Pop();
+                        _stack.Push((left.Get<bool>() && right.Get<bool>()) 
+                            ? _valueFactory.True() 
+                            : _valueFactory.False());
+                        break;
+                    }
+                    case OpCode.OR:
+                    {
+                        var right = _stack.Pop();
+                        var left = _stack.Pop();
+                        _stack.Push((left.Get<bool>() || right.Get<bool>()) 
+                            ? _valueFactory.True() 
+                            : _valueFactory.False());
+                        break;
+                    }
                     default:
                         throw new NotImplementedException(bc.Op.ToString());
                 }
-                frame.Address++;
-                
-            }
 
+                frame.Address++;
+            }
         }
 
         private Function GetStartFunction()
@@ -206,10 +680,11 @@ namespace eilang
 
             if (_env.Classes.TryGetValue("prog::app", out var app))
             {
-                if(app.Functions.TryGetValue(main, out var m))
+                if (app.Functions.TryGetValue(main, out var m))
                 {
                     return m;
                 }
+
                 // SHIFT + ALTGR + 9 == »
                 // SHIFT + ALTGR + 8 == «
             }
@@ -217,15 +692,18 @@ namespace eilang
             {
                 return m;
             }
-            else if (_env.Classes.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::app", out var globApp) && globApp.Functions.TryGetValue(main, out var ma))
+            else if (_env.Classes.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::app", out var globApp) &&
+                     globApp.Functions.TryGetValue(main, out var ma))
             {
                 return ma;
-            } 
+            }
             else if (_env.Functions.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::{main}", out var globMain))
             {
                 return globMain;
             }
-            var func = _env.Functions[$"{Compiler.GlobalFunctionAndModuleName}::{Compiler.GlobalFunctionAndModuleName}"];
+
+            var func = _env.Functions[
+                $"{Compiler.GlobalFunctionAndModuleName}::{Compiler.GlobalFunctionAndModuleName}"];
             func.Write(OpCode.RET);
             return func;
         }

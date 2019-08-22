@@ -1,15 +1,18 @@
+using System;
+
 namespace eilang
 {
+    [Flags]
     public enum TypeOfValue
     {
         None = 0,
-        String,
-        Integer,
-        Double,
-        Bool,
-        Class,
-        Instance,
-        Void
+        String = 1,
+        Integer = 2,
+        Double = 4,
+        Bool = 8,
+        Class = 16,
+        Instance = 32,
+        Void = 64
     }
 
     public interface IValue

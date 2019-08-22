@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection.Metadata;
 
 namespace eilang
 {
@@ -125,7 +128,7 @@ namespace eilang
 
             Require(TokenType.Equals);
 
-            var initExpr = ParsePlusAndMinus();
+            var initExpr = ParseOr();
             Require(TokenType.Semicolon);
             clas.Variables.Add(new AstMemberVariableDeclarationWithInit(ident, type, initExpr));
         }
@@ -160,7 +163,7 @@ namespace eilang
 
             Require(TokenType.Equals);
 
-            var initExpr = ParsePlusAndMinus();
+            var initExpr = ParseOr();
             Require(TokenType.Semicolon);
             foreach (var ide in idents)
                 clas.Variables.Add(new AstMemberVariableDeclarationWithInit(ide, type, initExpr));
@@ -212,7 +215,7 @@ namespace eilang
             ast.Functions.Add(fun);
         }
 
-        private void ParseBlock(AstFunction fun)
+        private void ParseBlock(IHaveExpression fun)
         {
             Require(TokenType.LeftBrace);
             while (!Match(TokenType.RightBrace) && !Match(TokenType.EOF))
@@ -228,9 +231,9 @@ namespace eilang
         {
             switch (_buffer[0].Type)
             {
-                // case TokenType.If:
-                // ParseIf(ast);
-                // return;
+                case TokenType.If:
+                    ParseIf(ast);
+                    return;
                 case TokenType.Var:
                     if (_inMemberAssignment)
                     {
@@ -253,7 +256,7 @@ namespace eilang
                             ParseAssignment(ast);
                             return;
                         default:
-                            ast.Expressions.Add(ParsePlusAndMinus());
+                            ast.Expressions.Add(ParseOr());
                             Require(TokenType.Semicolon);
                             return;
                     }
@@ -261,12 +264,34 @@ namespace eilang
                     Consume();
                     return;
                 default:
-                    ast.Expressions.Add(ParsePlusAndMinus());
+                    ast.Expressions.Add(ParseOr());
                     Require(TokenType.Semicolon);
                     return;
             }
 
             throw new NotImplementedException();
+        }
+
+        private void ParseIf(IHaveExpression ast)
+        {
+            Require(TokenType.If);
+            Require(TokenType.LeftParenthesis);
+            var condition = ParseOr();
+            Require(TokenType.RightParenthesis);
+            var ifPart = new AstBlock();
+            ParseBlock(ifPart);
+            
+            if (!Match(TokenType.Else))
+            {
+                ast.Expressions.Add(new AstIf(condition, ifPart, null));
+                return;
+            }
+
+            Consume();
+            var elsePart = new AstBlock();
+            ParseBlock(elsePart);
+
+            ast.Expressions.Add(new AstIf(condition, ifPart, elsePart));
         }
 
         private AstExpression ParseMemberReferenceOrMemberFunctionCallOrMemberVariableAssignment()
@@ -298,7 +323,7 @@ namespace eilang
 
                     _inMemberAssignment = true;
                     Require(TokenType.Equals);
-                    var assignVal = ParsePlusAndMinus();
+                    var assignVal = ParseOr();
                     var assignment = new AstMemberVariableAssignment(identifiers, assignVal);
                     _inMemberAssignment = false;
                     return assignment;
@@ -334,7 +359,7 @@ namespace eilang
         {
             var ident = Require(TokenType.Identifier).Text;
             Require(TokenType.Equals);
-            var value = ParsePlusAndMinus();
+            var value = ParseOr();
             Require(TokenType.Semicolon);
             ast.Expressions.Add(new AstAssignment(ident, value));
         }
@@ -344,9 +369,92 @@ namespace eilang
             Require(TokenType.Var);
             var ident = Require(TokenType.Identifier).Text;
             Require(TokenType.Equals);
-            var value = ParsePlusAndMinus();
+            var value = ParseOr();
             Require(TokenType.Semicolon);
             ast.Expressions.Add(new AstDeclarationAssignment(ident, value));
+        }
+
+        private AstExpression ParseOr()
+        {
+            var expr = ParseAnd();
+            while (Match(TokenType.Or))
+            {
+                Consume();
+                var right = ParseAnd();
+                expr = new AstCompare(Compare.Or, expr, right);
+            }
+
+            return expr;
+        }
+
+        private AstExpression ParseAnd()
+        {
+            var expr = ParseEqualityChecks();
+            while (Match(TokenType.And))
+            {
+                Consume();
+                var right = ParseEqualityChecks();
+                expr = new AstCompare(Compare.And, expr, right);
+            }
+
+            return expr;
+        }
+
+        private AstExpression  ParseEqualityChecks()
+        {
+            var expr = ParseDifferenceChecks();
+            while (Match(TokenType.EqualsEquals) || Match(TokenType.NotEquals))
+            {
+                if (Match(TokenType.EqualsEquals))
+                {
+                    Consume();
+                    var right = ParseDifferenceChecks();
+                    expr = new AstCompare(Compare.EqualsEquals, expr, right);
+                }
+                else if (Match(TokenType.NotEquals))
+                {
+                    Consume();
+                    var right = ParseDifferenceChecks();
+                    expr = new AstCompare(Compare.NotEquals, expr, right);
+                }
+            }
+
+            return expr;
+        }
+        
+        
+        private AstExpression  ParseDifferenceChecks()
+        {
+            var expr = ParsePlusAndMinus();
+            while (Match(TokenType.LessThan) || Match(TokenType.GreaterThan) || Match(TokenType.LessThanEquals) || Match(TokenType.GreaterThanEquals))
+            {
+                if (Match(TokenType.LessThan))
+                {
+                    Consume();
+                    var right = ParsePlusAndMinus();
+                    expr = new AstCompare(Compare.LessThan, expr, right);
+                }
+                else if (Match(TokenType.GreaterThan))
+                {
+                    Consume();
+                    var right = ParsePlusAndMinus();
+                    expr = new AstCompare(Compare.GreaterThan, expr, right);
+                }
+                else if (Match(TokenType.LessThanEquals))
+                {
+                    Consume();
+                    var right = ParsePlusAndMinus();
+                    expr = new AstCompare(Compare.LessThanEquals, expr, right);
+                }
+                else if (Match(TokenType.GreaterThanEquals))
+                {
+                    Consume();
+                    var right = ParsePlusAndMinus();
+                    expr = new AstCompare(Compare.GreaterThanEquals, expr, right);
+                }
+            }
+
+            return expr;
         }
 
         private AstExpression ParsePlusAndMinus()
@@ -407,7 +515,7 @@ namespace eilang
             {
                 case TokenType.LeftParenthesis:
                     Consume();
-                    var expr = ParsePlusAndMinus();
+                    var expr = ParseOr();
                     Require(TokenType.RightParenthesis);
                     return expr;
                 case TokenType.String:
@@ -458,7 +566,7 @@ namespace eilang
             var args = new List<AstExpression>();
             while (!Match(listEnd) && !Match(TokenType.EOF))
             {
-                args.Add(ParsePlusAndMinus());
+                args.Add(ParseOr());
                 if (Match(TokenType.Comma))
                 {
                     Consume();

@@ -318,6 +318,12 @@ namespace eilang
         {
             Log($"Compiling member function declaration '{memberFunc.Name}'");
             var func = new MemberFunction(memberFunc.Name, clas.FullName, memberFunc.Arguments, clas);
+            for (int i = memberFunc.Arguments.Count - 1; i > -1; i--)
+            {
+                func.Write(OpCode.DEF, _valueFactory.String(memberFunc.Arguments[i]));
+            }
+
+            func.Write(OpCode.PUSH, _valueFactory.Integer(memberFunc.Arguments.Count));
             memberFunc.Expressions.Accept(this, func, mod);
             if(func.Length < 1)
             {

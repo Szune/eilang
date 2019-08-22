@@ -599,6 +599,7 @@ namespace eilang
                     case OpCode.MCALL:
                         var callingClass = _stack.Pop().Get<Class>();
                         var callingInstance = _stack.Pop().Get<Instance>();
+                        var mCallArgCount = _stack.Pop().Get<int>();
                         if (!callingClass.Functions.TryGetValue(bc.Arg0.Get<string>(), out var membFunc))
                             throw new InvalidOperationException(
                                 $"Member function {bc.Arg0.Get<string>()} not found in class {callingClass.FullName}");

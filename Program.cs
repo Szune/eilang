@@ -8,7 +8,24 @@ namespace eilang
         static void Main(string[] args)
         {
             var code = @"
+typ point {
+    x,y: int;
+    ctor(x,y);
+
+    fun print() {
+        println('(' + x + ',' + y + ')');
+    }
+
+    fun add(other, nother, fother) {
+        println((x + other.x) + ' ' + (y + other.y));
+        println(nother);
+        println(fother);
+    }
+}
 fun main() {
+    var p = *point(1,2);
+    var p2 = *point(3,4);
+    p.add(p2, 'testy', 'triesty');
     var x = 1;
     if(1 == 2) {
         println('1 == 1');

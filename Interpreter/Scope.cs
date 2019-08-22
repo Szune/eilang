@@ -23,7 +23,8 @@ namespace eilang
         {
             if (_variables.TryGetValue(name, out var val))
                 return val;
-            while (_parent != null)
+                
+            if (_parent != null)
             {
                 var variable = _parent.GetVariable(name);
                 if (variable != null)
@@ -38,7 +39,7 @@ namespace eilang
             
             if (_variables.ContainsKey(name))
                 return this;
-            while (_parent != null)
+            if (_parent != null)
             {
                 var variable = _parent.GetVariable(name);
                 if (variable != null)

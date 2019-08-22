@@ -271,6 +271,7 @@ namespace eilang
                 identifiers.Add(nextIdentifier);
                 if (Match(TokenType.Semicolon))
                 {
+                    Require(TokenType.Semicolon);
                     return new AstMemberVariableReference(identifiers);
                 }
                 else if (Match(TokenType.LeftParenthesis))
@@ -284,13 +285,15 @@ namespace eilang
                         throw new ParserException($"Unexpected member variable assignment containing another member variable assignment at line {_buffer[0].Line}, col {_buffer[0].Col}");
                     }
                     _inMemberAssignment = true;
+                    Require(TokenType.Equals);
                     var assignVal = ParseRightExpression();
                     var assignment = new AstMemberVariableAssignment(identifiers, assignVal);
                     _inMemberAssignment = false;
                     return assignment;
                 }
             }
-            throw new ParserException($"Unexpected token {_buffer[0].Type} at line {_buffer[0].Line}, col {_buffer[0].Col}");
+            return new AstMemberVariableReference(identifiers);
+            //throw new ParserException($"Unexpected token {_buffer[0].Type} at line {_buffer[0].Line}, col {_buffer[0].Col}");
         }
 
 

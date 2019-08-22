@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 
 namespace eilang
 {
@@ -146,6 +147,16 @@ namespace eilang
                             throw new InvalidOperationException($"Member function {bc.Arg0.Get<string>()} not found in class {callingClass.FullName}");
                         _frames.Push(new CallFrame(membFunc));
                         _scopes.Push(callingInstance.Scope);
+                        break;
+                    case OpCode.MREF:
+                        var inst = _stack.Pop().Get<Instance>();
+                        var mRefVar = inst.Scope.GetVariable(bc.Arg0.Get<string>());
+                        _stack.Push(mRefVar);
+                        break;
+                    case OpCode.MSET:
+                        var mSetVal = _stack.Pop();
+                        var mSetInst = _stack.Pop().Get<Instance>();
+                        mSetInst.Scope.SetVariable(bc.Arg0.Get<string>(), mSetVal);
                         break;
                     default:
                         throw new NotImplementedException(bc.Op.ToString());

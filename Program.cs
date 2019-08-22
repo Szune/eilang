@@ -7,7 +7,6 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-
             string code = @"
 typ point {
     x,y: int;
@@ -40,6 +39,14 @@ typ test {
 fun main() {
     var falls = *test('mega',10, 5.9, *point(3,4));
     falls.print();
+    falls.p.print();
+    println(falls.s);
+    falls.s = 'giga';
+    println(falls.s);
+    falls.print();
+    falls.p.x = 15;
+    falls.p.print();
+    println(falls.p.x);
 }";
             
             var lexer = new Lexer(code);

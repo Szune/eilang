@@ -53,16 +53,28 @@ namespace eilang
             //_env.Modules.Add(mod.Name, mod);
         }
 
-        public void Visit(AstMemberVariableReference memberFunc, Function function, Module mod)
+        public void Visit(AstMemberVariableReference member, Function function, Module mod)
         {
-            Log($"Compiling member variable reference '{string.Join(".", memberFunc.Identifiers)}'");
-            throw new NotImplementedException();
+            Log($"Compiling member variable reference '{string.Join(".", member.Identifiers)}'");
+            
+            // 1st identifier = variable ref
+            function.Write(OpCode.REF, _valueFactory.String(member.Identifiers[0]));
+            // 2nd..n identifier = member ref
+            for (int i = 1; i < member.Identifiers.Count; i++)
+                function.Write(OpCode.MREF, _valueFactory.String(member.Identifiers[i]));
         }
 
-        public void Visit(AstMemberVariableAssignment memberFunc, Function function, Module mod)
+        public void Visit(AstMemberVariableAssignment member, Function function, Module mod)
         {
-            Log($"Compiling member variable assignment '{string.Join(".", memberFunc.Identifiers)}'");
-            throw new NotImplementedException();
+            Log($"Compiling member variable assignment '{string.Join(".", member.Identifiers)}'");
+            // 1st identifier = variable ref
+            function.Write(OpCode.REF, _valueFactory.String(member.Identifiers[0]));
+            // 2nd..n-1 identifier = member ref
+            for (int i = 1; i < member.Identifiers.Count - 1; i++)
+                function.Write(OpCode.MREF, _valueFactory.String(member.Identifiers[i]));
+            
+            member.Value.Accept(this, function, mod);
+            function.Write(OpCode.MSET, _valueFactory.String(member.Identifiers[member.Identifiers.Count-1]));
         }
 
         public void Visit(AstMemberFunctionCall memberFunc, Function function, Module mod)

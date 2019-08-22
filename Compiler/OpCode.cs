@@ -18,5 +18,6 @@ namespace eilang
         INIT = 10,
         MREF = 11,
         TYPEGET = 12,
+        MSET = 13,
     }
 }

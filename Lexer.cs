@@ -106,6 +106,12 @@ namespace eilang
                     case '+':
                         token = GetToken(TokenType.Plus);
                         break;
+                    case '-':
+                        token = GetToken(TokenType.Minus);
+                        break;
+                    case '/':
+                        token = GetToken(TokenType.Slash);
+                        break;
                     case '.':
                         token = GetToken(TokenType.Dot);
                         break;

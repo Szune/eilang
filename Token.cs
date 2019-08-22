@@ -27,6 +27,8 @@ namespace eilang
         Plus,
         True,
         False,
+        Minus,
+        Slash,
         EOF
     }
     

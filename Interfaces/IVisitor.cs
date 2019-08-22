@@ -21,5 +21,8 @@ namespace eilang
         void Visit(AstMemberVariableDeclaration member, Class function, Module mod);
         void Visit(AstMemberVariableDeclarationWithInit member, Class function, Module mod);
         void Visit(AstConstructor ctor, Class function, Module mod);
+        void Visit(AstBinaryMathOperation math, Function function, Module mod);
+        void Visit(AstTrue tr, Function function, Module mod);
+        void Visit(AstFalse fa, Function function, Module mod);
     }
 }

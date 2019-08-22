@@ -12,9 +12,7 @@ typ point {
     x,y: int;
     ctor(x,y);
     fun print() {
-        #println(x + ' ' + y);
-        println(x);
-        println(y);
+        println('(' + x + ',' + y + ')');
     }
 }
 typ test {
@@ -47,6 +45,12 @@ fun main() {
     falls.p.x = 15;
     falls.p.print();
     println(falls.p.x);
+
+    #if(10 > 7) {
+    #    do();
+    #} else {
+    #    doOther();
+    #}
 }";
             
             var lexer = new Lexer(code);

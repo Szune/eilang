@@ -22,22 +22,31 @@ typ point {
         println(fother);
     }
 }
+
+fun pointless(num) {
+    if(num == 2) {
+        println('num == 2');
+    } else if (num == 3) {
+        println('num == 3');
+    } else if (num == 4) {
+        println('num == 4');
+    } else if (num == 5) {
+        println('num == 5');
+    } else {
+        println('num == ' + num + ' (from variable)');
+    }
+}
+
 fun main() {
     var p = *point(1,2);
     var p2 = *point(3,4);
     p.add(p2, 'testy', 'triesty');
-    var x = 6;
-    if(x == 2) {
-        println('x == 2');
-    } else if (x == 3) {
-        println('x == 3');
-    } else if (x == 4) {
-        println('x == 4');
-    } else if (x == 5) {
-        println('x == 5');
-    } else {
-        println('x == ' + x + ' (from variable)');
-    }
+    pointless(1);
+    pointless(2);
+    pointless(3);
+    pointless(4);
+    pointless(5);
+    pointless(6);
 }";
             
             var lexer = new Lexer(code);

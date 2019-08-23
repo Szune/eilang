@@ -521,6 +521,7 @@ namespace eilang
                         frame.Address = bc.Arg0.Get<int>() - 1;
                         break;
                     case OpCode.CALL:
+                        var callArgCount = _stack.Pop().Get<int>();
                         _frames.Push(new CallFrame(
                             _env.Functions[$"{Compiler.GlobalFunctionAndModuleName}::{bc.Arg0.Get<string>()}"]));
                         var currentScope = _scopes.Peek();

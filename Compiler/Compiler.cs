@@ -301,6 +301,12 @@ namespace eilang
         {
             Log($"Compiling function declaration '{func.Name}'");
             var newFunc = new Function(func.Name, mod.Name, func.Arguments);
+            for (int i = func.Arguments.Count - 1; i > -1; i--)
+            {
+                newFunc.Write(OpCode.DEF, _valueFactory.String(func.Arguments[i]));
+            }
+
+            newFunc.Write(OpCode.PUSH, _valueFactory.Integer(func.Arguments.Count));
             func.Expressions.Accept(this, newFunc, mod);
             if(newFunc.Length < 1)
             {

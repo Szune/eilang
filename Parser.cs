@@ -287,11 +287,31 @@ namespace eilang
                 return;
             }
 
-            Consume();
-            var elsePart = new AstBlock();
-            ParseBlock(elsePart);
-
-            ast.Expressions.Add(new AstIf(condition, ifPart, elsePart));
+            var firstIf = new AstIf(condition, ifPart, null);
+            var currentIf = firstIf;
+            while (Match(TokenType.Else))
+            {
+                Consume();
+                if (Match(TokenType.If))
+                {
+                    Consume();
+                    var cond = ParseOr();
+                    var ifBlock = new AstBlock();
+                    ParseBlock(ifBlock);
+                    var newIf = new AstIf(cond, ifBlock, null);
+                    currentIf.SetElse(newIf);
+                    currentIf = newIf;
+                }
+                else
+                {
+                    var elseBlock = new AstBlock();
+                    ParseBlock(elseBlock);
+                    currentIf.SetElse(elseBlock);
+                    ast.Expressions.Add(firstIf);
+                    return;
+                }
+            }
+            ast.Expressions.Add(firstIf); // this part is reached if there were else ifs without an ending else
         }
 
         private AstExpression ParseMemberReferenceOrMemberFunctionCallOrMemberVariableAssignment()

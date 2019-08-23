@@ -26,25 +26,20 @@ fun main() {
     var p = *point(1,2);
     var p2 = *point(3,4);
     p.add(p2, 'testy', 'triesty');
-    var x = 1;
-    if(1 == 2) {
-        println('1 == 1');
+    var x = 6;
+    if(x == 2) {
+        println('x == 2');
+    } else if (x == 3) {
+        println('x == 3');
+    } else if (x == 4) {
+        println('x == 4');
+    } else if (x == 5) {
+        println('x == 5');
     } else {
-        println('1 != 2');
+        println('x == ' + x + ' (from variable)');
     }
 }";
             
-//    if(x == 2) {
-//        println('x == 2');
-//    } else if (x == 3) {
-//        println('x == 2');
-//    } else if (x == 4) {
-//        println('x == 4');
-//    } else if (x == 5) {
-//        println('x == 5');
-//    } else {
-//        println('x == ' + x + ' (from variable)');
-//    }
             var lexer = new Lexer(code);
             var parser = new Parser(lexer);
             var ast = parser.Parse();

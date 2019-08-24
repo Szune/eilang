@@ -111,18 +111,21 @@ namespace eilang
 
         public void Visit(AstMemberVariableDeclaration member, Class clas, Module mod)
         {
+            Log($"Compiling member variable declaration for '{member.Ident}'");
             clas.CtorForMembersWithValues.Write(OpCode.PUSH, _valueFactory.Void());
             clas.CtorForMembersWithValues.Write(OpCode.DEF, _valueFactory.String(member.Ident));
         }
 
         public void Visit(AstMemberVariableDeclarationWithInit member, Class clas, Module mod)
         {
+            Log($"Compiling member variable declaration with initial value for '{member.Ident}'");
             member.InitExpr.Accept(this, clas.CtorForMembersWithValues, mod);
             clas.CtorForMembersWithValues.Write(OpCode.DEF, _valueFactory.String(member.Ident));
         }
 
         public void Visit(AstConstructor ctor, Class clas, Module mod)
         {
+            Log($"Compiling ctor for '{clas.Name}'");
             var newCtor = new MemberFunction(ctor.Name, "", ctor.Arguments, clas);
             foreach (var arg in ctor.Arguments)
             {
@@ -135,6 +138,7 @@ namespace eilang
 
         public void Visit(AstBinaryMathOperation math, Function function, Module mod)
         {
+            Log($"Compiling binary math '{math.Op}'");
             math.Left.Accept(this, function, mod);
             math.Right.Accept(this, function, mod);
             switch (math.Op)
@@ -159,21 +163,25 @@ namespace eilang
 
         public void Visit(AstTrue tr, Function function, Module mod)
         {
+            Log($"Compiling true");
             function.Write(OpCode.PUSH, _valueFactory.True());
         }
 
         public void Visit(AstFalse fa, Function function, Module mod)
         {
+            Log($"Compiling false");
             function.Write(OpCode.PUSH, _valueFactory.False());
         }
 
         public void Visit(AstBlock block, Function function, Module mod)
         {
+            Log($"Compiling block");
             block.Expressions.Accept(this, function, mod);
         }
 
         public void Visit(AstIf aIf, Function function, Module mod)
         {
+            Log($"Compiling compare if statement");
             aIf.Condition.Accept(this, function, mod);
             function.Write(OpCode.JMPF, _valueFactory.Integer(0));
             var jmpfOpCodeIndex = function.Code.Count - 1;
@@ -198,6 +206,7 @@ namespace eilang
 
         public void Visit(AstCompare compare, Function function, Module mod)
         {
+            Log($"Compiling compare '{compare.Comparison}'");
             compare.Left.Accept(this, function, mod);
             compare.Right.Accept(this, function, mod);
 
@@ -230,6 +239,27 @@ namespace eilang
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        public void Visit(AstNewList list, Function function, Module mod)
+        {
+            Log($"Compiling new list with '{list.InitialItems.Count}' items");
+            for (int i = list.InitialItems.Count - 1; i > -1; i--)
+            {
+                list.InitialItems[i].Accept(this, function, mod);
+            }
+            function.Write(OpCode.PUSH, _valueFactory.Integer(list.InitialItems.Count));
+            function.Write(OpCode.NLIST);
+        }
+
+        public void Visit(AstIndexerReference indexer, Function function, Module mod)
+        {
+            Log($"Compiling indexer reference for variable '{indexer.Identifier}'");
+            indexer.IndexExpr.Accept(this, function, mod);
+            function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+            function.Write(OpCode.REF, _valueFactory.String(indexer.Identifier));
+            function.Write(OpCode.TYPEGET);
+            function.Write(OpCode.MCALL, _valueFactory.String("idx"));
         }
 
 

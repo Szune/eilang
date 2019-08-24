@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace eilang
 {
     public interface IValueFactory
@@ -10,6 +12,7 @@ namespace eilang
         IValue Instance(Instance instance);
         IValue Class(Class clas);
         IValue Void();
+        IValue List();
     }
 
     public class ValueFactory : IValueFactory
@@ -55,6 +58,13 @@ namespace eilang
         public IValue Void()
         {
             return _empty;
+        }
+
+        public IValue List()
+        {
+            var scope = new Scope();
+            scope.DefineVariable(".list", new Value(TypeOfValue.List, new List<IValue>()));
+            return Instance(new Instance(scope, new ListClass()));
         }
     }
 }

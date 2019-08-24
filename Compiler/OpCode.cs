@@ -33,6 +33,12 @@ namespace eilang
         GT,
         LTE,
         GTE,
-        JMP
+        JMP,
+        NLIST,
+        AIDX,
+        AADD,
+        AREM,
+        AREMA,
+        ALEN
     }
 }

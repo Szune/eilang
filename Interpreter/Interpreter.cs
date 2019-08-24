@@ -590,6 +590,7 @@ namespace eilang
                         else
                         {
                             throw new NotImplementedException();
+                            
                         }
 
                         break;
@@ -601,7 +602,7 @@ namespace eilang
                         var callingClass = _stack.Pop().Get<Class>();
                         var callingInstance = _stack.Pop().Get<Instance>();
                         var mCallArgCount = _stack.Pop().Get<int>();
-                        if (!callingClass.Functions.TryGetValue(bc.Arg0.Get<string>(), out var membFunc))
+                        if (!callingClass.TryGetFunction(bc.Arg0.Get<string>(), out var membFunc))
                             throw new InvalidOperationException(
                                 $"Member function {bc.Arg0.Get<string>()} not found in class {callingClass.FullName}");
                         _frames.Push(new CallFrame(membFunc));
@@ -633,6 +634,53 @@ namespace eilang
                         _stack.Push((left.Get<bool>() || right.Get<bool>()) 
                             ? _valueFactory.True() 
                             : _valueFactory.False());
+                        break;
+                    }
+                    case OpCode.NLIST:
+                    {
+                        var initCount = _stack.Pop();
+                        if (initCount.Get<int>() < 1)
+                        {
+                            _stack.Push(_valueFactory.List());
+                        }
+                        else
+                        {
+                            var list = _valueFactory.List();
+                            var actList = list.Get<Instance>().Scope.GetVariable(".list").Get<List<IValue>>();
+                            for (int i = 0; i < initCount.Get<int>(); i++)
+                            {
+                                actList.Add(_stack.Pop());
+                            }
+
+                            _stack.Push(list);
+                        }
+                        break;
+                    }
+                    case OpCode.AADD:
+                    {
+                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
+                        var val = _stack.Pop();
+                        list.Add(val);
+                        break;
+                    }
+                    case OpCode.ALEN:
+                    {
+                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
+                        _stack.Push(_valueFactory.Integer(list.Count));
+                        break;
+                    }
+                    case OpCode.AREM:
+                    {
+                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
+                        var val = _stack.Pop();
+                        list.Remove(val);
+                        break;
+                    }
+                    case OpCode.AIDX:
+                    {
+                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
+                        var index = _stack.Pop().Get<int>();
+                        _stack.Push(list[index]);
                         break;
                     }
                     default:
@@ -680,11 +728,12 @@ namespace eilang
 
             const string main = "main";
 
+            Function ret = null;
             if (_env.Classes.TryGetValue("prog::app", out var app))
             {
                 if (app.Functions.TryGetValue(main, out var m))
                 {
-                    return m;
+                    ret = m;
                 }
 
                 // SHIFT + ALTGR + 9 == »
@@ -692,22 +741,35 @@ namespace eilang
             }
             else if (_env.Functions.TryGetValue($"prog::{main}", out var m))
             {
-                return m;
+                ret = m;
             }
             else if (_env.Classes.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::app", out var globApp) &&
                      globApp.Functions.TryGetValue(main, out var ma))
             {
-                return ma;
+                ret = ma;
             }
             else if (_env.Functions.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::{main}", out var globMain))
             {
-                return globMain;
+                ret = globMain;
             }
 
-            var func = _env.Functions[
-                $"{Compiler.GlobalFunctionAndModuleName}::{Compiler.GlobalFunctionAndModuleName}"];
-            func.Write(OpCode.RET);
-            return func;
+            if (ret != null)
+            {
+                if (ret.Code[0].Op == OpCode.PUSH && ret.Code[0].Arg0.Get<int>() == 0)
+                {
+                    // removes the argument count of the function call to main
+                    ret.Code.RemoveAt(0);
+                }
+
+                return ret;
+            }
+            else
+            {
+                var func = _env.Functions[
+                    $"{Compiler.GlobalFunctionAndModuleName}::{Compiler.GlobalFunctionAndModuleName}"];
+                func.Write(OpCode.RET);
+                return func;
+            }
         }
     }
 }

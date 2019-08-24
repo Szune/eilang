@@ -12,7 +12,8 @@ namespace eilang
         Bool = 8,
         Class = 16,
         Instance = 32,
-        Void = 64
+        Void = 64,
+        List = 128
     }
 
     public interface IValue
@@ -36,6 +37,24 @@ namespace eilang
         public T Get<T>()
         {
             return (T)_value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            if (!(obj is IValue other))
+                return false;
+            return Debug.Equals(other.Debug);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((_value != null ? _value.GetHashCode() : 0) * 397) ^ (int) Type;
+            }
         }
     }
 }

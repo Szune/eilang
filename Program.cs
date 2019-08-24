@@ -7,6 +7,72 @@ namespace eilang
     {
         static void Main(string[] args)
         {
+            // TODO: 1. implement lists and indexers
+            // TODO: 1a) implement list.ins(0, 'item') (insert)
+            // TODO: 2. implement return statement
+            // TODO: 2. implement for loops
+            // TODO: 3. implement some form of string interpolation
+            // TODO: 4. implement 'function pointers' (e.g. saving a function to a variable,
+            // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
+            // TODO: 5. implement maps (dictionaries)
+            var code = @"
+fun main() {
+    var x = []; # new list
+    x.add(5);
+    println(x.len());
+    x.rem(5);
+    println(x.len());
+    x.add(100);
+    var y = x[0]; # reference item by index
+    println(y);
+    var z = [1,2,3,4,5]; # new list with initial items
+    println(z[3]);
+}";
+var loopCode = @"fun main() {
+    # for loopers
+    for (1..6) {
+        println(f'[{it_idx}] has value {it}');
+        println('[' + it_idx + '] has value ' + it); # auto loop index variable?
+        pointless(it); # auto variable
+    }
+    for (i : 1..6) {
+        pointless(i); # named variable
+    }
+    for (val, idx : 1..6) {
+        println(idx + ' has value ' + val);
+        pointless(val);
+    }
+    var n = 10;
+    for (1..n) {
+
+    }
+    for(array) {
+        println(it);
+    }
+    for(i: array) {
+        println(it);
+    }
+}
+";
+            
+            var lexer = new Lexer(code);
+            var parser = new Parser(lexer);
+            var ast = parser.Parse();
+
+            var walker = new AstWalker(ast);
+            walker.PrintAst();
+
+            var env = new Env();
+            env.ExportedFuncs.Add("println", PrintLine);
+
+            Compiler.Compile(env, ast, logger: Console.Out);
+
+            var interpreter = new Interpreter(env, logger: Console.Out);
+            interpreter.Interpret();
+        }
+
+        private static string testing_else_ifs()
+        {
             var code = @"
 typ point {
     x,y: int;
@@ -48,21 +114,7 @@ fun main() {
     pointless(5);
     pointless(6);
 }";
-            
-            var lexer = new Lexer(code);
-            var parser = new Parser(lexer);
-            var ast = parser.Parse();
-
-            var walker = new AstWalker(ast);
-            walker.PrintAst();
-
-            var env = new Env();
-            env.ExportedFuncs.Add("println", PrintLine);
-
-            Compiler.Compile(env, ast, logger: Console.Out);
-
-            var interpreter = new Interpreter(env, logger: Console.Out);
-            interpreter.Interpret();
+            return code;
         }
 
         private static string booltestcode()

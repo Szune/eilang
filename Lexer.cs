@@ -21,7 +21,9 @@ namespace eilang
                 {"typ", TokenType.Class},
                 {"modu", TokenType.Module},
                 {"fun", TokenType.Function},
+                {"for", TokenType.For},
                 {"var", TokenType.Var},
+                {"it", TokenType.It},
                 {"ctor", TokenType.Constructor},
                 {"true", TokenType.True},
                 {"false", TokenType.False}
@@ -92,6 +94,12 @@ namespace eilang
                     case ')':
                         token = GetToken(TokenType.RightParenthesis);
                         break;
+                    case '[':
+                        token = GetToken(TokenType.LeftBracket);
+                        break;
+                    case ']':
+                        token = GetToken(TokenType.RightBracket);
+                        break;
                     case '!':
                         if (_buffer[1] == '=')
                         {
@@ -134,7 +142,16 @@ namespace eilang
                         token = GetToken(TokenType.Slash);
                         break;
                     case '.':
-                        token = GetToken(TokenType.Dot);
+                        if (_buffer[1] == '.')
+                        {
+                            token = GetToken(TokenType.DoubleDot);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.Dot);
+                        }
+
                         break;
                     case '*':
                         token = GetToken(TokenType.Asterisk);

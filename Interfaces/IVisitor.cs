@@ -27,5 +27,7 @@ namespace eilang
         void Visit(AstBlock block, Function function, Module mod);
         void Visit(AstIf aIf, Function function, Module mod);
         void Visit(AstCompare compare, Function function, Module mod);
+        void Visit(AstNewList list, Function function, Module mod);
+        void Visit(AstIndexerReference indexer, Function function, Module mod);
     }
 }

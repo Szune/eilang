@@ -234,6 +234,9 @@ namespace eilang
                 case TokenType.If:
                     ParseIf(ast);
                     return;
+                case TokenType.For:
+                    ParseFor(ast);
+                    return;
                 case TokenType.Var:
                     if (_inMemberAssignment)
                     {
@@ -269,6 +272,26 @@ namespace eilang
                     return;
             }
 
+            throw new NotImplementedException();
+        }
+
+        private AstExpression ParseIndexerExpression()
+        {
+            var ident = Require(TokenType.Identifier).Text;
+            Require(TokenType.LeftBracket);
+            var expr = ParseOr();
+            Require(TokenType.RightBracket);
+            return new AstIndexerReference(ident, expr);
+        }
+        
+        private AstExpression ParseMemberIndexerExpression(List<string> identifiers)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ParseFor(IHaveExpression ast)
+        {
+            Require(TokenType.For);
             throw new NotImplementedException();
         }
 
@@ -333,6 +356,10 @@ namespace eilang
                 {
                     return ParseMemberFunctionCall(identifiers);
                 }
+                else if (Match(TokenType.LeftBracket))
+                {
+                    return ParseMemberIndexerExpression(identifiers);
+                }
                 else if (Match(TokenType.Equals))
                 {
                     if (_inMemberAssignment)
@@ -353,6 +380,7 @@ namespace eilang
             return new AstMemberVariableReference(identifiers);
             //throw new ParserException($"Unexpected token {_buffer[0].Type} at line {_buffer[0].Line}, col {_buffer[0].Col}");
         }
+
 
 
         private AstExpression ParseClassInitialization()
@@ -517,7 +545,7 @@ namespace eilang
                 else if (Match(TokenType.Slash))
                 {
                     Consume();
-                    var right = ParseMultiplicationAndDivision();
+                    var right = ParseReferences();
                     expression = new AstBinaryMathOperation(BinaryMath.Division, expression, right);
                 }
                 else
@@ -533,6 +561,8 @@ namespace eilang
         {
             switch (_buffer[0].Type)
             {
+                case TokenType.LeftBracket:
+                    return ParseListInit();
                 case TokenType.LeftParenthesis:
                     Consume();
                     var expr = ParseOr();
@@ -559,6 +589,8 @@ namespace eilang
                 case TokenType.Identifier:
                     switch (_buffer[1].Type)
                     {
+                        case TokenType.LeftBracket:
+                            return ParseIndexerExpression();
                         case TokenType.LeftParenthesis:
                             return ParseFunctionCall();
                         case TokenType.Dot:
@@ -572,6 +604,12 @@ namespace eilang
             }
 
             throw new NotImplementedException();
+        }
+
+        private AstExpression ParseListInit()
+        {
+            var args = ParseArgumentList(TokenType.LeftBracket, TokenType.RightBracket);
+            return new AstNewList(args);
         }
 
         private AstExpression ParseModuleAccess()

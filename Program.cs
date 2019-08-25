@@ -12,34 +12,10 @@ namespace eilang
             // TODO: 3. implement 'function pointers' (e.g. saving a function to a variable,
             // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
             // TODO: 4. implement maps (dictionaries)
-            var code = @"
-typ test {
-    _x: list = [];
-    fun idx_get(index) {
-        ret _x[index];
-    }
-
-    fun idx_set(index, item) {
-        _x[index] = item;
-    }
-
-    fun add(item) {
-        _x.add(item);
-    }
-}
-fun main() {
-    var t = *test();
-    t.add('hello');
-    println(t[0]);
-    t[0] = 'world';
-    println(t[0]);
-}
-";
-            
-var loopCode = @"fun main() {
+            var code = @"fun main() {
     # for loopers
     for (1..6) {
-        println(f'[{it_idx}] has value {it}');
+        #println(f'[{it_idx}] has value {it}');
         println('[' + it_idx + '] has value ' + it); # auto loop index variable?
         pointless(it); # auto variable
     }

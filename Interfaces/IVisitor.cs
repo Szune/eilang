@@ -35,5 +35,7 @@ namespace eilang
         void Visit(AstReturn ret, Function function, Module mod);
         void Visit(AstMemberIndexerReference indexer, Function function, Module mod);
         void Visit(AstMemberIndexerAssignment assign, Function function, Module mod);
+        void Visit(AstRange range, Function function, Module mod);
+        void Visit(AstForRange forRange, Function function, Module mod);
     }
 }

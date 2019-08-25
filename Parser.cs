@@ -367,7 +367,35 @@ namespace eilang
         private void ParseFor(IHaveExpression ast)
         {
             Require(TokenType.For);
-            throw new NotImplementedException();
+            Require(TokenType.LeftParenthesis);
+            if (Match(TokenType.Identifier))
+            {
+                if (_buffer[1].Match(TokenType.Colon))
+                {
+                    // for(idx : <loopExpr>)
+                    return;
+                }
+                else if (_buffer[1].Match(TokenType.Comma))
+                {
+                    // for(val, idx : <loopExpr>)
+                    return;
+                }
+                else if (_buffer[1].Match(TokenType.RightParenthesis))
+                {
+                    // for(array)
+                    return;
+                }
+                else if (_buffer[1].Match(TokenType.Dot))
+                {
+                    // for(array.of.some.type) or for(array.of.some.type..something)
+                }
+            }
+            
+            var range = ParseRanges();
+            Require(TokenType.RightParenthesis);
+            var forBlock = new AstBlock();
+            ParseBlock(forBlock);
+            ast.Expressions.Add(new AstForRange(range, forBlock));
         }
 
         private void ParseIf(IHaveExpression ast)
@@ -580,10 +608,36 @@ namespace eilang
             return expr;
         }
 
+        
+        private AstRange ParseRanges()
+        {
+            var expression = ParsePlusAndMinus();
+            while (Match(TokenType.DoubleDot))
+            {
+                if (Match(TokenType.DoubleDot))
+                {
+                    Consume();
+                    var right = ParsePlusAndMinus();
+                    expression = new AstRange(expression, right);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            if (!(expression is AstRange))
+            {
+                throw new ParserException($"For loop expression expected range near line {_buffer[0].Line}, pos {_buffer[0].Col}.");
+            }
+
+            return (AstRange)expression;
+        }
+        
         private AstExpression ParsePlusAndMinus()
         {
             var expression = ParseMultiplicationAndDivision();
-            while (Match(TokenType.Plus) || Match(TokenType.Minus))
+            while (Match(TokenType.Plus) || Match(TokenType.Minus) || Match(TokenType.DoubleDot))
             {
                 if (Match(TokenType.Plus))
                 {
@@ -596,6 +650,12 @@ namespace eilang
                     Consume();
                     var right = ParseMultiplicationAndDivision();
                     expression = new AstBinaryMathOperation(BinaryMath.Minus, expression, right);
+                }
+                else if (Match(TokenType.DoubleDot))
+                {
+                    Consume();
+                    var right = ParseMultiplicationAndDivision();
+                    expression = new AstRange(expression, right);
                 }
                 else
                 {

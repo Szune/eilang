@@ -51,6 +51,11 @@ namespace eilang
         AIDXS,
         TMPV,
         TMPC,
-        TMPR
+        TMPR,
+        JMPT,
+        NSCP,
+        PSCP,
+        NEG,
+        NOT
     }
 }

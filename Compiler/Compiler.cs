@@ -443,6 +443,60 @@ namespace eilang
             function.Write(OpCode.TMPC, _valueFactory.String(assign.Identifiers[0]));
         }
 
+        public void Visit(AstRange range, Function function, Module mod)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(AstForRange forRange, Function function, Module mod)
+        {
+            function.Write(OpCode.NSCP);
+            forRange.Range.Begin.Accept(this, function, mod);
+            forRange.Range.End.Accept(this, function, mod);
+            function.Write(OpCode.GT);
+            function.Write(OpCode.JMPT, _valueFactory.Integer(0));
+            var addressOfFirstJmpT = function.Code.Count - 1;
+            forRange.Range.Begin.Accept(this, function, mod);
+            function.Write(OpCode.DEF, _valueFactory.String(".it"));
+            function.Write(OpCode.REF, _valueFactory.String(".it"));
+            var addressOfCmp = function.Code.Count - 1;
+            forRange.Range.End.Accept(this, function, mod);
+            function.Write(OpCode.GT);
+            function.Write(OpCode.JMPT, _valueFactory.Integer(0));
+            var addressOfJmpT = function.Code.Count - 1;
+            forRange.Body.Accept(this, function, mod);
+            function.Write(OpCode.REF, _valueFactory.String(".it"));
+            function.Write(OpCode.PUSH, _valueFactory.Integer(1));
+            function.Write(OpCode.ADD);
+            function.Write(OpCode.SET, _valueFactory.String(".it"));
+            function.Write(OpCode.JMP, _valueFactory.Integer(addressOfCmp));
+            var endOfLoop = function.Code.Count;
+            function.Write(OpCode.PSCP);
+            function[addressOfJmpT] = new Bytecode(OpCode.JMPT, _valueFactory.Integer(endOfLoop));
+            function[addressOfFirstJmpT] = new Bytecode(OpCode.JMPT, _valueFactory.Integer(endOfLoop));
+        }
+
+        public void Visit(AstIt it, Function function, Module mod)
+        {
+            function.Write(OpCode.REF, _valueFactory.String(".it"));
+        }
+
+        public void Visit(AstUnaryMathOperation unary, Function function, Module mod)
+        {
+            unary.Expr.Accept(this, function, mod);
+            switch (unary.Op)
+            {
+                case UnaryMath.Minus:
+                    function.Write(OpCode.NEG);
+                    break;
+                case UnaryMath.Not:
+                    function.Write(OpCode.NOT);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         public void Visit(AstClass clas, Module mod)
         {
             Log($"Compiling class declaration '{clas.Name}'");

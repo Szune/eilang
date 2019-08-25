@@ -8,7 +8,7 @@ namespace eilang.Ast
         Times,
         Division
     }
-    
+
     public class AstBinaryMathOperation : AstExpression
     {
         public BinaryMath Op { get; }

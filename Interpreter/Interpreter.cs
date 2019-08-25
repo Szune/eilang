@@ -518,6 +518,12 @@ namespace eilang
                             frame.Address = bc.Arg0.Get<int>() - 1;
                         // + 1 because we need to adjust for the address++ at the start of the loop
                         break;
+                    case OpCode.JMPT:
+                        var jmpt = _stack.Pop().Get<bool>();
+                        if (jmpt == true)
+                            frame.Address = bc.Arg0.Get<int>() - 1;
+                        // + 1 because we need to adjust for the address++ at the start of the loop
+                        break;
                     case OpCode.JMP:
                         frame.Address = bc.Arg0.Get<int>() - 1;
                         break;
@@ -727,6 +733,46 @@ namespace eilang
                     case OpCode.TMPC:
                     {
                         _tmpVars.Remove(bc.Arg0.Get<string>());
+                        break;
+                    }
+                    case OpCode.NSCP:
+                        _scopes.Push(new Scope(_scopes.Peek()));
+                        break;
+                    case OpCode.PSCP:
+                        _scopes.Pop();
+                        break;
+                    
+                    case OpCode.NEG:
+                    {
+                        var val = _stack.Pop();
+                        switch (val.Type)
+                        {
+                            case TypeOfValue.Integer:
+                                
+                                _stack.Push(_valueFactory.Integer(-val.Get<int>()));
+                                break;
+                            case TypeOfValue.Double:
+                                _stack.Push(_valueFactory.Double(-val.Get<double>()));
+                                break;
+                            default:
+                                throw new InvalidOperationException();
+                        }
+                        break;
+                    }
+                    
+                    case OpCode.NOT:
+                    {
+                        var val = _stack.Pop();
+                        switch (val.Type)
+                        {
+                            case TypeOfValue.Bool:
+                                _stack.Push((!val.Get<bool>()) 
+                                    ? _valueFactory.True() 
+                                    : _valueFactory.False());
+                                break;
+                            default:
+                                throw new NotImplementedException(bc.Op.ToString());
+                        }
                         break;
                     }
                     default:

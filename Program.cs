@@ -12,30 +12,46 @@ namespace eilang
             // TODO: 3. implement 'function pointers' (e.g. saving a function to a variable,
             // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
             // TODO: 4. implement maps (dictionaries)
+            
+            //#define LOGGING
             var code = @"fun main() {
     # for loopers
-    for (1..6) {
+    for(0..-1)
+    {
+        println('test');
+    }
+    for (1..6) 
+    {   
+        println(it);
+    }
+    var b = 1;
+    var e = 3;
+    for (b..e)
+    {
+        println(it);
+    }
+    #for (1..6) {
         #println(f'[{it_idx}] has value {it}');
-        println('[' + it_idx + '] has value ' + it); # auto loop index variable?
-        pointless(it); # auto variable
-    }
-    for (i : 1..6) {
-        pointless(i); # named variable
-    }
-    for (val, idx : 1..6) {
-        println(idx + ' has value ' + val);
-        pointless(val);
-    }
-    var n = 10;
-    for (1..n) {
+        #println('[' + it_idx + '] has value ' + it); # auto loop index variable?
+        #pointless(it); # auto variable
+    #}
+    #for (i : 1..6) {
+        #pointless(i); # named variable
+    #}
+    #for (val, idx : 1..6) {
+        #println(idx + ' has value ' + val);
+        #pointless(val);
+    #}
+    #var n = 10;
+    #for (1..n) {
 
-    }
-    for(array) {
-        println(it);
-    }
-    for(i: array) {
-        println(it);
-    }
+    #}
+    #for(array) {
+        #println(it);
+    #}
+    #for(i: array) {
+        #println(it);
+    #}
 }
 ";
             
@@ -44,14 +60,24 @@ namespace eilang
             var ast = parser.Parse();
 
             var walker = new AstWalker(ast);
+#if  LOGGING
             walker.PrintAst();
+#endif
 
             var env = new Env();
             env.ExportedFuncs.Add("println", PrintLine);
 
-            Compiler.Compile(env, ast, logger: Console.Out);
+            Compiler.Compile(env, ast 
+#if LOGGING 
+                ,logger: Console.Out 
+#endif
+                );
 
-            var interpreter = new Interpreter(env, logger: Console.Out);
+            var interpreter = new Interpreter(env
+                #if LOGGING
+                ,logger: Console.Out
+                #endif
+                );
             interpreter.Interpret();
         }
 

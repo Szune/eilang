@@ -227,7 +227,7 @@ namespace eilang
             Consume();
             while (IsNumber(_buffer[0]) || (!decimalPoint && _buffer[0] == deci) && !IsEOF)
             {
-                if(_buffer[0] == deci)
+                if(_buffer[0] == deci && _buffer[1] != deci)
                 {
                     if(!decimalPoint)
                     {
@@ -237,6 +237,10 @@ namespace eilang
                     {
                         throw new LexerException($"More than one decimal point '{deci}' in number.");
                     }
+                }
+                else if (_buffer[0] == deci && _buffer[1] == deci)
+                {
+                    return new Token(TokenType.Integer, _line, _col, integer: int.Parse(sb.ToString()));
                 }
                 sb.Append(_buffer[0]);
                 Consume();

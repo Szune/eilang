@@ -718,9 +718,20 @@ namespace eilang
                 case TokenType.False:
                     Consume();
                     return new AstFalse();
+                case TokenType.Minus:
+                    Consume();
+                    var minusExpr = ParseReferences();
+                    return new AstUnaryMathOperation(UnaryMath.Minus, minusExpr);
+                case TokenType.Dot:
+                    Consume();
+                    var notExpr = ParseReferences();
+                    return new AstUnaryMathOperation(UnaryMath.Not, notExpr);
                 case TokenType.Asterisk:
                     Consume();
                     return ParseClassInitialization();
+                case TokenType.It:
+                    Consume();
+                    return new AstIt();
                 case TokenType.Identifier:
                     switch (_buffer[1].Type)
                     {

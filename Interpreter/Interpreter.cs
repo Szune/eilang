@@ -13,6 +13,7 @@ namespace eilang
         private readonly Stack<CallFrame> _frames = new Stack<CallFrame>();
         private readonly StackWithoutNullItems<IValue> _stack = new StackWithoutNullItems<IValue>();
         private readonly Stack<Scope> _scopes = new Stack<Scope>();
+        private readonly Dictionary<string, IValue> _tmpVars = new Dictionary<string, IValue>();
         private readonly TextWriter _logger;
 
         public Interpreter(Env env, IValueFactory valueFactory = null, TextWriter logger = null)
@@ -604,7 +605,7 @@ namespace eilang
                         var mCallArgCount = _stack.Pop().Get<int>();
                         if (!callingClass.TryGetFunction(bc.Arg0.Get<string>(), out var membFunc))
                             throw new InvalidOperationException(
-                                $"Member function {bc.Arg0.Get<string>()} not found in class {callingClass.FullName}");
+                                $"Member function '{bc.Arg0.Get<string>()}' not found in class '{callingClass.FullName}'");
                         _frames.Push(new CallFrame(membFunc));
                         _scopes.Push(new Scope(callingInstance.Scope));
                         break;
@@ -676,11 +677,56 @@ namespace eilang
                         list.Remove(val);
                         break;
                     }
-                    case OpCode.AIDX:
+                    case OpCode.AREMA:
+                    {
+                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
+                        var index = _stack.Pop().Get<int>();
+                        list.RemoveAt(index);
+                        break;
+                    }
+                    case OpCode.AIDXG:
                     {
                         var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
                         var index = _stack.Pop().Get<int>();
                         _stack.Push(list[index]);
+                        break;
+                    }
+                    case OpCode.AIDXS:
+                    {
+                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
+                        var val = _stack.Pop();
+                        var index = _stack.Pop().Get<int>();
+                        list[index] = val;
+                        break;
+                    }
+                    case OpCode.AINS:
+                    {
+                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
+                        var val = _stack.Pop();
+                        var index = _stack.Pop().Get<int>();
+                        list.Insert(index, val);
+                        break;
+                    }
+                    case OpCode.ACLR:
+                    {
+                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
+                        list.Clear();
+                        break;
+                    }
+                    case OpCode.TMPV:
+                    {
+                        var val = _stack.Pop();
+                        _tmpVars[bc.Arg0.Get<string>()] = val;
+                        break;
+                    }
+                    case OpCode.TMPR:
+                    {
+                        _stack.Push(_tmpVars[bc.Arg0.Get<string>()]);
+                        break;
+                    }
+                    case OpCode.TMPC:
+                    {
+                        _tmpVars.Remove(bc.Arg0.Get<string>());
                         break;
                     }
                     default:
@@ -755,12 +801,6 @@ namespace eilang
 
             if (ret != null)
             {
-                if (ret.Code[0].Op == OpCode.PUSH && ret.Code[0].Arg0.Get<int>() == 0)
-                {
-                    // removes the argument count of the function call to main
-                    ret.Code.RemoveAt(0);
-                }
-
                 return ret;
             }
             else

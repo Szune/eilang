@@ -1,13 +1,13 @@
 namespace eilang.Ast
 {
-    public class AstVariableReference : AstExpression
+    public class AstReturn : AstExpression
     {
-        public AstVariableReference(string ident)
-        {
-            Ident = ident;
-        }
+        public AstExpression RetExpr { get; }
 
-        public string Ident { get; }
+        public AstReturn(AstExpression retExpr)
+        {
+            RetExpr = retExpr;
+        }
 
         public override void Accept(IVisitor visitor, Function function, Module mod)
         {

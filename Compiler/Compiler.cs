@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection.Emit;
+using eilang.Ast;
 
 namespace eilang
 {
@@ -131,7 +133,6 @@ namespace eilang
             {
                 newCtor.Write(OpCode.DEF, _valueFactory.String(arg));
             }
-
             newCtor.Write(OpCode.RET);
             clas.Constructors.Add(newCtor);
         }
@@ -255,13 +256,192 @@ namespace eilang
         public void Visit(AstIndexerReference indexer, Function function, Module mod)
         {
             Log($"Compiling indexer reference for variable '{indexer.Identifier}'");
-            indexer.IndexExpr.Accept(this, function, mod);
+            if (indexer.IndexExprs.Count == 0)
+                throw new CompilerException(
+                    $"Indexer on variable '{indexer.Identifier}' contained no indexer expressions.");
+            indexer.IndexExprs[0].Accept(this, function, mod);
             function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
             function.Write(OpCode.REF, _valueFactory.String(indexer.Identifier));
             function.Write(OpCode.TYPEGET);
-            function.Write(OpCode.MCALL, _valueFactory.String("idx"));
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            for (int i = 1; i < indexer.IndexExprs.Count; i++)
+            {
+                // set tmp var to top of stack
+                function.Write(OpCode.TMPV, _valueFactory.String(indexer.Identifier));
+                indexer.IndexExprs[i].Accept(this, function, mod);
+                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+                // ref tmp var
+                function.Write(OpCode.TMPR, _valueFactory.String(indexer.Identifier));
+                function.Write(OpCode.TYPEGET);
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            }
+
+            if (indexer.IndexExprs.Count > 1)
+            {
+                // clear tmp var
+                function.Write(OpCode.TMPC, _valueFactory.String(indexer.Identifier));
+            }
         }
 
+        public void Visit(AstIndexerAssignment assign, Function function, Module mod)
+        {
+            Log($"Compiling indexer assignment for variable '{assign.Identifier}'");
+            if (assign.IndexExprs.Count == 0)
+                throw new CompilerException(
+                    $"Indexer on variable '{assign.Identifier}' contained no indexer expressions.");
+            assign.IndexExprs[0].Accept(this, function, mod);
+            
+            if(assign.IndexExprs.Count == 1)
+                assign.ValueExpr.Accept(this, function, mod);
+            if (assign.IndexExprs.Count > 1)
+            {
+                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+            }
+            else
+            {
+                // only one reference, so assign to first
+                function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
+            }
+            function.Write(OpCode.REF, _valueFactory.String(assign.Identifier));
+            function.Write(OpCode.TYPEGET);
+            if (assign.IndexExprs.Count > 1)
+            {
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            }
+            else
+            {
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
+                return;
+            }
+            for (int i = 1; i < assign.IndexExprs.Count - 1; i++)
+            {
+                // set tmp var to top of stack
+                function.Write(OpCode.TMPV, _valueFactory.String(assign.Identifier));
+                assign.IndexExprs[i].Accept(this, function, mod);
+                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+                // ref tmp var
+                function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifier));
+                function.Write(OpCode.TYPEGET);
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            }
+            
+            // setup idx_set call
+            assign.ValueExpr.Accept(this, function, mod);
+            function.Write(OpCode.TMPV, _valueFactory.String(assign.Identifier));
+            assign.IndexExprs[assign.IndexExprs.Count-1].Accept(this, function, mod);
+            function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
+            // ref tmp var
+            function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifier));
+            function.Write(OpCode.TYPEGET);
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
+
+            // clear tmp var
+            function.Write(OpCode.TMPC, _valueFactory.String(assign.Identifier));
+        }
+
+        public void Visit(AstReturn ret, Function function, Module mod)
+        {
+            if(ret.RetExpr != null)
+                ret.RetExpr.Accept(this, function, mod);
+            function.Write(OpCode.RET);
+        }
+
+        public void Visit(AstMemberIndexerReference indexer, Function function, Module mod)
+        {
+            Log($"Compiling member indexer reference for variable '{indexer.Identifiers[0]}'");
+            // 1st identifier = variable ref
+            function.Write(OpCode.REF, _valueFactory.String(indexer.Identifiers[0]));
+            // 2nd..n identifier = member ref
+            for (int i = 1; i < indexer.Identifiers.Count; i++)
+                function.Write(OpCode.MREF, _valueFactory.String(indexer.Identifiers[i]));
+            if (indexer.IndexExprs.Count == 0)
+                throw new CompilerException(
+                    $"Indexer on variable '{indexer.Identifiers[0]}' contained no indexer expressions.");
+            function.Write(OpCode.TMPV, _valueFactory.String(indexer.Identifiers[0]));
+            indexer.IndexExprs[0].Accept(this, function, mod);
+            function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+            function.Write(OpCode.TMPR, _valueFactory.String(indexer.Identifiers[0]));
+            function.Write(OpCode.TYPEGET);
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            for (int i = 1; i < indexer.IndexExprs.Count; i++)
+            {
+                // set tmp var to top of stack
+                function.Write(OpCode.TMPV, _valueFactory.String(indexer.Identifiers[0]));
+                indexer.IndexExprs[i].Accept(this, function, mod);
+                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+                // ref tmp var
+                function.Write(OpCode.TMPR, _valueFactory.String(indexer.Identifiers[0]));
+                function.Write(OpCode.TYPEGET);
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            }
+
+            if (indexer.IndexExprs.Count > 1)
+            {
+                // clear tmp var
+                function.Write(OpCode.TMPC, _valueFactory.String(indexer.Identifiers[0]));
+            }
+        }
+
+        public void Visit(AstMemberIndexerAssignment assign, Function function, Module mod)
+        {
+            Log($"Compiling member indexer assignment for variable '{assign.Identifiers[0]}'");
+            // 1st identifier = variable ref
+            function.Write(OpCode.REF, _valueFactory.String(assign.Identifiers[0]));
+            // 2nd..n identifier = member ref
+            for (int i = 1; i < assign.Identifiers.Count; i++)
+                function.Write(OpCode.MREF, _valueFactory.String(assign.Identifiers[i]));
+            if (assign.IndexExprs.Count == 0)
+                throw new CompilerException(
+                    $"Indexer on variable '{assign.Identifiers[0]}' contained no indexer expressions.");
+            function.Write(OpCode.TMPV, _valueFactory.String(assign.Identifiers[0]));
+            assign.IndexExprs[0].Accept(this, function, mod);
+            if(assign.IndexExprs.Count == 1)
+                assign.ValueExpr.Accept(this, function, mod);
+            if (assign.IndexExprs.Count > 1)
+            {
+                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+            }
+            else
+            {
+                // only one reference, so assign to first
+                function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
+            }
+            function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifiers[0]));
+            function.Write(OpCode.TYPEGET);
+            if (assign.IndexExprs.Count > 1)
+            {
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            }
+            else
+            {
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
+                return;
+            }
+            for (int i = 1; i < assign.IndexExprs.Count - 1; i++)
+            {
+                // set tmp var to top of stack
+                function.Write(OpCode.TMPV, _valueFactory.String(assign.Identifiers[0]));
+                assign.IndexExprs[i].Accept(this, function, mod);
+                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+                // ref tmp var
+                function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifiers[0]));
+                function.Write(OpCode.TYPEGET);
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            }
+            
+            // setup idx_set call
+            assign.ValueExpr.Accept(this, function, mod);
+            function.Write(OpCode.TMPV, _valueFactory.String(assign.Identifiers[0]));
+            assign.IndexExprs[assign.IndexExprs.Count-1].Accept(this, function, mod);
+            function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
+            // ref tmp var
+            function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifiers[0]));
+            function.Write(OpCode.TYPEGET);
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
+
+            // clear tmp var
+            function.Write(OpCode.TMPC, _valueFactory.String(assign.Identifiers[0]));
+        }
 
         public void Visit(AstClass clas, Module mod)
         {
@@ -336,7 +516,6 @@ namespace eilang
                 newFunc.Write(OpCode.DEF, _valueFactory.String(func.Arguments[i]));
             }
 
-            newFunc.Write(OpCode.PUSH, _valueFactory.Integer(func.Arguments.Count));
             func.Expressions.Accept(this, newFunc, mod);
             if(newFunc.Length < 1)
             {
@@ -359,7 +538,6 @@ namespace eilang
                 func.Write(OpCode.DEF, _valueFactory.String(memberFunc.Arguments[i]));
             }
 
-            func.Write(OpCode.PUSH, _valueFactory.Integer(memberFunc.Arguments.Count));
             memberFunc.Expressions.Accept(this, func, mod);
             if(func.Length < 1)
             {

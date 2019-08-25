@@ -1,3 +1,5 @@
+using eilang.Ast;
+
 namespace eilang
 {
     public interface IVisitor
@@ -29,5 +31,9 @@ namespace eilang
         void Visit(AstCompare compare, Function function, Module mod);
         void Visit(AstNewList list, Function function, Module mod);
         void Visit(AstIndexerReference indexer, Function function, Module mod);
+        void Visit(AstIndexerAssignment assign, Function function, Module mod);
+        void Visit(AstReturn ret, Function function, Module mod);
+        void Visit(AstMemberIndexerReference indexer, Function function, Module mod);
+        void Visit(AstMemberIndexerAssignment assign, Function function, Module mod);
     }
 }

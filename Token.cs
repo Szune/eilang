@@ -3,6 +3,7 @@ namespace eilang
     public enum TokenType
     {
         None = 0,
+        EOF,
         Identifier,
         LeftParenthesis,
         RightParenthesis,
@@ -44,8 +45,9 @@ namespace eilang
         Slash,
         Not,
         It,
-        EOF
+        Return
     }
+    
     
     public class Token
     {

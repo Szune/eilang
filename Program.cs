@@ -7,27 +7,35 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-            // TODO: 1. implement lists and indexers
-            // TODO: 1a) implement list.ins(0, 'item') (insert)
-            // TODO: 2. implement return statement
-            // TODO: 2. implement for loops
-            // TODO: 3. implement some form of string interpolation
-            // TODO: 4. implement 'function pointers' (e.g. saving a function to a variable,
+            // TODO: 1. implement for loops
+            // TODO: 2. implement some form of string interpolation
+            // TODO: 3. implement 'function pointers' (e.g. saving a function to a variable,
             // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
-            // TODO: 5. implement maps (dictionaries)
+            // TODO: 4. implement maps (dictionaries)
             var code = @"
+typ test {
+    _x: list = [];
+    fun idx_get(index) {
+        ret _x[index];
+    }
+
+    fun idx_set(index, item) {
+        _x[index] = item;
+    }
+
+    fun add(item) {
+        _x.add(item);
+    }
+}
 fun main() {
-    var x = []; # new list
-    x.add(5);
-    println(x.len());
-    x.rem(5);
-    println(x.len());
-    x.add(100);
-    var y = x[0]; # reference item by index
-    println(y);
-    var z = [1,2,3,4,5]; # new list with initial items
-    println(z[3]);
-}";
+    var t = *test();
+    t.add('hello');
+    println(t[0]);
+    t[0] = 'world';
+    println(t[0]);
+}
+";
+            
 var loopCode = @"fun main() {
     # for loopers
     for (1..6) {
@@ -69,6 +77,71 @@ var loopCode = @"fun main() {
 
             var interpreter = new Interpreter(env, logger: Console.Out);
             interpreter.Interpret();
+        }
+
+        private static string test_indexing_on_any_type()
+        {
+            var code = @"
+typ test {
+    _x: list = [];
+    fun idx_get(index) {
+        ret _x[index];
+    }
+
+    fun idx_set(index, item) {
+        _x[index] = item;
+    }
+
+    fun add(item) {
+        _x.add(item);
+    }
+}
+fun main() {
+    #var t = [];
+    #t.add('hello');
+    #t[0] = 'hello world';
+    var t = *test();
+    t.add('hello');
+    println(t[0]);
+    t[0] = 'hello world';
+    println(t[0]);
+    t._x[0] = 'hello :(';
+    println(t._x[0]);
+}";
+            return code;
+        }
+
+        private static string test_list_and_indexers()
+        {
+            var code = @"
+fun main() {
+    var x = []; # new list
+    x.add(5);
+    println('x.len() = ' + x.len());
+    x.rem(5);
+    println('x.len() = ' + x.len());
+    x.add(100);
+    x.ins(0, 50);
+    var y = x[0]; # reference item by index
+    println('x[0] = ' + y);
+    var u = x[1];
+    println('x[1] = ' + u);
+    x.rem_at(0);
+    println('x[0] = ' + x[0]);
+    var z = [1,2,3,4,5]; # new list with initial items
+    println('z[3] = ' + z[3]);
+    z[3] = 137;
+    println('z[3] = ' + z[3]);
+    println('z len = ' + z.len());
+    z.clr();
+    println('z len = ' + z.len());
+    z.add([10,12]);
+    println('z[0][1] = ' + z[0][1]);
+    var p = z[0]; # fix parser to enable writing z[0].add()
+    p.add([13,15]);
+    println('z[0][2][1] = ' + z[0][2][1]);
+}";
+            return code;
         }
 
         private static string testing_else_ifs()

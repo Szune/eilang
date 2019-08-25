@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace eilang
+namespace eilang.Ast
 {
     public class AstMemberFunctionCall : AstExpression
     {

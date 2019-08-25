@@ -18,6 +18,7 @@ namespace eilang
             _keywords = new Dictionary<string, TokenType>{
                 {"if", TokenType.If},
                 {"else", TokenType.Else},
+                {"ret", TokenType.Return},
                 {"typ", TokenType.Class},
                 {"modu", TokenType.Module},
                 {"fun", TokenType.Function},
@@ -271,7 +272,7 @@ namespace eilang
 
         private bool IsIdentifierStart(char chr)
         {
-            return char.IsLetter(chr);
+            return char.IsLetter(chr) || chr == '_';
         }
 
         private bool IsIdentifierChar(char chr)

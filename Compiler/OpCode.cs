@@ -35,10 +35,22 @@ namespace eilang
         GTE,
         JMP,
         NLIST,
-        AIDX,
         AADD,
         AREM,
         AREMA,
-        ALEN
+        ALEN,
+        ACLR,
+        AINS,
+        /// <summary>
+        /// list indexer get
+        /// </summary>
+        AIDXG,
+        /// <summary>
+        /// list indexer set
+        /// </summary>
+        AIDXS,
+        TMPV,
+        TMPC,
+        TMPR
     }
 }

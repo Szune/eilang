@@ -1,4 +1,4 @@
-namespace eilang
+namespace eilang.Ast
 {
     public class AstDeclarationAssignment : AstAssignment
     {

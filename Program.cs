@@ -15,6 +15,9 @@ namespace eilang
             
             //#define LOGGING
             var code = @"fun main() {
+    #+
+        block comment
+    -#
     # for loopers
     for(0..-1)
     {
@@ -30,28 +33,30 @@ namespace eilang
     {
         println(it);
     }
-    #for (1..6) {
-        #println(f'[{it_idx}] has value {it}');
-        #println('[' + it_idx + '] has value ' + it); # auto loop index variable?
-        #pointless(it); # auto variable
-    #}
-    #for (i : 1..6) {
-        #pointless(i); # named variable
-    #}
-    #for (val, idx : 1..6) {
-        #println(idx + ' has value ' + val);
-        #pointless(val);
-    #}
-    #var n = 10;
-    #for (1..n) {
+    #+
+    for (1..6) {
+        println(f'[{it_idx}] has value {it}');
+        println('[' + it_idx + '] has value ' + it); # auto loop index variable?
+        pointless(it); # auto variable
+    }
+    for (i : 1..6) {
+        pointless(i); # named variable
+    }
+    for (val, idx : 1..6) {
+        println(idx + ' has value ' + val);
+        pointless(val);
+    }
+    var n = 10;
+    for (1..n) {
 
-    #}
-    #for(array) {
-        #println(it);
-    #}
-    #for(i: array) {
-        #println(it);
-    #}
+    }
+    for(array) {
+        println(it);
+    }
+    for(i: array) {
+        println(it);
+    }
+    -#
 }
 ";
             

@@ -58,9 +58,21 @@ namespace eilang
                     case '\t':
                         break;
                     case '#': // comments
-                        while (_buffer[0] != '\n' && !IsEOF)
+                        if (_buffer[1] == '+')
                         {
-                            Consume();
+                            while (_buffer[0] != '-' || _buffer[1] != '#' && !IsEOF)
+                            {
+                                Consume();
+                            }
+
+                            Consume(); // consume last #
+                        }
+                        else
+                        {
+                            while (_buffer[0] != '\n' && !IsEOF)
+                            {
+                                Consume();
+                            }
                         }
                         break;
                     case '\r':

@@ -1,4 +1,5 @@
 using eilang.Ast;
+using eilang.Classes;
 
 namespace eilang
 {

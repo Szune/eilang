@@ -1,0 +1,90 @@
+modu std {
+	typ cmd {
+		arg, val: string;
+		ctor(arg, val);
+	}
+
+	typ argparse {
+		fun parse() {
+			var en = *env();
+			var args = en.get_args();
+			var cmds = [];
+			println(args.len());
+			if(args.len() == 1) {
+				ret cmds;
+			}
+			if(args.len() == 2) {
+				cmds.add(*std::cmd(args[1], ""));
+				ret cmds;
+			}
+			#+for (0..(args.len() - 1)) {
+				println(args[it]);
+			}-#
+
+			ret cmds;
+		}
+	}
+}
+
+
+fun main() {
+	var parser = *std::argparse();
+	var parsed = parser.parse();
+	var first = parsed[0];
+	println(parsed.len());
+	println(first.arg);
+	
+    #+
+    var n = *net();
+    n.get();
+    n.post();
+    n.head();
+    var f = *file('x.txt');
+    var d = *dir('/home/erik/Desktop');
+    -#
+    
+    #+
+        block comment
+    -#
+    # for loopers
+    for(0..-1)
+    {
+        println('test');
+    }
+
+    for (1..6) 
+    {   
+        println(it);
+    }
+    var b = 1;
+    var e = 3;
+    for (b..e)
+    {
+        println(it);
+    }
+    #+
+    for (1..6) {
+        println(f'[{it_idx}] has value {it}');
+        println('[' + it_idx + '] has value ' + it); # auto loop index variable?
+        pointless(it); # auto variable
+    }
+    for (i : 1..6) {
+        pointless(i); # named variable
+    }
+
+    for (val, idx : 1..6) {
+        println(idx + ' has value ' + val);
+        pointless(val);
+    }
+    var n = 10;
+    for (1..n) {
+
+    }
+    for(array) {
+        println(it);
+    }
+    for(i: array) {
+        println(it);
+    }
+    -#
+}

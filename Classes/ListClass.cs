@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-
-namespace eilang
+namespace eilang.Classes
 {
     public class ListClass : Class
     {
@@ -50,8 +49,6 @@ namespace eilang
             {
                 Code = 
                 {
-                    //new Bytecode(OpCode.DEF, factory.String("item")),
-                    //new Bytecode(OpCode.DEF, factory.String("index")),
                     new Bytecode(OpCode.AIDXS),
                     new Bytecode(OpCode.RET)
                 }

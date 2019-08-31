@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Emit;
 using eilang.Ast;
+using eilang.Classes;
 
 namespace eilang
 {

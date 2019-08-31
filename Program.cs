@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using eilang.Classes;
 
 namespace eilang
 {
@@ -14,7 +16,17 @@ namespace eilang
             // TODO: 4. implement maps (dictionaries)
             
             //#define LOGGING
-            var code = @"fun main() {
+            var code = File.ReadAllText("test.ei");
+            var oldcode = @"fun main() {
+    #+
+    var n = *net();
+    n.get();
+    n.post();
+    n.head();
+    var f = *file('x.txt');
+    var d = *dir('/home/erik/Desktop');
+    -#
+    
     #+
         block comment
     -#
@@ -62,6 +74,7 @@ namespace eilang
             
             var lexer = new Lexer(code);
             var parser = new Parser(lexer);
+            var newParser = new NewParser(lexer);
             var ast = parser.Parse();
 
             var walker = new AstWalker(ast);
@@ -71,6 +84,8 @@ namespace eilang
 
             var env = new Env();
             env.ExportedFuncs.Add("println", PrintLine);
+            var envClass = new EnvClass(new ValueFactory());
+            env.Classes.Add(envClass.FullName, envClass);
 
             Compiler.Compile(env, ast 
 #if LOGGING 

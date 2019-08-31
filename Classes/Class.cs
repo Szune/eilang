@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace eilang
+namespace eilang.Classes
 {
     public class Class
     {

@@ -1,3 +1,5 @@
+using eilang.Classes;
+
 namespace eilang.Ast
 {
     public class AstMemberVariableDeclaration : IVisitableInClass

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
+using eilang.Classes;
 
 namespace eilang
 {
@@ -551,7 +552,7 @@ namespace eilang
                     case OpCode.INIT:
                         var argCount = _stack.Pop().Get<int>();
                         if (!_env.Classes.TryGetValue(bc.Arg0.Get<string>(), out var clas))
-                            throw new InvalidOperationException($"Class not found {clas}");
+                            throw new InvalidOperationException($"Class not found {bc.Arg0.Get<string>()}");
                         var instScope = new Scope();
                         var newInstance = new Instance(instScope, clas);
                         // figure out which constructor to call (should probably do that in the parser though)

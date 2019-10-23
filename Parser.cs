@@ -697,28 +697,39 @@ namespace eilang
             var expression = ParseReferences();
             while (Match(TokenType.Dot))
             {
-                Require(TokenType.Dot);
-                var ident = Require(TokenType.Identifier).Text;
-                if (Match(TokenType.LeftParenthesis))
-                {
-                    // member func call
-                    throw new NotImplementedException();
-                }
-                else if (Match(TokenType.Semicolon))
-                {
-                    // member variable ref
-                    expression = new AstMultiReference(expression, new AstMemberReference(ident));
-                }
-                else if (Match(TokenType.Equals))
-                {
-                    throw new NotImplementedException();
-                    // member variable assignment
-                }
-                else
-                {
-                    // member variable ref + more
-                    expression = new AstMultiReference(expression, new AstMemberReference(ident));
-                }
+                expression = new AstMultiReference(expression, ParseMemberAccess());
+            }
+
+            return expression;
+        }
+
+        private AstExpression ParseMemberAccess()
+        {
+            AstExpression expression;
+            Require(TokenType.Dot);
+            var ident = Require(TokenType.Identifier).Text;
+            if (Match(TokenType.LeftParenthesis))
+            {
+                // member func call
+                var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
+                expression = new AstMemberCall(ident, args);
+            }
+            else if (Match(TokenType.Semicolon))
+            {
+                // member variable ref
+                expression = new AstMemberReference(ident);
+            }
+            else if (Match(TokenType.Equals))
+            {
+                Require(TokenType.Equals);
+                var assignment = ParseOr();
+                expression = new AstMemberAssignment(ident, assignment);
+                // member variable assignment
+            }
+            else
+            {
+                // member variable ref + more
+                expression = new AstMemberReference(ident);
             }
 
             return expression;
@@ -764,6 +775,8 @@ namespace eilang
                 case TokenType.It:
                     Consume();
                     return new AstIt();
+                case TokenType.Dot:
+                    return ParseMemberAccess();
                 case TokenType.Identifier:
                     switch (_buffer[1].Type)
                     {

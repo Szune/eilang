@@ -64,5 +64,10 @@ namespace eilang
 
             scope._variables[name] = value;
         }
+
+        public Dictionary<string, IValue> GetAllVariables()
+        {
+            return _variables;
+        }
     }
 }

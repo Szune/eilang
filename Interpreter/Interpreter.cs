@@ -607,9 +607,19 @@ namespace eilang
                         _stack.Push(_valueFactory.Class(type));
                         break;
                     case OpCode.MCALL:
+                        var mCallArgCount = _stack.Pop().Get<int>();
+                        var tmpValues = new Stack<IValue>();
+                        for (int i = 0; i < mCallArgCount; i++)
+                        {
+                            var val = _stack.Pop();
+                            tmpValues.Push(val);
+                        }
                         var callingClass = _stack.Pop().Get<Class>();
                         var callingInstance = _stack.Pop().Get<Instance>();
-                        var mCallArgCount = _stack.Pop().Get<int>();
+                        for (int i = 0; i < mCallArgCount; i++)
+                        {
+                            _stack.Push(tmpValues.Pop());
+                        }
                         if (!callingClass.TryGetFunction(bc.Arg0.Get<string>(), out var membFunc))
                             throw new InvalidOperationException(
                                 $"Member function '{bc.Arg0.Get<string>()}' not found in class '{callingClass.FullName}'");

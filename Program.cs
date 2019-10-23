@@ -367,12 +367,17 @@ fun outer() {
 ";
         }
 
-        private static IValue PrintLine(IValueFactory factory, IValue val)
+        private static IValue PrintLine(IValueFactory fac, IValue value)
         {
-                switch(val.Type)
+            var ind = '.';
+            PrintLineInner(fac, value);
+            void PrintLineInner(IValueFactory factory, IValue val, int indent = 0)
+            {
+                Console.Write(new string(ind, indent * 2));
+                switch (val.Type)
                 {
                     case TypeOfValue.String:
-                        Console.WriteLine(val.Get<string>());
+                        Console.WriteLine($"'{val.Get<string>()}'");
                         break;
                     case TypeOfValue.Double:
                         Console.WriteLine(val.Get<double>());
@@ -380,11 +385,33 @@ fun outer() {
                     case TypeOfValue.Integer:
                         Console.WriteLine(val.Get<int>());
                         break;
+                    case TypeOfValue.Bool:
+                        Console.WriteLine(val.Get<bool>());
+                        break;
+                    case TypeOfValue.Void:
+                        Console.WriteLine(val.ToString());
+                        break;
+                    case TypeOfValue.Instance:
+                        var inst = val.Get<Instance>();
+                        var vars = inst.Scope.GetAllVariables();
+                        Console.WriteLine("{Instance of type " + inst.Owner.FullName);
+                        foreach (var kvp in vars)
+                        {
+                            Console.Write(new string(ind, (indent * 2) + 2));
+                            Console.WriteLine($"(variable '{kvp.Key}':");
+                            PrintLineInner(factory, kvp.Value, indent + 2);
+                            Console.Write(new string(ind, (indent * 2) + 2));
+                            Console.WriteLine(")");
+                        }
+                        Console.Write(new string(ind, indent * 2));
+                        Console.WriteLine("}");
+                        break;
                     default:
                         throw new InvalidOperationException("println does not work with " + val.Type);
 
-                } 
-                return factory.Void();
+                }
+            }
+            return fac.Void();
         }
     }
 }

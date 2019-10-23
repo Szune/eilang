@@ -21,5 +21,10 @@ namespace eilang
         {
             Op = op;
         }
+
+        public override string ToString()
+        {
+            return Op.ToString();
+        }
     }
 }

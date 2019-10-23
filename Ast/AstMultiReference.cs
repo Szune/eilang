@@ -3,9 +3,9 @@
     public class AstMultiReference : AstExpression
     {
         public AstExpression First { get; }
-        public AstMemberReference Second { get; }
+        public AstExpression Second { get; }
 
-        public AstMultiReference(AstExpression first, AstMemberReference second)
+        public AstMultiReference(AstExpression first, AstExpression second)
         {
             First = first;
             Second = second;

@@ -2,6 +2,10 @@ modu std {
     typ oth {
         other: string;
         ctor(other);
+        
+        fun write() {
+            println('writing from within oth');
+        }
     }
 	typ cmd {
 		arg, val: string;
@@ -9,6 +13,10 @@ modu std {
 		
 		fun init() {
 		    arg = *std::oth('hello world from typ oth');
+		}
+		
+		fun init2() {
+		    arg = ['oops, init2 works wow cool'];
 		}
 	}
 
@@ -36,16 +44,42 @@ modu std {
 }
 
 
+fun printTwo(first, last) {
+    println(first);
+    println(last);
+}
+
+
 fun main() {
+    printTwo('hello', 'world');
 	var parser = *std::argparse();
 	var parsed = parser.parse();
+	
+	var d = [];
+	d.add(['hello everybody wow yes']);
+	println(d[0][0]);
+	
+	var dd = [];
+	dd.add(*std::cmd());
+	dd[0].init2();
+	#println(dd[0].arg[0]);
+	
+	
+	var nlst = [];
+	nlst.add('hej');
+	println(nlst[0]);
+	nlst[0] = 'då';
+	println(nlst[0]);
+	
 	var lst = [];
 	lst.add(*std::cmd());
-	var p = lst[0];
-	p.init();
+	println(lst.len());
+	lst[0].init();
+	println(lst[0]);
+	println('after lst[0].init();');
 	
-	#println(lst[0].arg[0]);
 	println(lst[0].arg.other);
+	lst[0].arg.write();
 	
 	for (0..(parsed.len() - 1)) {
 	    println(parsed[it].arg);

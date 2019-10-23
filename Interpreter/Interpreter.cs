@@ -695,6 +695,14 @@ namespace eilang
                     {
                         var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
                         var index = _stack.Pop().Get<int>();
+                        if (index > list.Count - 1 || index < 0)
+                        {
+                            // find metadata to print error containing the indexed array's name
+                            _frames.Pop(); // pop current method call frame for "idx_get"
+                            var errorFrame = _frames.Peek();
+                            var arrayName = errorFrame.GetNearestMethodCallAboveCurrentAddress("idx_get")?.Metadata?.Variable;
+                            throw new InterpreterException($"Index out of range: {arrayName}[{index}],\nitems in list ({list.Count} total): {{{string.Join("}, {", list)}}}");
+                        }
                         _stack.Push(list[index]);
                         break;
                     }

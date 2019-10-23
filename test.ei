@@ -9,7 +9,7 @@ modu std {
 			var en = *env();
 			var args = en.get_args();
 			var cmds = [];
-			println(args.len());
+			#println(args.len());
 			if(args.len() == 1) {
 				ret cmds;
 			}
@@ -17,9 +17,10 @@ modu std {
 				cmds.add(*std::cmd(args[1], ""));
 				ret cmds;
 			}
-			#+for (0..(args.len() - 1)) {
-				println(args[it]);
-			}-#
+			for (0..(args.len() - 1)) {
+			    cmds.add(*std::cmd(args[it], ""));
+				#println(args[it]);
+			}
 
 			ret cmds;
 		}
@@ -30,9 +31,18 @@ modu std {
 fun main() {
 	var parser = *std::argparse();
 	var parsed = parser.parse();
-	var first = parsed[0];
-	println(parsed.len());
+	var c = *std::cmd("", "");
+	
+	for (0..(parsed.len() - 1)) {
+	    c = parsed[it];
+	    println(c.arg);
+	}
+	
+	#+var first = parsed[0];
 	println(first.arg);
+	println(parsed.len());
+	#println(first.arg);
+	-#
 	
     #+
     var n = *net();

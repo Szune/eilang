@@ -56,5 +56,10 @@ namespace eilang
                 return ((_value != null ? _value.GetHashCode() : 0) * 397) ^ (int) Type;
             }
         }
+
+        public override string ToString()
+        {
+            return _value?.ToString() ?? "{null}";
+        }
     }
 }

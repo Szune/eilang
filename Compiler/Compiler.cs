@@ -264,7 +264,8 @@ namespace eilang
             function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
             function.Write(OpCode.REF, _valueFactory.String(indexer.Identifier));
             function.Write(OpCode.TYPEGET);
-            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"), 
+                metadata: new Metadata{ Variable = indexer.Identifier, IndexerDepth = 0});
             for (int i = 1; i < indexer.IndexExprs.Count; i++)
             {
                 // set tmp var to top of stack
@@ -274,7 +275,8 @@ namespace eilang
                 // ref tmp var
                 function.Write(OpCode.TMPR, _valueFactory.String(indexer.Identifier));
                 function.Write(OpCode.TYPEGET);
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
+                    metadata: new Metadata {Variable = indexer.Identifier, IndexerDepth = i});
             }
 
             if (indexer.IndexExprs.Count > 1)
@@ -307,7 +309,8 @@ namespace eilang
             function.Write(OpCode.TYPEGET);
             if (assign.IndexExprs.Count > 1)
             {
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
+                    metadata: new Metadata {Variable = assign.Identifier, IndexerDepth = 0});
             }
             else
             {
@@ -323,7 +326,8 @@ namespace eilang
                 // ref tmp var
                 function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifier));
                 function.Write(OpCode.TYPEGET);
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
+                    metadata: new Metadata {Variable = assign.Identifier, IndexerDepth = i});
             }
             
             // setup idx_set call
@@ -363,7 +367,8 @@ namespace eilang
             function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
             function.Write(OpCode.TMPR, _valueFactory.String(indexer.Identifiers[0]));
             function.Write(OpCode.TYPEGET);
-            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"), 
+                metadata: new Metadata{Variable = indexer.Identifiers[0], IndexerDepth = 0});
             for (int i = 1; i < indexer.IndexExprs.Count; i++)
             {
                 // set tmp var to top of stack
@@ -373,7 +378,8 @@ namespace eilang
                 // ref tmp var
                 function.Write(OpCode.TMPR, _valueFactory.String(indexer.Identifiers[0]));
                 function.Write(OpCode.TYPEGET);
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
+                    metadata: new Metadata{Variable = indexer.Identifiers[0], IndexerDepth = 0});
             }
 
             if (indexer.IndexExprs.Count > 1)
@@ -411,7 +417,8 @@ namespace eilang
             function.Write(OpCode.TYPEGET);
             if (assign.IndexExprs.Count > 1)
             {
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
+                    metadata: new Metadata{Variable = assign.Identifiers[0], IndexerDepth = 0});
             }
             else
             {
@@ -427,7 +434,8 @@ namespace eilang
                 // ref tmp var
                 function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifiers[0]));
                 function.Write(OpCode.TYPEGET);
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
+                    metadata: new Metadata{Variable = assign.Identifiers[0], IndexerDepth = 0});
             }
             
             // setup idx_set call

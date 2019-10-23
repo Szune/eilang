@@ -8,5 +8,19 @@ namespace eilang
         {
             Function = function;
         }
+
+        public Bytecode GetNearestMethodCallAboveCurrentAddress(string methodName)
+        {
+            for (int i = Address; i > 0; i--)
+            {
+                if (Function[i].Op == OpCode.MCALL &&
+                    Function[i].Arg0.Get<string>() == methodName)
+                {
+                    return Function[i];
+                }
+            }
+
+            return null;
+        }
     }
 }

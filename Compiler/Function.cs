@@ -18,9 +18,9 @@ namespace eilang
         }
         public List<Bytecode> Code {get;} = new List<Bytecode>();
 
-        public void Write(OpCode op, IValue arg0 = null, IValue arg1 = null, IValue arg2 = null)
+        public void Write(OpCode op, IValue arg0 = null, IValue arg1 = null, IValue arg2 = null, Metadata metadata = null)
         {
-            Code.Add(new Bytecode(op, arg0, arg1, arg2));
+            Code.Add(new Bytecode(op, arg0, arg1, arg2, metadata));
         }
 
         public Bytecode this[int index] {

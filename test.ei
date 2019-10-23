@@ -1,7 +1,16 @@
 modu std {
+    typ f {
+        fun write() {
+            println('hello from f');
+        }
+    }
     typ oth {
         other: string;
         ctor(other);
+        
+        fun get_f() {
+            ret *std::f();
+        }
         
         fun write() {
             println('writing from within oth');
@@ -62,7 +71,9 @@ fun main() {
 	var dd = [];
 	dd.add(*std::cmd());
 	dd[0].init2();
-	#println(dd[0].arg[0]);
+	println(dd[0].arg[0]);
+	dd[0].arg = ['changed value of dd[0].arg'];
+	println(dd[0].arg[0]);
 	
 	
 	var nlst = [];
@@ -80,6 +91,7 @@ fun main() {
 	
 	println(lst[0].arg.other);
 	lst[0].arg.write();
+	lst[0].arg.get_f().write();
 	
 	for (0..(parsed.len() - 1)) {
 	    println(parsed[it].arg);

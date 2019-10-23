@@ -328,6 +328,19 @@ namespace eilang
             var idxAssignExpr = new AstIndexerAssignment(ident, idxExprs, assignExpr);
             ast.Expressions.Add(idxAssignExpr);
         }
+        
+        private AstExpression ParseMemberIndexerExpression(string ident)
+        {
+            var idxExprs = new List<AstExpression>();
+            while (Match(TokenType.LeftBracket))
+            {
+                Consume();
+                var expr = ParseOr();
+                Require(TokenType.RightBracket);
+                idxExprs.Add(expr);
+            }
+            return new AstMemberIndexerRef(ident, idxExprs);
+        }
 
         private AstExpression ParseIndexerExpression()
         {
@@ -725,6 +738,11 @@ namespace eilang
                 var assignment = ParseOr();
                 expression = new AstMemberAssignment(ident, assignment);
                 // member variable assignment
+            }
+            else if (Match(TokenType.LeftBracket))
+            {
+                // member indexer(s)
+                expression = ParseMemberIndexerExpression(ident);
             }
             else
             {

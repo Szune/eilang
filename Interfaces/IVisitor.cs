@@ -44,5 +44,6 @@ namespace eilang
         void Visit(AstMultiReference memberFunc, Function function, Module mod);
         void Visit(AstMemberCall memberFunc, Function function, Module mod);
         void Visit(AstMemberAssignment memberFunc, Function function, Module mod);
+        void Visit(AstMemberIndexerRef memberFunc, Function function, Module mod);
     }
 }

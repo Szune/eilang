@@ -531,7 +531,26 @@ namespace eilang
 
         public void Visit(AstMemberAssignment memberFunc, Function function, Module mod)
         {
-            throw new NotImplementedException();
+            memberFunc.Assignment.Accept(this, function, mod);
+            function.Write(OpCode.MSET, _valueFactory.String(memberFunc.Ident));
+        }
+
+        public void Visit(AstMemberIndexerRef indexer, Function function, Module mod)
+        {
+            function.Write(OpCode.MREF, _valueFactory.String(indexer.Ident));
+            function.Write(OpCode.TYPEGET);
+            indexer.IndexExprs[0].Accept(this, function, mod);
+            function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"), 
+                metadata: new Metadata{ Variable = indexer.Ident, IndexerDepth = 0});
+            for (int i = 1; i < indexer.IndexExprs.Count; i++)
+            {
+                function.Write(OpCode.TYPEGET);
+                indexer.IndexExprs[i].Accept(this, function, mod);
+                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
+                    metadata: new Metadata {Variable = indexer.Ident, IndexerDepth = i});
+            }
         }
 
         public void Visit(AstClass clas, Module mod)

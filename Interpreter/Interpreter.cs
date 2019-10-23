@@ -598,9 +598,7 @@ namespace eilang
                         else
                         {
                             throw new NotImplementedException();
-                            
                         }
-
                         break;
                     case OpCode.TYPEGET:
                         var type = _stack.Peek().Get<Instance>().Owner;

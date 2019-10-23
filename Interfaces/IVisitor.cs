@@ -40,5 +40,7 @@ namespace eilang
         void Visit(AstForRange forRange, Function function, Module mod);
         void Visit(AstIt it, Function function, Module mod);
         void Visit(AstUnaryMathOperation unary, Function function, Module mod);
+        void Visit(AstMemberReference memberFunc, Function function, Module mod);
+        void Visit(AstMultiReference memberFunc, Function function, Module mod);
     }
 }

@@ -1,7 +1,15 @@
 modu std {
+    typ oth {
+        other: string;
+        ctor(other);
+    }
 	typ cmd {
 		arg, val: string;
 		ctor(arg, val);
+		
+		fun init() {
+		    arg = *std::oth('hello world from typ oth');
+		}
 	}
 
 	typ argparse {
@@ -31,18 +39,17 @@ modu std {
 fun main() {
 	var parser = *std::argparse();
 	var parsed = parser.parse();
-	var c = *std::cmd("", "");
+	var lst = [];
+	lst.add(*std::cmd());
+	var p = lst[0];
+	p.init();
+	
+	#println(lst[0].arg[0]);
+	println(lst[0].arg.other);
 	
 	for (0..(parsed.len() - 1)) {
-	    #c = parsed[it].arg;
-	    #println(c.arg);
+	    println(parsed[it].arg);
 	}
-	
-	#+var first = parsed[0];
-	println(first.arg);
-	println(parsed.len());
-	#println(first.arg);
-	-#
 	
     #+
     var n = *net();

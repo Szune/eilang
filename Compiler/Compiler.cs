@@ -506,6 +506,17 @@ namespace eilang
             }
         }
 
+        public void Visit(AstMemberReference memberFunc, Function function, Module mod)
+        {
+            function.Write(OpCode.MREF, _valueFactory.String(memberFunc.Ident));
+        }
+
+        public void Visit(AstMultiReference memberFunc, Function function, Module mod)
+        {
+            memberFunc.First.Accept(this, function, mod);
+            memberFunc.Second.Accept(this, function, mod);
+        }
+
         public void Visit(AstClass clas, Module mod)
         {
             Log($"Compiling class declaration '{clas.Name}'");

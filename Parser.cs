@@ -668,24 +668,56 @@ namespace eilang
 
         private AstExpression ParseMultiplicationAndDivision()
         {
-            var expression = ParseReferences();
+            var expression = ParseDots();
             while (Match(TokenType.Asterisk) || Match(TokenType.Slash))
             {
                 if (Match(TokenType.Asterisk))
                 {
                     Consume();
-                    var right = ParseReferences();
+                    var right = ParseDots();
                     expression = new AstBinaryMathOperation(BinaryMath.Times, expression, right);
                 }
                 else if (Match(TokenType.Slash))
                 {
                     Consume();
-                    var right = ParseReferences();
+                    var right = ParseDots();
                     expression = new AstBinaryMathOperation(BinaryMath.Division, expression, right);
                 }
                 else
                 {
                     throw new NotImplementedException();
+                }
+            }
+
+            return expression;
+        }
+
+        private AstExpression ParseDots()
+        {
+            var expression = ParseReferences();
+            while (Match(TokenType.Dot))
+            {
+                Require(TokenType.Dot);
+                var ident = Require(TokenType.Identifier).Text;
+                if (Match(TokenType.LeftParenthesis))
+                {
+                    // member func call
+                    throw new NotImplementedException();
+                }
+                else if (Match(TokenType.Semicolon))
+                {
+                    // member variable ref
+                    expression = new AstMultiReference(expression, new AstMemberReference(ident));
+                }
+                else if (Match(TokenType.Equals))
+                {
+                    throw new NotImplementedException();
+                    // member variable assignment
+                }
+                else
+                {
+                    // member variable ref + more
+                    expression = new AstMultiReference(expression, new AstMemberReference(ident));
                 }
             }
 

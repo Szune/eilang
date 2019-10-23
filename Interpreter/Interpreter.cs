@@ -560,7 +560,7 @@ namespace eilang
                         if (ctor == null && argCount > 0)
                             throw new InvalidOperationException(
                                 $"No constructor exists which takes {argCount} arguments.");
-                        else if (ctor == null && argCount == 0)
+                        else if ((ctor == null && argCount == 0) || ctor?.Length == 1)
                             ctor = clas.CtorForMembersWithValues;
                         _frames.Push(new CallFrame(ctor));
                         _scopes.Push(instScope);
@@ -619,6 +619,8 @@ namespace eilang
                     case OpCode.MREF:
                         var inst = _stack.Pop().Get<Instance>();
                         var mRefVar = inst.Scope.GetVariable(bc.Arg0.Get<string>());
+                        if (mRefVar == null)
+                            ThrowVariableNotFound(bc.Arg0.Get<string>());
                         _stack.Push(mRefVar);
                         break;
                     case OpCode.MSET:
@@ -790,6 +792,11 @@ namespace eilang
 
                 frame.Address++;
             }
+        }
+
+        private void ThrowVariableNotFound(string variable)
+        {
+            throw new InterpreterException($"Variable not found: {variable}");
         }
 
         private Function GetStartFunction()

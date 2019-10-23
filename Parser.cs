@@ -722,7 +722,7 @@ namespace eilang
                     Consume();
                     var minusExpr = ParseReferences();
                     return new AstUnaryMathOperation(UnaryMath.Minus, minusExpr);
-                case TokenType.Dot:
+                case TokenType.Not:
                     Consume();
                     var notExpr = ParseReferences();
                     return new AstUnaryMathOperation(UnaryMath.Not, notExpr);

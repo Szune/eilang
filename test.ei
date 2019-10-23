@@ -34,8 +34,8 @@ fun main() {
 	var c = *std::cmd("", "");
 	
 	for (0..(parsed.len() - 1)) {
-	    c = parsed[it];
-	    println(c.arg);
+	    #c = parsed[it].arg;
+	    #println(c.arg);
 	}
 	
 	#+var first = parsed[0];

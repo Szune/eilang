@@ -56,6 +56,13 @@ namespace eilang
         NSCP,
         PSCP,
         NEG,
-        NOT
+        NOT,
+        SLEN,
+        SIDXG,
+        SIDXS,
+        SINS,
+        SRPLA,
+        SVIEW,
+        SIDXO
     }
 }

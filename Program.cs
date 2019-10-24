@@ -100,6 +100,59 @@ namespace eilang
                 );
             interpreter.Interpret();
         }
+        
+        
+        private static IValue PrintLine(IValueFactory fac, IValue value)
+        {
+            var ind = '.';
+            PrintLineInner(fac, value);
+            void PrintLineInner(IValueFactory factory, IValue val, int indent = 0)
+            {
+                Console.Write(new string(ind, indent * 2));
+                switch (val.Type)
+                {
+                    case TypeOfValue.String:
+                        Console.WriteLine($"'{val.Get<Instance>().Scope.GetVariable(".string").Get<string>()}'");
+                        break;
+                    case TypeOfValue.Double:
+                        Console.WriteLine(val.Get<double>());
+                        break;
+                    case TypeOfValue.Integer:
+                        Console.WriteLine(val.Get<int>());
+                        break;
+                    case TypeOfValue.Bool:
+                        Console.WriteLine(val.Get<bool>());
+                        break;
+                    case TypeOfValue.Void:
+                        Console.WriteLine(val.ToString());
+                        break;
+                    case TypeOfValue.List:
+                        var list = val.Get<List<IValue>>();
+                        foreach(var item in list)
+                            PrintLineInner(factory, item, indent);
+                        break;
+                    case TypeOfValue.Instance:
+                        var inst = val.Get<Instance>();
+                        var vars = inst.Scope.GetAllVariables();
+                        Console.WriteLine("{Instance of type " + inst.Owner.FullName);
+                        foreach (var kvp in vars)
+                        {
+                            Console.Write(new string(ind, (indent * 2) + 2));
+                            Console.WriteLine($"(variable '{kvp.Key}':");
+                            PrintLineInner(factory, kvp.Value, indent + 2);
+                            Console.Write(new string(ind, (indent * 2) + 2));
+                            Console.WriteLine(")");
+                        }
+                        Console.Write(new string(ind, indent * 2));
+                        Console.WriteLine("}");
+                        break;
+                    default:
+                        throw new InvalidOperationException("println does not work with " + val.Type);
+
+                }
+            }
+            return fac.Void();
+        }
 
         private static string test_indexing_on_any_type()
         {
@@ -365,58 +418,6 @@ fun outer() {
     println('hello world from outer!');
 }
 ";
-        }
-
-        private static IValue PrintLine(IValueFactory fac, IValue value)
-        {
-            var ind = '.';
-            PrintLineInner(fac, value);
-            void PrintLineInner(IValueFactory factory, IValue val, int indent = 0)
-            {
-                Console.Write(new string(ind, indent * 2));
-                switch (val.Type)
-                {
-                    case TypeOfValue.String:
-                        Console.WriteLine($"'{val.Get<string>()}'");
-                        break;
-                    case TypeOfValue.Double:
-                        Console.WriteLine(val.Get<double>());
-                        break;
-                    case TypeOfValue.Integer:
-                        Console.WriteLine(val.Get<int>());
-                        break;
-                    case TypeOfValue.Bool:
-                        Console.WriteLine(val.Get<bool>());
-                        break;
-                    case TypeOfValue.Void:
-                        Console.WriteLine(val.ToString());
-                        break;
-                    case TypeOfValue.List:
-                        var list = val.Get<List<IValue>>();
-                        foreach(var item in list)
-                            PrintLineInner(factory, item, indent);
-                        break;
-                    case TypeOfValue.Instance:
-                        var inst = val.Get<Instance>();
-                        var vars = inst.Scope.GetAllVariables();
-                        Console.WriteLine("{Instance of type " + inst.Owner.FullName);
-                        foreach (var kvp in vars)
-                        {
-                            Console.Write(new string(ind, (indent * 2) + 2));
-                            Console.WriteLine($"(variable '{kvp.Key}':");
-                            PrintLineInner(factory, kvp.Value, indent + 2);
-                            Console.Write(new string(ind, (indent * 2) + 2));
-                            Console.WriteLine(")");
-                        }
-                        Console.Write(new string(ind, indent * 2));
-                        Console.WriteLine("}");
-                        break;
-                    default:
-                        throw new InvalidOperationException("println does not work with " + val.Type);
-
-                }
-            }
-            return fac.Void();
         }
     }
 }

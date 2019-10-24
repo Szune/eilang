@@ -46,9 +46,8 @@ modu std {
 				cmds.add(*std::cmd(args[1], ""));
 				ret cmds;
 			}
-			for (0..(args.len() - 1)) {
+			for (1..(args.len() - 1)) {
 			    cmds.add(*std::cmd(args[it], ""));
-				#println(args[it]);
 			}
 
 			ret cmds;
@@ -60,11 +59,15 @@ modu std {
 fun printTwo(first, last) {
     println(first);
     println(last);
+    ret *std::cmd("hle","ble").arg;
 }
 
 
 fun main() {
-    printTwo('hello', 'world');
+    var ststst = "test";
+    println(ststst[0] + ststst[2]);
+    var s = printTwo('hello', 'world');
+    println("s: " + s);
 	var parser = *std::argparse();
 	var parsed = parser.parse();
 	

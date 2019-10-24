@@ -10,7 +10,7 @@ namespace eilang
         IValue Double(double doub);
         IValue True();
         IValue False();
-        IValue Instance(Instance instance);
+        IValue Instance(Instance instance, TypeOfValue type = TypeOfValue.Instance);
         IValue Class(Class clas);
         IValue Void();
         IValue List();
@@ -43,7 +43,9 @@ namespace eilang
 
         public IValue String(string str)
         {
-            return new Value(TypeOfValue.String, str);
+            var scope = new Scope();
+            scope.DefineVariable(".string", new Value(TypeOfValue.String, str));
+            return Instance(new Instance(scope, new StringClass()), TypeOfValue.String);
         }
 
         public IValue Class(Class clas)
@@ -51,9 +53,9 @@ namespace eilang
             return new Value(TypeOfValue.Class, clas);
         }
 
-        public IValue Instance(Instance instance)
+        public IValue Instance(Instance instance, TypeOfValue type = TypeOfValue.Instance)
         {
-            return new Value(TypeOfValue.Instance, instance);
+            return new Value(type, instance);
         }
         
         public IValue Void()

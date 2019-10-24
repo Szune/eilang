@@ -61,7 +61,7 @@ namespace eilang.Classes
                     new Bytecode(OpCode.RET)
                 }
             });
-            Functions.Add("ins", new MemberFunction("ins", Module, new List<string>{"index, item"}, this)
+            Functions.Add("ins", new MemberFunction("ins", Module, new List<string>{"index", "item"}, this)
             {
                 Code = 
                 {

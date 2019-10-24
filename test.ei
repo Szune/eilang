@@ -27,6 +27,10 @@ modu std {
 		fun init2() {
 		    arg = ['oops, init2 works wow cool'];
 		}
+		
+		fun init3() {
+		    arg = [['init3 also works wow']];
+		}
 	}
 
 	typ argparse {
@@ -74,7 +78,14 @@ fun main() {
 	println(dd[0].arg[0]);
 	dd[0].arg = ['changed value of dd[0].arg'];
 	println(dd[0].arg[0]);
+	dd[0].arg[0] = 'whoa, changed value of dd[0].arg[0]';
+	println(dd[0].arg[0]);
 	
+	var nx = *std::cmd();
+	nx.init3();
+	println(nx.arg[0][0]);
+	nx.arg[0][0] = 'new 3';
+	println(nx.arg[0][0]);
 	
 	var nlst = [];
 	nlst.add('hej');

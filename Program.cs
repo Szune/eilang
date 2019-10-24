@@ -391,6 +391,11 @@ fun outer() {
                     case TypeOfValue.Void:
                         Console.WriteLine(val.ToString());
                         break;
+                    case TypeOfValue.List:
+                        var list = val.Get<List<IValue>>();
+                        foreach(var item in list)
+                            PrintLineInner(factory, item, indent);
+                        break;
                     case TypeOfValue.Instance:
                         var inst = val.Get<Instance>();
                         var vars = inst.Scope.GetAllVariables();

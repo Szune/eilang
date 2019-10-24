@@ -447,13 +447,28 @@ namespace eilang
             // ref tmp var
             //function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifiers[0]));
             function.Write(OpCode.TYPEGET);
-            assign.ValueExpr.Accept(this, function, mod);
             assign.IndexExprs[assign.IndexExprs.Count-1].Accept(this, function, mod);
+            assign.ValueExpr.Accept(this, function, mod);
             function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
             function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
 
             // clear tmp var
             //function.Write(OpCode.TMPC, _valueFactory.String(assign.Identifiers[0]));
+        }
+        
+        public void Visit(AstMemberIndexerAss memberFunc, Function function, Module mod)
+        {
+            function.Write(OpCode.MREF, _valueFactory.String(memberFunc.Indexers.Ident));
+            for (int i = 1; i < memberFunc.Indexers.IndexExprs.Count - 1; i++)
+            {
+                memberFunc.Indexers.IndexExprs[i].Accept(this, function, mod);
+            }
+            
+            function.Write(OpCode.TYPEGET);
+            memberFunc.Indexers.IndexExprs[memberFunc.Indexers.IndexExprs.Count-1].Accept(this, function, mod);
+            memberFunc.Assignment.Accept(this, function, mod);
+            function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
         }
 
         public void Visit(AstRange range, Function function, Module mod)
@@ -552,6 +567,7 @@ namespace eilang
                     metadata: new Metadata {Variable = indexer.Ident, IndexerDepth = i});
             }
         }
+
 
         public void Visit(AstClass clas, Module mod)
         {

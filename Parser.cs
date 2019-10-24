@@ -278,8 +278,6 @@ namespace eilang
                     Require(TokenType.Semicolon);
                     return;
             }
-
-            throw new NotImplementedException();
         }
 
         private void ParseReturn(IHaveExpression ast)
@@ -306,18 +304,6 @@ namespace eilang
                 idxExprs.Add(expr);
             }
 
-//            if (Match(TokenType.Dot))
-//            {
-//                // call function or reference variable on the returned type
-//                ast.Expressions.Add(new AstIndexerReference(ident, idxExprs));
-//                // parse dot-identifier-list
-//                // if ends with left parenthesis, parse func call
-//                ast.Expressions.Add(new AstMemberFunctionCallOnStackValue());
-//                // if ends with anything else, parse member reference
-//                ast.Expressions.Add(new AstMemberReferenceOnStackValue());
-//                // TODO: refactor some parsing to other parsers
-//                return;
-//            }
             if (!Match(TokenType.Equals))
             {
                 ast.Expressions.Add(new AstIndexerReference(ident, idxExprs));
@@ -329,7 +315,7 @@ namespace eilang
             ast.Expressions.Add(idxAssignExpr);
         }
         
-        private AstExpression ParseMemberIndexerExpression(string ident)
+        private AstMemberIndexerRef ParseMemberIndexerExpression(string ident)
         {
             var idxExprs = new List<AstExpression>();
             while (Match(TokenType.LeftBracket))
@@ -742,7 +728,18 @@ namespace eilang
             else if (Match(TokenType.LeftBracket))
             {
                 // member indexer(s)
-                expression = ParseMemberIndexerExpression(ident);
+                var indexerExpression = ParseMemberIndexerExpression(ident);
+                if (!Match(TokenType.Equals))
+                {
+                    expression = indexerExpression;
+                }
+                else
+                {
+                    // member indexer assignment
+                    Require(TokenType.Equals);
+                    var assi = ParseOr();
+                    expression = new AstMemberIndexerAss(indexerExpression, assi);
+                }
             }
             else
             {

@@ -64,10 +64,19 @@ fun printTwo(first, last) {
 
 
 fun main() {
+    println("hello".at(0));
     var ststst = "test";
+    println(ststst[0] + ststst[2]);
+    ststst[0] = 'f';
     println(ststst[0] + ststst[2]);
     var s = printTwo('hello', 'world');
     println("s: " + s);
+    println("lower-to-upper".upper());
+    println("UPPER-TO-LOWER".lower());
+    println("this is pointless".view(0, "this is point".len()));
+    println("index: " + "where is index?".index_of("here", 0));
+    println("replaced hello with yellow".replace("hell", "yellow"));
+    println("fe".ins(2, "st"));
 	var parser = *std::argparse();
 	var parsed = parser.parse();
 	

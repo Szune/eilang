@@ -63,6 +63,8 @@ namespace eilang
         SINS,
         SRPLA,
         SVIEW,
-        SIDXO
+        SIDXO,
+        SLOW,
+        SUP
     }
 }

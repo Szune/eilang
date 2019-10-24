@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Text;
 using eilang.Classes;
 
 namespace eilang
@@ -49,8 +50,8 @@ namespace eilang
         public void Interpret()
         {
             Log("Interpreting...");
-            var start = GetStartFunction();
-            _frames.Push(new CallFrame(start));
+            var startFunc = GetStartFunction();
+            _frames.Push(new CallFrame(startFunc));
             _scopes.Push(new Scope());
 
             while (_frames.Count > 0)
@@ -805,6 +806,59 @@ namespace eilang
                         var str = _scopes.Peek().GetVariable(".string").Get<string>();
                         var idx = _stack.Pop().Get<int>();
                         _stack.Push(_valueFactory.String(str[idx].ToString()));
+                        break;
+                    }
+                    case OpCode.SIDXS:
+                    {
+                        var str = new StringBuilder(_scopes.Peek().GetVariable(".string").Get<string>());
+                        var val = GetString(_stack.Pop());
+                        var index = _stack.Pop().Get<int>();
+                        str[index] = val[0];
+                        _scopes.Peek().SetVariable(".string", _valueFactory.InternalString(str.ToString()));
+                        break;
+                    }
+                    case OpCode.SVIEW:
+                    {
+                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
+                        var end = _stack.Pop().Get<int>();
+                        var start = _stack.Pop().Get<int>();
+                        _stack.Push(_valueFactory.String(str.Substring(start, end - start)));
+                        break;
+                    }
+                    case OpCode.SIDXO:
+                    {
+                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
+                        var startIndex = _stack.Pop().Get<int>();
+                        var find = GetString(_stack.Pop());
+                        _stack.Push(_valueFactory.Integer(str.IndexOf(find, startIndex, StringComparison.InvariantCulture)));
+                        break;
+                    }
+                    case OpCode.SINS:
+                    {
+                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
+                        var insert = GetString(_stack.Pop());
+                        var index = _stack.Pop().Get<int>();
+                        _stack.Push(_valueFactory.String(str.Insert(index, insert)));
+                        break;
+                    }
+                    case OpCode.SRPLA:
+                    {
+                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
+                        var newStr = GetString(_stack.Pop());
+                        var oldStr = GetString(_stack.Pop());
+                        _stack.Push(_valueFactory.String(str.Replace(oldStr, newStr)));
+                        break;
+                    }
+                    case OpCode.SUP:
+                    {
+                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
+                        _stack.Push(_valueFactory.String(str.ToUpperInvariant()));
+                        break;
+                    }
+                    case OpCode.SLOW:
+                    {
+                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
+                        _stack.Push(_valueFactory.String(str.ToLowerInvariant()));
                         break;
                     }
                     default:

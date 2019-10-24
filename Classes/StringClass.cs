@@ -14,6 +14,14 @@ namespace eilang.Classes
                     new Bytecode(OpCode.RET)
                 }
             });
+            Functions.Add("at", new MemberFunction("at", Module, new List<string>{"index"}, this)
+            {
+                Code = 
+                {
+                    new Bytecode(OpCode.SIDXG),
+                    new Bytecode(OpCode.RET)
+                }
+            });
             Functions.Add("idx_get", new MemberFunction("idx_get", Module, new List<string>{"index"}, this)
             {
                 Code = 
@@ -38,7 +46,7 @@ namespace eilang.Classes
                     new Bytecode(OpCode.RET)
                 }
             });
-            Functions.Add("idx_of", new MemberFunction("idx_of", Module, new List<string>{"lookup"}, this)
+            Functions.Add("index_of", new MemberFunction("index_of", Module, new List<string>{"lookup", "start"}, this)
             {
                 Code = 
                 {
@@ -51,6 +59,22 @@ namespace eilang.Classes
                 Code = 
                 {
                     new Bytecode(OpCode.SRPLA),
+                    new Bytecode(OpCode.RET)
+                }
+            });
+            Functions.Add("lower", new MemberFunction("lower", Module, new List<string>(), this)
+            {
+                Code = 
+                {
+                    new Bytecode(OpCode.SLOW),
+                    new Bytecode(OpCode.RET)
+                }
+            });
+            Functions.Add("upper", new MemberFunction("upper", Module, new List<string>(), this)
+            {
+                Code = 
+                {
+                    new Bytecode(OpCode.SUP),
                     new Bytecode(OpCode.RET)
                 }
             });

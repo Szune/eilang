@@ -112,7 +112,7 @@ namespace eilang
                 switch (val.Type)
                 {
                     case TypeOfValue.String:
-                        Console.WriteLine($"'{val.Get<Instance>().Scope.GetVariable(".string").Get<string>()}'");
+                        Console.WriteLine(val.Get<Instance>().Scope.GetVariable(".string").Get<string>());
                         break;
                     case TypeOfValue.Double:
                         Console.WriteLine(val.Get<double>());

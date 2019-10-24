@@ -6,6 +6,7 @@ namespace eilang
     public interface IValueFactory
     {
         IValue String(string str);
+        IValue InternalString(string str);
         IValue Integer(int inte);
         IValue Double(double doub);
         IValue True();
@@ -39,6 +40,11 @@ namespace eilang
         public IValue Integer(int inte)
         {
             return new Value(TypeOfValue.Integer, inte);
+        }
+        
+        public IValue InternalString(string str)
+        {
+            return new Value(TypeOfValue.String, str);
         }
 
         public IValue String(string str)

@@ -42,10 +42,10 @@ namespace eilang
             return root;
         }
 
-        private void ParseModule(AstRoot root)
+        private void ParseModule(AstRoot root, string outerModule = "")
         {
             Require(TokenType.Module);
-            var ident = Require(TokenType.Identifier).Text;
+            var ident = outerModule + Require(TokenType.Identifier).Text;
             var module = new AstModule(ident);
             root.Modules.Add(module);
             Require(TokenType.LeftBrace);
@@ -58,6 +58,12 @@ namespace eilang
                         break;
                     case TokenType.Function:
                         ParseFunction(module);
+                        break;
+                    case TokenType.Module:
+                        ParseModule(root, $"{ident}::");
+                        break;
+                    default:
+                        ThrowParserException("Unknown token");
                         break;
                 }
             }
@@ -384,9 +390,8 @@ namespace eilang
             return new AstMemberIndexerRef(ident, idxExprs);
         }
 
-        private AstExpression ParseIndexerExpression()
+        private AstExpression ParseIndexerExpression(string name)
         {
-            var ident = Require(TokenType.Identifier).Text;
             var idxExprs = new List<AstExpression>();
             while (Match(TokenType.LeftBracket))
             {
@@ -395,7 +400,7 @@ namespace eilang
                 Require(TokenType.RightBracket);
                 idxExprs.Add(expr);
             }
-            return new AstIndexerReference(ident, idxExprs);
+            return new AstIndexerReference(name, idxExprs);
         }
 
         private void ParseFor(IHaveExpression ast)
@@ -468,16 +473,15 @@ namespace eilang
 
         private AstExpression ParseClassInitialization()
         {
-            var identifiers = GetIdentifierList();
+            var identifiers = GetModuledClassName();
             var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
             return new AstClassInitialization(identifiers, args);
         }
 
-        private AstFunctionCall ParseFunctionCall()
+        private AstFunctionCall ParseFunctionCall(string name)
         {
-            var function = Require(TokenType.Identifier).Text;
             var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
-            return new AstFunctionCall(function, args);
+            return new AstFunctionCall(name, args);
         }
 
         private void ParseDeclarationAssignment(IHaveExpression ast)
@@ -761,18 +765,7 @@ namespace eilang
                     Consume();
                     return new AstIx();
                 case TokenType.Identifier:
-                    switch (_buffer[1].Type)
-                    {
-                        case TokenType.LeftBracket:
-                            return ParseIndexerExpression();
-                        case TokenType.LeftParenthesis:
-                            return ParseFunctionCall();
-                        case TokenType.DoubleColon:
-                            return ParseModuleAccess();
-                        default:
-                            var ident = Require(TokenType.Identifier).Text;
-                            return new AstIdentifier(ident);
-                    }
+                    return ParseModuleAccess();
             }
 
             return ThrowParserException("not implemented");
@@ -781,7 +774,15 @@ namespace eilang
         private AstExpression ParseModuleAccess()
         {
             var name = GetModuledClassName();
-            return new AstIdentifier(name);
+            switch (_buffer[0].Type)
+            {
+                case TokenType.LeftBracket:
+                    return ParseIndexerExpression(name);
+                case TokenType.LeftParenthesis:
+                    return ParseFunctionCall(name);
+                default:
+                    return new AstIdentifier(name);
+            }
         }
 
         private AstExpression ParseListInit()
@@ -809,30 +810,6 @@ namespace eilang
             return args;
         }
 
-
-        private List<Reference> GetIdentifierList()
-        {
-            var identifiers = new List<Reference>();
-            var firstIdentifier = Require(TokenType.Identifier).Text;
-            identifiers.Add(new Reference(firstIdentifier, Match(TokenType.DoubleColon)));
-
-            if (Match(TokenType.DoubleColon))
-                Consume();
-            else if (Match(TokenType.Dot))
-                Consume();
-
-            while (Match(TokenType.Identifier) && !Match(TokenType.EOF))
-            {
-                var ident = Require(TokenType.Identifier).Text;
-                identifiers.Add(new Reference(ident, Match(TokenType.DoubleColon)));
-                if (Match(TokenType.DoubleColon))
-                    Consume();
-                else if (Match(TokenType.Dot))
-                    Consume();
-            }
-
-            return identifiers;
-        }
 
         private string GetModuledClassName()
         {
@@ -866,7 +843,7 @@ namespace eilang
             var consumed = Consume();
             if (consumed.Type != type)
                 throw new ParserException(
-                    $"Unexpected token {consumed.Type}, expected {type} at line {consumed.Line}, col {consumed.Col}");
+                    $"Unexpected token {consumed.Type}, expected {type} at line {consumed.Line + 1}, col {consumed.Col}");
             return consumed;
         }
     }

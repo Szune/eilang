@@ -50,7 +50,11 @@ namespace eilang
         Not,
         It,
         Ix,
-        Return
+        Return,
+        /// <summary>
+        /// Current object access
+        /// </summary>
+        Me
     }
     
     

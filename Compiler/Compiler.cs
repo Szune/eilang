@@ -57,9 +57,9 @@ namespace eilang
 
         public void Visit(AstClassInitialization init, Function function, Module mod)
         {
-            var fullName = init.Identifiers.Count > 1
-                ? GetFullName(init.Identifiers)
-                : $"{GlobalFunctionAndModuleName}::{init.Identifiers[0].Ident}";
+            var fullName = init.Identifiers.Contains("::")
+                ? init.Identifiers
+                : $"{GlobalFunctionAndModuleName}::{init.Identifiers}";
             Log($"Compiling instance initialization '{fullName}'");
             init.Arguments.Accept(this, function, mod);
             function.Write(OpCode.PUSH, _valueFactory.Integer(init.Arguments.Count));
@@ -565,20 +565,6 @@ namespace eilang
             }
 
             clas.Functions.Add(func.Name, func);
-        }
-
-        private string GetFullName(List<Reference> idents)
-        {
-            if (idents.Count < 2)
-                throw new InvalidOperationException("Can only use GetFullName when idents > 1");
-            var full = idents[0].Ident + (idents[0].IsModule ? "::" : ".");
-            for (int i = 1; i < idents.Count - 2; i++)
-            {
-                full += idents[i].Ident + (idents[i].IsModule ? "::" : ".");
-            }
-
-            full += idents[idents.Count - 1].Ident;
-            return full;
         }
     }
 }

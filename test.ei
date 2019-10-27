@@ -1,4 +1,16 @@
-﻿fun join_range(strings, joiner) {
+﻿modu std {
+    modu str {
+       fun join(strings, joiner) {
+            var finalStr = strings[0];
+            for (strings.skip(1)) {
+                finalStr += joiner + it;
+            }
+            ret finalStr;
+        }
+    }
+}
+
+fun join_range(strings, joiner) {
     var finalStr = '';
     for (0..strings.len()-1) {
         if (ix == 0) {
@@ -36,4 +48,6 @@ fun main() {
     println(join_array2("these are four words".split(' '), '\n'));
     println("-----");
     println(join_range("last join range".split(' '), '\n'));
+    println("-----");
+    println(std::str::join("hello me!".split(' '), '-'));
 }

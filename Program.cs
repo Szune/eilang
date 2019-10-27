@@ -12,6 +12,7 @@ namespace eilang
             // TODO: 2. implement 'function pointers' (e.g. saving a function to a variable,
             // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
             // TODO: 3. implement maps (dictionaries)
+            // TODO: 4. implement modulo
             
             //#define LOGGING
             var code = File.ReadAllText("test.ei");

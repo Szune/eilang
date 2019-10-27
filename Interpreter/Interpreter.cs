@@ -539,8 +539,20 @@ namespace eilang
                         break;
                     case OpCode.CALL:
                         var callArgCount = _stack.Pop().Get<int>();
-                        _frames.Push(new CallFrame(
-                            _env.Functions[$"{Compiler.GlobalFunctionAndModuleName}::{GetString(bc.Arg0)}"]));
+                        if (_env.Functions.ContainsKey($"{Compiler.GlobalFunctionAndModuleName}::{GetString(bc.Arg0)}"))
+                        {
+                            _frames.Push(new CallFrame(
+                                _env.Functions[$"{Compiler.GlobalFunctionAndModuleName}::{GetString(bc.Arg0)}"]));
+                        }
+                        else if (_env.Functions.ContainsKey(GetString(bc.Arg0)))
+                        {
+                            _frames.Push(new CallFrame(
+                                _env.Functions[GetString(bc.Arg0)]));
+                        }
+                        else
+                        {
+                            throw new InterpreterException($"Function '{GetString(bc.Arg0)}' not found.");
+                        }
                         var currentScope = _scopes.Peek();
                         _scopes.Push(new Scope(currentScope));
                         break;

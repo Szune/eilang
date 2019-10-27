@@ -4,10 +4,10 @@ namespace eilang.Ast
 {
     public class AstClassInitialization : AstExpression
     {
-        public List<Reference> Identifiers { get; }
+        public string Identifiers { get; }
         public List<AstExpression> Arguments { get; }
 
-        public AstClassInitialization (List<Reference> identifiers, List<AstExpression> arguments)
+        public AstClassInitialization (string identifiers, List<AstExpression> arguments)
         {
             Identifiers = identifiers;
             Arguments = arguments;

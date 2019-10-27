@@ -142,7 +142,7 @@ namespace eilang
                         PrintExpressions(astBlock.Expressions, indent + 1);
                         break;
                     case AstClassInitialization aci:
-                        Console.WriteLine($"{prefix}{expr.GetType().Name} {GetFullName(aci.Identifiers)}");
+                        Console.WriteLine($"{prefix}{expr.GetType().Name} {aci.Identifiers}");
                         PrintExpressions(aci.Arguments, indent + 1);
                         break;
                     case AstCompare astCompare:

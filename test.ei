@@ -1,59 +1,39 @@
-typ test {
-    val1: string;
-    val2: test2;
-    ctor(val1, val2);
-    
-    fun get() {
-        ret *test2("baz", "bah");
+﻿fun join_range(strings, joiner) {
+    var finalStr = '';
+    for (0..strings.len()-1) {
+        if (ix == 0) {
+            finalStr = strings[ix];
+        } else {
+            finalStr = finalStr + joiner + strings[ix];
+        }
     }
+    ret finalStr;
 }
 
-
-typ test2 {
-    val3, val4: any;
-    ctor(val3, val4);
+fun join_array(strings, joiner) {
+    var finalStr = strings[0];
+    for (strings.skip(1)) {
+        finalStr += joiner + it;
+    }
+    ret finalStr;
 }
 
-fun testfun() {
-    println("testing");
+fun join_array2(strings, joiner) {
+    var finalStr = "";
+    for (strings) {
+        if(ix == 0) {
+            finalStr = it;
+        } else {
+        finalStr += joiner + it;
+        }
+    }
+    ret finalStr;
 }
 
 fun main() {
-    # Assignment tests
-    var test = *test("foo", *test2("bar", "baz"));
-    println("test.val1 = " + test.val1);
-    test.val1 += "bar";
-    println("test.val1 = " + test.val1);
-    test.val1 = "muhbar";
-    println("test.val1 = " + test.val1);
-    println("test.val2.val3 = " + test.val2.val3);
-    test.val2.val3 = "_moo_";
-    println("test.val2.val3 = " + test.val2.val3);
-    
-    var lst = [*test('one', *test2('two', ['hello']))];
-    println("lst = " + lst);
-    lst[0].val2.val3 = "bus";
-    println("lst = " + lst);
-    lst[0].val2.val4[0] += ' world';
-    println("lst = " + lst);
-    lst[0] = 'bye';
-    println(lst);
-    lst = 'hello';
-    println(lst);
-    lst += ' world';
-    println(lst);
-    
-    println("*test('1','2').get().val3 = " + *test('1','2').get().val3);
-    testfun();
-    
-    println("*test('1',*test2(['test2'],'3')).val2.val3[0] = " + *test('1',*test2(['test2'],'3')).val2.val3[0]);
-    
-    for(1..4) {
-        println("it = " + it);
-    }
-    
-#    lst = [1,2,3,4];
-#    for(lst) {
-#        println("it = " + it);
-#    }
+    println(join_array("these three words".split(' '), '\n'));
+    println("-----");
+    println(join_array2("these are four words".split(' '), '\n'));
+    println("-----");
+    println(join_range("last join range".split(' '), '\n'));
 }

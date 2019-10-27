@@ -36,10 +36,11 @@ namespace eilang
         void Visit(AstMultiReference memberFunc, Function function, Module mod);
         void Visit(AstMemberFunctionCall memberFunc, Function function, Module mod);
         void Visit(AstMemberIndexerRef memberFunc, Function function, Module mod);
-        void Visit(AstForArray memberFunc, Function function, Module mod);
+        void Visit(AstForArray forArray, Function function, Module mod);
         void Visit(AstAssignmentValue assign, Function function, Module mod);
         void Visit(AstAssignment assignment, Function function, Module mod);
         void Visit(AstAssignmentReference memberFunc, Function function, Module mod);
         void Visit(AstIdentifier identifier, Function function, Module mod);
+        void Visit(AstIx memberFunc, Function function, Module mod);
     }
 }

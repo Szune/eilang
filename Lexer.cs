@@ -24,6 +24,7 @@ namespace eilang
                 {"for", TokenType.For},
                 {"var", TokenType.Var},
                 {"it", TokenType.It},
+                {"ix", TokenType.Ix},
                 {"ctor", TokenType.Constructor},
                 {"true", TokenType.True},
                 {"false", TokenType.False}

@@ -1,0 +1,54 @@
+typ test {
+    val1: string;
+    val2: test2;
+    ctor(val1, val2);
+    
+    fun get() {
+        ret *test2("baz", "bah");
+    }
+}
+
+
+typ test2 {
+    val3, val4: any;
+    ctor(val3, val4);
+}
+
+fun testfun() {
+    println("testing");
+}
+
+fun main() {
+    # Assignment tests
+    var test = *test("foo", *test2("bar", "baz"));
+    println("test.val1 = " + test.val1);
+    test.val1 += "bar";
+    println("test.val1 = " + test.val1);
+    test.val1 = "muhbar";
+    println("test.val1 = " + test.val1);
+    println("test.val2.val3 = " + test.val2.val3);
+    test.val2.val3 = "_moo_";
+    println("test.val2.val3 = " + test.val2.val3);
+    
+    var lst = [*test('one', *test2('two', ['hello']))];
+    println("lst = " + lst);
+    lst[0].val2.val3 = "bus";
+    println("lst = " + lst);
+    lst[0].val2.val4[0] += ' world';
+    println("lst = " + lst);
+    lst[0] = 'bye';
+    println(lst);
+    lst = 'hello';
+    println(lst);
+    lst += ' world';
+    println(lst);
+    
+    println("*test('1','2').get().val3 = " + *test('1','2').get().val3);
+    testfun();
+    
+    println("*test('1',*test2(['test2'],'3')).val2.val3[0] = " + *test('1',*test2(['test2'],'3')).val2.val3[0]);
+    
+    for(1..4) {
+        println("it = " + ix);
+    }
+}

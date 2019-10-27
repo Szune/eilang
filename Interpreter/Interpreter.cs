@@ -520,13 +520,19 @@ namespace eilang
                         var jmpf = _stack.Pop().Get<bool>();
                         if (jmpf == false)
                             frame.Address = bc.Arg0.Get<int>() - 1;
-                        // + 1 because we need to adjust for the address++ at the start of the loop
+                        // - 1 because we need to adjust for the address++ at the start of the loop
                         break;
                     case OpCode.JMPT:
                         var jmpt = _stack.Pop().Get<bool>();
                         if (jmpt == true)
                             frame.Address = bc.Arg0.Get<int>() - 1;
-                        // + 1 because we need to adjust for the address++ at the start of the loop
+                        // - 1 because we need to adjust for the address++ at the start of the loop
+                        break;
+                    case OpCode.JMPZ:
+                        var jmpz = _stack.Pop().Get<int>();
+                        if (jmpz == 0)
+                            frame.Address = bc.Arg0.Get<int>() - 1;
+                        // - 1 because we need to adjust for the address++ at the start of the loop
                         break;
                     case OpCode.JMP:
                         frame.Address = bc.Arg0.Get<int>() - 1;

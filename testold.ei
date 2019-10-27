@@ -47,7 +47,7 @@ modu std {
 				ret cmds;
 			}
 			for (1..(args.len() - 1)) {
-			    cmds.add(*std::cmd(args[it], ""));
+			    cmds.add(*std::cmd(args[ix], ""));
 			}
 
 			ret cmds;
@@ -70,10 +70,10 @@ fun join(strings, joiner) {
     ret finalStr;
     #+
     for (0..(strings.len()-1)) {
-        if (it == 0) {
-            finalStr = strings[it];
+        if (ix == 0) {
+            finalStr = strings[ix];
         } else {
-            finalStr = finalStr + joiner + strings[it];
+            finalStr = finalStr + joiner + strings[ix];
         }
     }
     -#
@@ -138,7 +138,7 @@ fun main() {
 	lst[0].arg.get_f().write();
 	
 	for (0..(parsed.len() - 1)) {
-	    println(parsed[it].arg);
+	    println(parsed[ix].arg);
 	}
 	
     #+
@@ -161,18 +161,18 @@ fun main() {
 
     for (1..6) 
     {   
-        println(it);
+        println(ix);
     }
     var b = 1;
     var e = 3;
     for (b..e)
     {
-        println(it);
+        println(ix);
     }
     #+
     for (1..6) {
-        println(f'[{it_idx}] has value {it}');
-        println('[' + it_idx + '] has value ' + it); # auto loop index variable?
+        println(f'[{ix}] has value {it}');
+        println('[' + ix + '] has value ' + it); # auto loop index variable?
         pointless(it); # auto variable
     }
     for (i : 1..6) {
@@ -191,7 +191,7 @@ fun main() {
         println(it);
     }
     for(i: array) {
-        println(it);
+        println(i);
     }
     -#
 }

@@ -129,27 +129,9 @@ namespace eilang
                     case TypeOfValue.List:
                         Console.WriteLine(val.ToString());
                         break;
-//                        var list = val.Get<List<IValue>>();
-//                        foreach(var item in list)
-//                            PrintLineInner(factory, item, indent);
-//                        break;
                     case TypeOfValue.Instance:
                         Console.WriteLine(val.ToString());
                         break;
-//                        var inst = val.Get<Instance>();
-//                        var vars = inst.Scope.GetAllVariables();
-//                        Console.WriteLine("{Instance of type " + inst.Owner.FullName);
-//                        foreach (var kvp in vars)
-//                        {
-//                            Console.Write(new string(ind, (indent * 2) + 2));
-//                            Console.WriteLine($"(variable '{kvp.Key}':");
-//                            PrintLineInner(factory, kvp.Value, indent + 2);
-//                            Console.Write(new string(ind, (indent * 2) + 2));
-//                            Console.WriteLine(")");
-//                        }
-//                        Console.Write(new string(ind, indent * 2));
-//                        Console.WriteLine("}");
-//                        break;
                     default:
                         throw new InvalidOperationException("println does not work with " + val.Type);
 

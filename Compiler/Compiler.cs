@@ -12,6 +12,7 @@ namespace eilang
         private readonly Env _env;
         private readonly TextWriter _logger;
         private readonly IValueFactory _valueFactory;
+        private int _forDepth = 0;
 
         public Compiler(Env env, TextWriter logger, IValueFactory valueFactory)
         {
@@ -238,11 +239,6 @@ namespace eilang
             function.Write(OpCode.RET);
         }
 
-        public void Visit(AstForArray memberFunc, Function function, Module mod)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Visit(AstAssignmentValue assign, Function function, Module mod)
         {
             assign.Value.Accept(this, function, mod);
@@ -327,13 +323,68 @@ namespace eilang
             function.Write(OpCode.REF, _valueFactory.String(identifier.Ident));
         }
 
-        public void Visit(AstRange range, Function function, Module mod)
+        public void Visit(AstIx memberFunc, Function function, Module mod)
         {
-            throw new NotImplementedException();
+            function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
         }
 
+        public void Visit(AstRange range, Function function, Module mod)
+        {
+            throw new NotImplementedException("should never arrive here");
+        }
+
+
+        public void Visit(AstForArray forArray, Function function, Module mod)
+        {
+            _forDepth++;
+            function.Write(OpCode.NSCP);
+            forArray.Array.Accept(this, function, mod);
+            function.Write(OpCode.TMPV, _valueFactory.String($".aval{_forDepth}"));
+            function.Write(OpCode.TMPR, _valueFactory.String($".aval{_forDepth}"));
+            function.Write(OpCode.TYPEGET);
+            function.Write(OpCode.PUSH, _valueFactory.Integer(0));
+            function.Write(OpCode.MCALL, _valueFactory.String("len"));
+            function.Write(OpCode.TMPV, _valueFactory.String($".alen{_forDepth}"));
+            function.Write(OpCode.TMPR, _valueFactory.String($".alen{_forDepth}"));
+            function.Write(OpCode.JMPZ, _valueFactory.Integer(0));
+            var addressOfFirstJmpZ = function.Code.Count - 1;
+            // start loop with index set to 0
+            function.Write(OpCode.PUSH, _valueFactory.Integer(0));
+            function.Write(OpCode.DEF, _valueFactory.String($".ix{_forDepth}"));
+            // define 'it' variable
+            function.Write(OpCode.PUSH, _valueFactory.Void());
+            function.Write(OpCode.DEF, _valueFactory.String($".it{_forDepth}"));
+            function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
+            var addressOfCmp = function.Code.Count - 1;
+            // loop for the length of the array
+            function.Write(OpCode.TMPR, _valueFactory.String($".alen{_forDepth}"));
+            function.Write(OpCode.GTE);
+            function.Write(OpCode.JMPT, _valueFactory.Integer(0));
+            var addressOfJmpT = function.Code.Count - 1;
+            // set 'it' to the value of array at current index 
+            function.Write(OpCode.TMPR, _valueFactory.String($".aval{_forDepth}"));
+            function.Write(OpCode.TYPEGET);
+            function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
+            function.Write(OpCode.PUSH, _valueFactory.Integer(1));
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+            function.Write(OpCode.SET, _valueFactory.String($".it{_forDepth}"));
+            forArray.Body.Accept(this, function, mod);
+            function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
+            function.Write(OpCode.PUSH, _valueFactory.Integer(1));
+            function.Write(OpCode.ADD);
+            function.Write(OpCode.SET, _valueFactory.String($".ix{_forDepth}"));
+            function.Write(OpCode.JMP, _valueFactory.Integer(addressOfCmp));
+            var endOfLoop = function.Code.Count;
+            function.Write(OpCode.PSCP);
+            function.Write(OpCode.TMPC, _valueFactory.String($".alen{_forDepth}"));
+            function[addressOfJmpT] = new Bytecode(OpCode.JMPT, _valueFactory.Integer(endOfLoop));
+            function[addressOfFirstJmpZ] = new Bytecode(OpCode.JMPZ, _valueFactory.Integer(endOfLoop));
+            _forDepth--;
+        }
+        
         public void Visit(AstForRange forRange, Function function, Module mod)
         {
+            _forDepth++;
             function.Write(OpCode.NSCP);
             forRange.Range.Begin.Accept(this, function, mod);
             forRange.Range.End.Accept(this, function, mod);
@@ -341,28 +392,29 @@ namespace eilang
             function.Write(OpCode.JMPT, _valueFactory.Integer(0));
             var addressOfFirstJmpT = function.Code.Count - 1;
             forRange.Range.Begin.Accept(this, function, mod);
-            function.Write(OpCode.DEF, _valueFactory.String(".it"));
-            function.Write(OpCode.REF, _valueFactory.String(".it"));
+            function.Write(OpCode.DEF, _valueFactory.String($".ix{_forDepth}"));
+            function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
             var addressOfCmp = function.Code.Count - 1;
             forRange.Range.End.Accept(this, function, mod);
             function.Write(OpCode.GT);
             function.Write(OpCode.JMPT, _valueFactory.Integer(0));
             var addressOfJmpT = function.Code.Count - 1;
             forRange.Body.Accept(this, function, mod);
-            function.Write(OpCode.REF, _valueFactory.String(".it"));
+            function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
             function.Write(OpCode.PUSH, _valueFactory.Integer(1));
             function.Write(OpCode.ADD);
-            function.Write(OpCode.SET, _valueFactory.String(".it"));
+            function.Write(OpCode.SET, _valueFactory.String($".ix{_forDepth}"));
             function.Write(OpCode.JMP, _valueFactory.Integer(addressOfCmp));
             var endOfLoop = function.Code.Count;
             function.Write(OpCode.PSCP);
             function[addressOfJmpT] = new Bytecode(OpCode.JMPT, _valueFactory.Integer(endOfLoop));
             function[addressOfFirstJmpT] = new Bytecode(OpCode.JMPT, _valueFactory.Integer(endOfLoop));
+            _forDepth--;
         }
 
         public void Visit(AstIt it, Function function, Module mod)
         {
-            function.Write(OpCode.REF, _valueFactory.String(".it"));
+            function.Write(OpCode.REF, _valueFactory.String($".it{_forDepth}"));
         }
 
         public void Visit(AstUnaryMathOperation unary, Function function, Module mod)

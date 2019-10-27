@@ -156,6 +156,10 @@ namespace eilang
         /// <summary>
         /// Jump if true
         /// </summary>
+        JMPZ,
+        /// <summary>
+        /// New scope
+        /// </summary>
         JMPT,
         /// <summary>
         /// New scope

@@ -757,6 +757,9 @@ namespace eilang
                 case TokenType.It:
                     Consume();
                     return new AstIt();
+                case TokenType.Ix:
+                    Consume();
+                    return new AstIx();
                 case TokenType.Identifier:
                     switch (_buffer[1].Type)
                     {

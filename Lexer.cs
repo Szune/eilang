@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -146,13 +145,37 @@ namespace eilang
                         token = GetToken(TokenType.Comma);
                         break;
                     case '+':
-                        token = GetToken(TokenType.Plus);
+                        if (_buffer[1] == '=')
+                        {
+                            token = GetToken(TokenType.PlusEquals);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.Plus);
+                        }
                         break;
                     case '-':
-                        token = GetToken(TokenType.Minus);
+                        if (_buffer[1] == '=')
+                        {
+                            token = GetToken(TokenType.MinusEquals);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.Minus);
+                        }
                         break;
                     case '/':
-                        token = GetToken(TokenType.Slash);
+                        if (_buffer[1] == '=')
+                        {
+                            token = GetToken(TokenType.DivideEquals);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.Slash);
+                        }
                         break;
                     case '.':
                         if (_buffer[1] == '.')
@@ -167,7 +190,15 @@ namespace eilang
 
                         break;
                     case '*':
-                        token = GetToken(TokenType.Asterisk);
+                        if (_buffer[1] == '=')
+                        {
+                            token = GetToken(TokenType.TimesEquals);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.Asterisk);
+                        }
                         break;
                     case '&':
                         if (_buffer[1] == '&')
@@ -307,6 +338,21 @@ namespace eilang
                     // escaped string char
                     sb.Append(stringChar);
                     Consume(); // consume escape char
+                }
+                else if (_buffer[0] == '\\' && _buffer[1] == '\\')
+                {
+                    sb.Append('\\');
+                    Consume();
+                }
+                else if (_buffer[0] == '\\' && _buffer[1] == 'n')
+                {
+                    sb.Append('\n');
+                    Consume(); // consume slash
+                }
+                else if (_buffer[0] == '\\' && _buffer[1] == 't')
+                {
+                    sb.Append('\t');
+                    Consume(); // consume slash
                 }
                 else
                 {

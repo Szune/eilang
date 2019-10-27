@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace eilang
 {
     public class Module

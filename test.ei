@@ -1,176 +1,59 @@
-modu std {
-    typ f {
-        fun write() {
-            println('hello from f');
-        }
+typ test {
+    val1: string;
+    val2: test2;
+    ctor(val1, val2);
+    
+    fun get() {
+        ret *test2("baz", "bah");
     }
-    typ oth {
-        other: string;
-        ctor(other);
-        
-        fun get_f() {
-            ret *std::f();
-        }
-        
-        fun write() {
-            println('writing from within oth');
-        }
-    }
-	typ cmd {
-		arg, val: string;
-		ctor(arg, val);
-		
-		fun init() {
-		    arg = *std::oth('hello world from typ oth');
-		}
-		
-		fun init2() {
-		    arg = ['oops, init2 works wow cool'];
-		}
-		
-		fun init3() {
-		    arg = [['init3 also works wow']];
-		}
-	}
-
-	typ argparse {
-		fun parse() {
-			var en = *env();
-			var args = en.get_args();
-			var cmds = [];
-			#println(args.len());
-			if(args.len() == 1) {
-				ret cmds;
-			}
-			if(args.len() == 2) {
-				cmds.add(*std::cmd(args[1], ""));
-				ret cmds;
-			}
-			for (1..(args.len() - 1)) {
-			    cmds.add(*std::cmd(args[it], ""));
-			}
-
-			ret cmds;
-		}
-	}
 }
 
 
-fun printTwo(first, last) {
-    println(first);
-    println(last);
-    ret *std::cmd("hle","ble").arg;
+typ test2 {
+    val3, val4: any;
+    ctor(val3, val4);
 }
 
+fun testfun() {
+    println("testing");
+}
 
 fun main() {
-    println("hello".at(0));
-    var ststst = "test";
-    println(ststst[0] + ststst[2]);
-    ststst[0] = 'f';
-    println(ststst[0] + ststst[2]);
-    var s = printTwo('hello', 'world');
-    println("s: " + s);
-    println("lower-to-upper".upper());
-    println("UPPER-TO-LOWER".lower());
-    println("this is pointless".view(0, "this is point".len()));
-    println("index: " + "where is index?".index_of("here", 0));
-    println("replaced hello with yellow".replace("hell", "yellow"));
-    println("fe".ins(2, "st"));
-	var parser = *std::argparse();
-	var parsed = parser.parse();
-	
-	var d = [];
-	d.add(['hello everybody wow yes']);
-	println(d[0][0]);
-	
-	var dd = [];
-	dd.add(*std::cmd());
-	dd[0].init2();
-	println(dd[0].arg[0]);
-	dd[0].arg = ['changed value of dd[0].arg'];
-	println(dd[0].arg[0]);
-	dd[0].arg[0] = 'whoa, changed value of dd[0].arg[0]';
-	println(dd[0].arg[0]);
-	
-	var nx = *std::cmd();
-	nx.init3();
-	println(nx.arg[0][0]);
-	nx.arg[0][0] = 'new 3';
-	println(nx.arg[0][0]);
-	
-	var nlst = [];
-	nlst.add('hej');
-	println(nlst[0]);
-	nlst[0] = 'då';
-	println(nlst[0]);
-	
-	var lst = [];
-	lst.add(*std::cmd());
-	println(lst.len());
-	lst[0].init();
-	println(lst[0]);
-	println('after lst[0].init();');
-	
-	println(lst[0].arg.other);
-	lst[0].arg.write();
-	lst[0].arg.get_f().write();
-	
-	for (0..(parsed.len() - 1)) {
-	    println(parsed[it].arg);
-	}
-	
-    #+
-    var n = *net();
-    n.get();
-    n.post();
-    n.head();
-    var f = *file('x.txt');
-    var d = *dir('/home/erik/Desktop');
-    -#
+    # Assignment tests
+    var test = *test("foo", *test2("bar", "baz"));
+    println("test.val1 = " + test.val1);
+    test.val1 += "bar";
+    println("test.val1 = " + test.val1);
+    test.val1 = "muhbar";
+    println("test.val1 = " + test.val1);
+    println("test.val2.val3 = " + test.val2.val3);
+    test.val2.val3 = "_moo_";
+    println("test.val2.val3 = " + test.val2.val3);
     
-    #+
-        block comment
-    -#
-    # for loopers
-    for(0..-1)
-    {
-        println('test');
+    var lst = [*test('one', *test2('two', ['hello']))];
+    println("lst = " + lst);
+    lst[0].val2.val3 = "bus";
+    println("lst = " + lst);
+    lst[0].val2.val4[0] += ' world';
+    println("lst = " + lst);
+    lst[0] = 'bye';
+    println(lst);
+    lst = 'hello';
+    println(lst);
+    lst += ' world';
+    println(lst);
+    
+    println("*test('1','2').get().val3 = " + *test('1','2').get().val3);
+    testfun();
+    
+    println("*test('1',*test2(['test2'],'3')).val2.val3[0] = " + *test('1',*test2(['test2'],'3')).val2.val3[0]);
+    
+    for(1..4) {
+        println("it = " + it);
     }
-
-    for (1..6) 
-    {   
-        println(it);
-    }
-    var b = 1;
-    var e = 3;
-    for (b..e)
-    {
-        println(it);
-    }
-    #+
-    for (1..6) {
-        println(f'[{it_idx}] has value {it}');
-        println('[' + it_idx + '] has value ' + it); # auto loop index variable?
-        pointless(it); # auto variable
-    }
-    for (i : 1..6) {
-        pointless(i); # named variable
-    }
-
-    for (val, idx : 1..6) {
-        println(idx + ' has value ' + val);
-        pointless(val);
-    }
-    var n = 10;
-    for (1..n) {
-
-    }
-    for(array) {
-        println(it);
-    }
-    for(i: array) {
-        println(it);
-    }
-    -#
+    
+#    lst = [1,2,3,4];
+#    for(lst) {
+#        println("it = " + it);
+#    }
 }

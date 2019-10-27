@@ -15,5 +15,10 @@
         {
             visitor.Visit(this, function, mod);
         }
+
+        public AstExpression GetLastExpression()
+        {
+            return Second;
+        }
     }
 }

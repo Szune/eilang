@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection.Emit;
 using eilang.Ast;
 using eilang.Classes;
 
 namespace eilang
 {
-    
     public class Compiler : IVisitor
     {
         public const string GlobalFunctionAndModuleName = ".global";
@@ -56,51 +54,6 @@ namespace eilang
             //_env.Modules.Add(mod.Name, mod);
         }
 
-        public void Visit(AstMemberVariableReference member, Function function, Module mod)
-        {
-            Log($"Compiling member variable reference '{string.Join(".", member.Identifiers)}'");
-            
-            // 1st identifier = variable ref
-            function.Write(OpCode.REF, _valueFactory.String(member.Identifiers[0]));
-            // 2nd..n identifier = member ref
-            for (int i = 1; i < member.Identifiers.Count; i++)
-                function.Write(OpCode.MREF, _valueFactory.String(member.Identifiers[i]));
-        }
-
-        public void Visit(AstMemberVariableAssignment member, Function function, Module mod)
-        {
-            Log($"Compiling member variable assignment '{string.Join(".", member.Identifiers)}'");
-            // 1st identifier = variable ref
-            function.Write(OpCode.REF, _valueFactory.String(member.Identifiers[0]));
-            // 2nd..n-1 identifier = member ref
-            for (int i = 1; i < member.Identifiers.Count - 1; i++)
-                function.Write(OpCode.MREF, _valueFactory.String(member.Identifiers[i]));
-            
-            member.Value.Accept(this, function, mod);
-            function.Write(OpCode.MSET, _valueFactory.String(member.Identifiers[member.Identifiers.Count-1]));
-        }
-
-        public void Visit(AstMemberFunctionCall memberFunc, Function function, Module mod)
-        {
-            Log($"Compiling member function call '{string.Join(".", memberFunc.Identifiers)}'");
-            // 1st identifier = variable ref
-            function.Write(OpCode.REF, _valueFactory.String(memberFunc.Identifiers[0]));
-            // 2nd..n-1 identifier = member ref, but only if there are more than 2 identifiers (otherwise, 2nd is method name)
-            if (memberFunc.Identifiers.Count > 2)
-            {
-                for (int i = 1; i < memberFunc.Identifiers.Count - 1; i++)
-                    function.Write(OpCode.MREF, _valueFactory.String(memberFunc.Identifiers[i]));
-            }
-            
-            function.Write(OpCode.TYPEGET); // get type of current value on stack, so we can operate on its class with the instance
-            
-            memberFunc.Arguments.Accept(this, function, mod);
-            function.Write(OpCode.PUSH, _valueFactory.Integer(memberFunc.Arguments.Count));
-            
-            // last identifier = method name
-            function.Write(OpCode.MCALL, _valueFactory.String(memberFunc.Identifiers[memberFunc.Identifiers.Count-1]));
-        }
-
         public void Visit(AstClassInitialization init, Function function, Module mod)
         {
             var fullName = init.Identifiers.Count > 1
@@ -134,6 +87,7 @@ namespace eilang
             {
                 newCtor.Write(OpCode.DEF, _valueFactory.String(arg));
             }
+
             newCtor.Write(OpCode.RET);
             clas.Constructors.Add(newCtor);
         }
@@ -160,7 +114,6 @@ namespace eilang
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            
         }
 
         public void Visit(AstTrue tr, Function function, Module mod)
@@ -187,7 +140,7 @@ namespace eilang
             aIf.Condition.Accept(this, function, mod);
             function.Write(OpCode.JMPF, _valueFactory.Integer(0));
             var jmpfOpCodeIndex = function.Code.Count - 1;
-            
+
             aIf.IfExpr.Accept(this, function, mod);
             function.Write(OpCode.JMP, _valueFactory.Integer(0));
             var jmpOpCodeIndex = function.Code.Count - 1;
@@ -250,6 +203,7 @@ namespace eilang
             {
                 list.InitialItems[i].Accept(this, function, mod);
             }
+
             function.Write(OpCode.PUSH, _valueFactory.Integer(list.InitialItems.Count));
             function.Write(OpCode.NLIST);
         }
@@ -264,211 +218,113 @@ namespace eilang
             function.Write(OpCode.TYPEGET);
             indexer.IndexExprs[0].Accept(this, function, mod);
             function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
-            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"), 
-                metadata: new Metadata{ Variable = indexer.Identifier, IndexerDepth = 0});
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
+                metadata: new Metadata {Variable = indexer.Identifier, IndexerDepth = 0});
             for (int i = 1; i < indexer.IndexExprs.Count; i++)
             {
-                // set tmp var to top of stack
-                //function.Write(OpCode.TMPV, _valueFactory.String(indexer.Identifier));
-                // ref tmp var
-                //function.Write(OpCode.TMPR, _valueFactory.String(indexer.Identifier));
                 function.Write(OpCode.TYPEGET);
                 indexer.IndexExprs[i].Accept(this, function, mod);
                 function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
                 function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
                     metadata: new Metadata {Variable = indexer.Identifier, IndexerDepth = i});
             }
-
-            if (indexer.IndexExprs.Count > 1)
-            {
-                // clear tmp var
-                //function.Write(OpCode.TMPC, _valueFactory.String(indexer.Identifier));
-            }
         }
 
-        public void Visit(AstIndexerAssignment assign, Function function, Module mod)
-        {
-            Log($"Compiling indexer assignment for variable '{assign.Identifier}'");
-            if (assign.IndexExprs.Count == 0)
-                throw new CompilerException(
-                    $"Indexer on variable '{assign.Identifier}' contained no indexer expressions.");
-            function.Write(OpCode.REF, _valueFactory.String(assign.Identifier));
-            function.Write(OpCode.TYPEGET);
-            
-            assign.IndexExprs[0].Accept(this, function, mod);
-            
-            if(assign.IndexExprs.Count == 1)
-                assign.ValueExpr.Accept(this, function, mod);
-            
-            if (assign.IndexExprs.Count > 1)
-            {
-                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
-            }
-            else
-            {
-                // only one reference, so assign to first
-                function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
-            }
-            
-            if (assign.IndexExprs.Count > 1)
-            {
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
-                    metadata: new Metadata {Variable = assign.Identifier, IndexerDepth = 0});
-            }
-            else
-            {
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
-                return;
-            }
-            for (int i = 1; i < assign.IndexExprs.Count - 1; i++)
-            {
-                // set tmp var to top of stack
-                //function.Write(OpCode.TMPV, _valueFactory.String(assign.Identifier));
-                // ref tmp var
-                //function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifier));
-                function.Write(OpCode.TYPEGET);
-                assign.IndexExprs[i].Accept(this, function, mod);
-                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
-                    metadata: new Metadata {Variable = assign.Identifier, IndexerDepth = i});
-            }
-            
-            // setup idx_set call
-            //function.Write(OpCode.TMPV, _valueFactory.String(assign.Identifier));
-            // ref tmp var
-            //function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifier));
-            
-            function.Write(OpCode.TYPEGET);
-            assign.ValueExpr.Accept(this, function, mod);
-            assign.IndexExprs[assign.IndexExprs.Count-1].Accept(this, function, mod);
-            function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
-            function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
-
-            // clear tmp var
-            //function.Write(OpCode.TMPC, _valueFactory.String(assign.Identifier));
-        }
 
         public void Visit(AstReturn ret, Function function, Module mod)
         {
-            if(ret.RetExpr != null)
+            if (ret.RetExpr != null)
                 ret.RetExpr.Accept(this, function, mod);
             function.Write(OpCode.RET);
         }
 
-        public void Visit(AstMemberIndexerReference indexer, Function function, Module mod)
+        public void Visit(AstForArray memberFunc, Function function, Module mod)
         {
-            Log($"Compiling member indexer reference for variable '{indexer.Identifiers[0]}'");
-            // 1st identifier = variable ref
-            function.Write(OpCode.REF, _valueFactory.String(indexer.Identifiers[0]));
-            // 2nd..n identifier = member ref
-            for (int i = 1; i < indexer.Identifiers.Count; i++)
-                function.Write(OpCode.MREF, _valueFactory.String(indexer.Identifiers[i]));
-            if (indexer.IndexExprs.Count == 0)
-                throw new CompilerException(
-                    $"Indexer on variable '{indexer.Identifiers[0]}' contained no indexer expressions.");
-            //function.Write(OpCode.TMPV, _valueFactory.String(indexer.Identifiers[0]));
-            //function.Write(OpCode.TMPR, _valueFactory.String(indexer.Identifiers[0]));
-            function.Write(OpCode.TYPEGET);
-            indexer.IndexExprs[0].Accept(this, function, mod);
-            function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
-            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"), 
-                metadata: new Metadata{Variable = indexer.Identifiers[0], IndexerDepth = 0});
-            for (int i = 1; i < indexer.IndexExprs.Count; i++)
+            throw new NotImplementedException();
+        }
+
+        public void Visit(AstAssignmentValue assign, Function function, Module mod)
+        {
+            assign.Value.Accept(this, function, mod);
+        }
+
+        public void Visit(AstAssignment assignment, Function function, Module mod)
+        {
+            switch (assignment.Set.Type)
             {
-                // set tmp var to top of stack
-                //function.Write(OpCode.TMPV, _valueFactory.String(indexer.Identifiers[0]));
-                // ref tmp var
-                //function.Write(OpCode.TMPR, _valueFactory.String(indexer.Identifiers[0]));
-                function.Write(OpCode.TYPEGET);
-                indexer.IndexExprs[i].Accept(this, function, mod);
-                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
-                    metadata: new Metadata{Variable = indexer.Identifiers[0], IndexerDepth = 0});
+                case AssignmentSet.MemberVariable:
+                    assignment.Set.RequiredReferences.Accept(this, function, mod);
+                    break;
+                case AssignmentSet.Array:
+                    assignment.Set.RequiredReferences.Accept(this, function, mod);
+                    function.Write(OpCode.TYPEGET);
+                    assignment.Set.IndexExprs.Accept(this, function, mod);
+                    break;
+            }
+            
+            switch (assignment.Value.Type)
+            {
+                case Assignment.Equals:
+                    assignment.Value.Accept(this, function, mod);
+                    switch (assignment.Set.Type)
+                    {
+                        case AssignmentSet.Array:
+                            function.Write(OpCode.PUSH, _valueFactory.Integer(2));
+                            function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
+                            break;
+                        case AssignmentSet.Variable:
+                            function.Write(OpCode.SET, _valueFactory.String(assignment.Set.OptionalIdentifier));
+                            break;
+                        case AssignmentSet.MemberVariable:
+                            function.Write(OpCode.MSET, _valueFactory.String(assignment.Set.OptionalIdentifier));
+                            break;
+                    }
+                    return;
+                case Assignment.DivideEquals:
+                    assignment.Reference.Accept(this, function, mod);
+                    assignment.Value.Accept(this, function, mod);
+                    function.Write(OpCode.DIV);
+                    break;
+                case Assignment.TimesEquals:
+                    assignment.Reference.Accept(this, function, mod);
+                    assignment.Value.Accept(this, function, mod);
+                    function.Write(OpCode.MUL);
+                    break;
+                case Assignment.MinusEquals:
+                    assignment.Reference.Accept(this, function, mod);
+                    assignment.Value.Accept(this, function, mod);
+                    function.Write(OpCode.SUB);
+                    break;
+                case Assignment.PlusEquals:
+                    assignment.Reference.Accept(this, function, mod);
+                    assignment.Value.Accept(this, function, mod);
+                    function.Write(OpCode.ADD);
+                    break;
             }
 
-            if (indexer.IndexExprs.Count > 1)
+            switch (assignment.Set.Type)
             {
-                // clear tmp var
-                //function.Write(OpCode.TMPC, _valueFactory.String(indexer.Identifiers[0]));
+                case AssignmentSet.Array:
+                    function.Write(OpCode.PUSH, _valueFactory.Integer(2));
+                    function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
+                    break;
+                case AssignmentSet.Variable:
+                    function.Write(OpCode.SET, _valueFactory.String(assignment.Set.OptionalIdentifier));
+                    break;
+                case AssignmentSet.MemberVariable:
+                    function.Write(OpCode.MSET, _valueFactory.String(assignment.Set.OptionalIdentifier));
+                    break;
             }
         }
 
-        public void Visit(AstMemberIndexerAssignment assign, Function function, Module mod)
+        public void Visit(AstAssignmentReference memberFunc, Function function, Module mod)
         {
-            Log($"Compiling member indexer assignment for variable '{assign.Identifiers[0]}'");
-            // 1st identifier = variable ref
-            function.Write(OpCode.REF, _valueFactory.String(assign.Identifiers[0]));
-            // 2nd..n identifier = member ref
-            for (int i = 1; i < assign.Identifiers.Count; i++)
-                function.Write(OpCode.MREF, _valueFactory.String(assign.Identifiers[i]));
-            if (assign.IndexExprs.Count == 0)
-                throw new CompilerException(
-                    $"Indexer on variable '{assign.Identifiers[0]}' contained no indexer expressions.");
-            //function.Write(OpCode.TMPV, _valueFactory.String(assign.Identifiers[0]));
-            //function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifiers[0]));
-            function.Write(OpCode.TYPEGET);
-            assign.IndexExprs[0].Accept(this, function, mod);
-            if(assign.IndexExprs.Count == 1)
-                assign.ValueExpr.Accept(this, function, mod);
-            if (assign.IndexExprs.Count > 1)
-            {
-                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
-            }
-            else
-            {
-                // only one reference, so assign to first
-                function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
-            }
-            if (assign.IndexExprs.Count > 1)
-            {
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
-                    metadata: new Metadata{Variable = assign.Identifiers[0], IndexerDepth = 0});
-            }
-            else
-            {
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
-                return;
-            }
-            for (int i = 1; i < assign.IndexExprs.Count - 1; i++)
-            {
-                // set tmp var to top of stack
-                //function.Write(OpCode.TMPV, _valueFactory.String(assign.Identifiers[0]));
-                // ref tmp var
-                //function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifiers[0]));
-                function.Write(OpCode.TYPEGET);
-                assign.IndexExprs[i].Accept(this, function, mod);
-                function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
-                function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
-                    metadata: new Metadata{Variable = assign.Identifiers[0], IndexerDepth = 0});
-            }
-            
-            // setup idx_set call
-            //function.Write(OpCode.TMPV, _valueFactory.String(assign.Identifiers[0]));
-            // ref tmp var
-            //function.Write(OpCode.TMPR, _valueFactory.String(assign.Identifiers[0]));
-            function.Write(OpCode.TYPEGET);
-            assign.IndexExprs[assign.IndexExprs.Count-1].Accept(this, function, mod);
-            assign.ValueExpr.Accept(this, function, mod);
-            function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
-            function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
-
-            // clear tmp var
-            //function.Write(OpCode.TMPC, _valueFactory.String(assign.Identifiers[0]));
+            memberFunc.Reference.Accept(this, function, mod);
         }
-        
-        public void Visit(AstMemberIndexerAss memberFunc, Function function, Module mod)
+
+        public void Visit(AstIdentifier identifier, Function function, Module mod)
         {
-            function.Write(OpCode.MREF, _valueFactory.String(memberFunc.Indexers.Ident));
-            for (int i = 1; i < memberFunc.Indexers.IndexExprs.Count - 1; i++)
-            {
-                memberFunc.Indexers.IndexExprs[i].Accept(this, function, mod);
-            }
-            
-            function.Write(OpCode.TYPEGET);
-            memberFunc.Indexers.IndexExprs[memberFunc.Indexers.IndexExprs.Count-1].Accept(this, function, mod);
-            memberFunc.Assignment.Accept(this, function, mod);
-            function.Write(OpCode.PUSH, _valueFactory.Integer(2)); // arg count
-            function.Write(OpCode.MCALL, _valueFactory.String("idx_set"));
+            function.Write(OpCode.REF, _valueFactory.String(identifier.Ident));
         }
 
         public void Visit(AstRange range, Function function, Module mod)
@@ -536,18 +392,12 @@ namespace eilang
             memberFunc.Second.Accept(this, function, mod);
         }
 
-        public void Visit(AstMemberCall memberFunc, Function function, Module mod)
+        public void Visit(AstMemberFunctionCall memberFunc, Function function, Module mod)
         {
             function.Write(OpCode.TYPEGET);
             memberFunc.Arguments.Accept(this, function, mod);
             function.Write(OpCode.PUSH, _valueFactory.Integer(memberFunc.Arguments.Count));
             function.Write(OpCode.MCALL, _valueFactory.String(memberFunc.Ident));
-        }
-
-        public void Visit(AstMemberAssignment memberFunc, Function function, Module mod)
-        {
-            memberFunc.Assignment.Accept(this, function, mod);
-            function.Write(OpCode.MSET, _valueFactory.String(memberFunc.Ident));
         }
 
         public void Visit(AstMemberIndexerRef indexer, Function function, Module mod)
@@ -556,8 +406,8 @@ namespace eilang
             function.Write(OpCode.TYPEGET);
             indexer.IndexExprs[0].Accept(this, function, mod);
             function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
-            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"), 
-                metadata: new Metadata{ Variable = indexer.Ident, IndexerDepth = 0});
+            function.Write(OpCode.MCALL, _valueFactory.String("idx_get"),
+                metadata: new Metadata {Variable = indexer.Ident, IndexerDepth = 0});
             for (int i = 1; i < indexer.IndexExprs.Count; i++)
             {
                 function.Write(OpCode.TYPEGET);
@@ -587,19 +437,12 @@ namespace eilang
             function.Write(OpCode.DEF, _valueFactory.String(assignment.Ident));
         }
 
-        public void Visit(AstAssignment assignment, Function function, Module mod)
-        {
-            Log($"Compiling variable assignment '{assignment.Ident}'");
-            assignment.Value.Accept(this, function, mod);
-            function.Write(OpCode.SET, _valueFactory.String(assignment.Ident));
-        }
-
         public void Visit(AstFunctionCall funcCall, Function function, Module mod)
         {
             Log($"Compiling function call '{funcCall.Name}'");
             funcCall.Arguments.Accept(this, function, mod);
             function.Write(OpCode.PUSH, _valueFactory.Integer(funcCall.Arguments.Count));
-            if(_env.ExportedFuncs.ContainsKey(funcCall.Name))
+            if (_env.ExportedFuncs.ContainsKey(funcCall.Name))
             {
                 function.Write(OpCode.ECALL, _valueFactory.String(funcCall.Name));
             }
@@ -607,12 +450,6 @@ namespace eilang
             {
                 function.Write(OpCode.CALL, _valueFactory.String(funcCall.Name));
             }
-        }
-
-        public void Visit(AstVariableReference reference, Function function, Module mod)
-        {
-            Log($"Compiling variable reference '{reference.Ident}'");
-            function.Write(OpCode.REF, _valueFactory.String(reference.Ident));
         }
 
         public void Visit(AstStringConstant constant, Function function, Module mod)
@@ -643,14 +480,15 @@ namespace eilang
             }
 
             func.Expressions.Accept(this, newFunc, mod);
-            if(newFunc.Length < 1)
+            if (newFunc.Length < 1)
             {
                 newFunc.Write(OpCode.RET);
             }
-            else if(newFunc[newFunc.Length-1].Op != OpCode.RET)
+            else if (newFunc[newFunc.Length - 1].Op != OpCode.RET)
             {
                 newFunc.Write(OpCode.RET);
             }
+
             _env.Functions.Add(newFunc.FullName, newFunc);
         }
 
@@ -665,20 +503,21 @@ namespace eilang
             }
 
             memberFunc.Expressions.Accept(this, func, mod);
-            if(func.Length < 1)
+            if (func.Length < 1)
             {
                 func.Write(OpCode.RET);
             }
-            else if(func[func.Length-1].Op != OpCode.RET)
+            else if (func[func.Length - 1].Op != OpCode.RET)
             {
                 func.Write(OpCode.RET);
             }
+
             clas.Functions.Add(func.Name, func);
         }
 
         private string GetFullName(List<Reference> idents)
         {
-            if(idents.Count < 2)
+            if (idents.Count < 2)
                 throw new InvalidOperationException("Can only use GetFullName when idents > 1");
             var full = idents[0].Ident + (idents[0].IsModule ? "::" : ".");
             for (int i = 1; i < idents.Count - 2; i++)

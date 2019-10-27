@@ -105,17 +105,9 @@ namespace eilang
                         PrintExpressions(new List<AstExpression>{astIf.IfExpr}, indent + 1);
                         PrintExpressions(new List<AstExpression>{astIf.ElseExpr}, indent + 1);
                         break;
-                    case AstIndexerAssignment astIndexerAssignment:
-                        Console.WriteLine($"{prefix}{expr.GetType().Name} on {astIndexerAssignment.Identifier}");
-                        PrintExpressions(new List<AstExpression> {astIndexerAssignment.ValueExpr}, indent + 1);
-                        PrintExpressions(astIndexerAssignment.IndexExprs, indent + 1);
-                        break;
                     case AstIndexerReference astIndexerReference:
                         Console.WriteLine($"{prefix}{expr.GetType().Name} on {astIndexerReference.Identifier}");
                         PrintExpressions(astIndexerReference.IndexExprs, indent + 1);
-                        break;
-                    case AstVariableReference refe:
-                        Console.WriteLine($"{prefix}{expr.GetType().Name} {refe.Ident}");
                         break;
                     case AstStringConstant str:
                         Console.WriteLine($"{prefix}{expr.GetType().Name} '{str.String}'");
@@ -125,26 +117,6 @@ namespace eilang
                         break;
                     case AstIntegerConstant inte:
                         Console.WriteLine($"{prefix}{expr.GetType().Name} {inte.Integer}");
-                        break;
-                    case AstMemberFunctionCall amfa:
-                        Console.WriteLine($"{prefix}{expr.GetType().Name} {string.Join(".", amfa.Identifiers)}");
-                        PrintExpressions(amfa.Arguments, indent + 1);
-                        break;
-                    case AstMemberIndexerAssignment astMemberIndexerAssignment:
-                        Console.WriteLine($"{prefix}{expr.GetType().Name} on {string.Join(".", astMemberIndexerAssignment.Identifiers)}");
-                        PrintExpressions(new List<AstExpression> {astMemberIndexerAssignment.ValueExpr}, indent + 1);
-                        PrintExpressions(astMemberIndexerAssignment.IndexExprs, indent + 1);
-                        break;
-                    case AstMemberIndexerReference astMemberIndexerReference:
-                        Console.WriteLine($"{prefix}{expr.GetType().Name} on {string.Join(".", astMemberIndexerReference.Identifiers)}");
-                        PrintExpressions(astMemberIndexerReference.IndexExprs, indent + 1);
-                        break;
-                    case AstMemberVariableAssignment amva:
-                        Console.WriteLine($"{prefix}{expr.GetType().Name} {string.Join(".", amva.Identifiers)}");
-                        PrintExpressions(new List<AstExpression> {amva.Value}, indent + 1);
-                        break;
-                    case AstMemberVariableReference astMemberVariableReference:
-                        Console.WriteLine($"{prefix}{expr.GetType().Name} {string.Join(".", astMemberVariableReference.Identifiers)}");
                         break;
                     case AstNewList astNewList:
                         Console.WriteLine($"{prefix}{expr.GetType().Name}");
@@ -162,10 +134,6 @@ namespace eilang
                     case AstDeclarationAssignment ada:
                         Console.WriteLine($"{prefix}{expr.GetType().Name} {ada.Ident}");
                         PrintExpressions(new List<AstExpression>{ada.Value}, indent + 1);
-                        break;
-                    case AstAssignment aa:
-                        Console.WriteLine($"{prefix}{expr.GetType().Name} {aa.Ident}");
-                        PrintExpressions(new List<AstExpression>{aa.Value}, indent + 1);
                         break;
                     case AstBinaryMathOperation astBinaryMathOperation:
                         break;

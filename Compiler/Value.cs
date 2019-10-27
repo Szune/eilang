@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace eilang
 {
@@ -30,13 +32,14 @@ namespace eilang
             Type = type;
             _value = value;
         }
-        public TypeOfValue Type {get;}
+
+        public TypeOfValue Type { get; }
         private readonly object _value;
         public object Debug => _value;
 
         public T Get<T>()
         {
-            return (T)_value;
+            return (T) _value;
         }
 
         public override bool Equals(object obj)
@@ -59,7 +62,21 @@ namespace eilang
 
         public override string ToString()
         {
-            return _value?.ToString() ?? "{null}";
+            switch (Type)
+            {
+                case TypeOfValue.String:
+                    return Get<Instance>()?.Scope.GetVariable(".string").Debug?.ToString() ?? "{null}";
+                case TypeOfValue.List:
+                    return "[" + string.Join(", ", 
+                               Get<Instance>().Scope.GetVariable(".list")
+                                   .Get<List<IValue>>().Select(item => item.ToString())) + "]";
+                case TypeOfValue.Instance:
+                    return "<" + Get<Instance>().Owner.FullName + ">{" + string.Join(", ", Get<Instance>().Scope
+                               .GetAllVariables().Select(item => $"{item.Key}: {item.Value}"))
+                        + "}";
+                default:
+                    return _value?.ToString() ?? "{null}";
+            }
         }
     }
 }

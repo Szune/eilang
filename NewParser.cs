@@ -1,5 +1,3 @@
-using System;
-
 namespace eilang
 {
     public class NewParser

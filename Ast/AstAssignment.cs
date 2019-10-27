@@ -1,15 +1,17 @@
-namespace eilang.Ast
+﻿namespace eilang.Ast
 {
     public class AstAssignment : AstExpression
     {
-        public AstAssignment(string ident, AstExpression value)
+        public AstAssignment(AstAssignmentReference reference, AstAssignmentValue value, AstAssignmentSet set)
         {
-            Ident = ident;
+            Reference = reference;
             Value = value;
+            Set = set;
         }
 
-        public string Ident { get; }
-        public AstExpression Value { get; }
+        public AstAssignmentReference Reference { get; }
+        public AstAssignmentValue Value { get; }
+        public AstAssignmentSet  Set { get; }
 
         public override void Accept(IVisitor visitor, Function function, Module mod)
         {

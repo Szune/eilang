@@ -14,7 +14,7 @@ namespace eilang
         IValue Instance(Instance instance, TypeOfValue type = TypeOfValue.Instance);
         IValue Class(Class clas);
         IValue Void();
-        IValue List();
+        IValue List(List<IValue> items = default);
     }
 
     public class ValueFactory : IValueFactory
@@ -69,11 +69,11 @@ namespace eilang
             return _empty;
         }
 
-        public IValue List()
+        public IValue List(List<IValue> items = default)
         {
             var scope = new Scope();
-            scope.DefineVariable(".list", new Value(TypeOfValue.List, new List<IValue>()));
-            return Instance(new Instance(scope, new ListClass()));
+            scope.DefineVariable(".list", new Value(TypeOfValue.List, items ?? new List<IValue>()));
+            return Instance(new Instance(scope, new ListClass()), TypeOfValue.List);
         }
     }
 }

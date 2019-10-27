@@ -7,19 +7,14 @@ namespace eilang
     {
         void Visit(AstRoot root);
         void Visit(AstDeclarationAssignment assignment, Function function, Module mod);
-        void Visit(AstAssignment assignment, Function function, Module mod);
         void Visit(AstDoubleConstant constant, Function function, Module mod);
         void Visit(AstFunctionCall funcCall, Function function, Module mod);
-        void Visit(AstVariableReference reference, Function function, Module mod);
         void Visit(AstClass clas, Module mod);
         void Visit(AstFunction func, Module mod);
         void Visit(AstMemberFunction memberFunc, Class clas, Module mod);
         void Visit(AstStringConstant constant, Function function, Module mod);
         void Visit(AstIntegerConstant constant, Function function, Module mod);
         void Visit(AstModule module);
-        void Visit(AstMemberVariableReference member, Function function, Module mod);
-        void Visit(AstMemberVariableAssignment member, Function function, Module mod);
-        void Visit(AstMemberFunctionCall memberFunc, Function function, Module mod);
         void Visit(AstClassInitialization init, Function function, Module mod);
         void Visit(AstMemberVariableDeclaration member, Class function, Module mod);
         void Visit(AstMemberVariableDeclarationWithInit member, Class function, Module mod);
@@ -32,19 +27,19 @@ namespace eilang
         void Visit(AstCompare compare, Function function, Module mod);
         void Visit(AstNewList list, Function function, Module mod);
         void Visit(AstIndexerReference indexer, Function function, Module mod);
-        void Visit(AstIndexerAssignment assign, Function function, Module mod);
         void Visit(AstReturn ret, Function function, Module mod);
-        void Visit(AstMemberIndexerReference indexer, Function function, Module mod);
-        void Visit(AstMemberIndexerAssignment assign, Function function, Module mod);
         void Visit(AstRange range, Function function, Module mod);
         void Visit(AstForRange forRange, Function function, Module mod);
         void Visit(AstIt it, Function function, Module mod);
         void Visit(AstUnaryMathOperation unary, Function function, Module mod);
         void Visit(AstMemberReference memberFunc, Function function, Module mod);
         void Visit(AstMultiReference memberFunc, Function function, Module mod);
-        void Visit(AstMemberCall memberFunc, Function function, Module mod);
-        void Visit(AstMemberAssignment memberFunc, Function function, Module mod);
+        void Visit(AstMemberFunctionCall memberFunc, Function function, Module mod);
         void Visit(AstMemberIndexerRef memberFunc, Function function, Module mod);
-        void Visit(AstMemberIndexerAss memberFunc, Function function, Module mod);
+        void Visit(AstForArray memberFunc, Function function, Module mod);
+        void Visit(AstAssignmentValue assign, Function function, Module mod);
+        void Visit(AstAssignment assignment, Function function, Module mod);
+        void Visit(AstAssignmentReference memberFunc, Function function, Module mod);
+        void Visit(AstIdentifier identifier, Function function, Module mod);
     }
 }

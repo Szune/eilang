@@ -69,6 +69,14 @@ namespace eilang.Classes
                     new Bytecode(OpCode.RET)
                 }
             });
+            Functions.Add("skip", new MemberFunction("ins", Module, new List<string>{"count"}, this)
+            {
+                Code = 
+                {
+                    new Bytecode(OpCode.ASKIP),
+                    new Bytecode(OpCode.RET)
+                }
+            });
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using eilang.Classes;
 
@@ -9,6 +8,7 @@ namespace eilang
     {
         static void Main(string[] args)
         {
+            // TODO 0. implement string.split()
             // TODO: 1. implement for loops
             // TODO: 2. implement some form of string interpolation
             // TODO: 3. implement 'function pointers' (e.g. saving a function to a variable,
@@ -127,25 +127,29 @@ namespace eilang
                         Console.WriteLine(val.ToString());
                         break;
                     case TypeOfValue.List:
-                        var list = val.Get<List<IValue>>();
-                        foreach(var item in list)
-                            PrintLineInner(factory, item, indent);
+                        Console.WriteLine(val.ToString());
                         break;
+//                        var list = val.Get<List<IValue>>();
+//                        foreach(var item in list)
+//                            PrintLineInner(factory, item, indent);
+//                        break;
                     case TypeOfValue.Instance:
-                        var inst = val.Get<Instance>();
-                        var vars = inst.Scope.GetAllVariables();
-                        Console.WriteLine("{Instance of type " + inst.Owner.FullName);
-                        foreach (var kvp in vars)
-                        {
-                            Console.Write(new string(ind, (indent * 2) + 2));
-                            Console.WriteLine($"(variable '{kvp.Key}':");
-                            PrintLineInner(factory, kvp.Value, indent + 2);
-                            Console.Write(new string(ind, (indent * 2) + 2));
-                            Console.WriteLine(")");
-                        }
-                        Console.Write(new string(ind, indent * 2));
-                        Console.WriteLine("}");
+                        Console.WriteLine(val.ToString());
                         break;
+//                        var inst = val.Get<Instance>();
+//                        var vars = inst.Scope.GetAllVariables();
+//                        Console.WriteLine("{Instance of type " + inst.Owner.FullName);
+//                        foreach (var kvp in vars)
+//                        {
+//                            Console.Write(new string(ind, (indent * 2) + 2));
+//                            Console.WriteLine($"(variable '{kvp.Key}':");
+//                            PrintLineInner(factory, kvp.Value, indent + 2);
+//                            Console.Write(new string(ind, (indent * 2) + 2));
+//                            Console.WriteLine(")");
+//                        }
+//                        Console.Write(new string(ind, indent * 2));
+//                        Console.WriteLine("}");
+//                        break;
                     default:
                         throw new InvalidOperationException("println does not work with " + val.Type);
 

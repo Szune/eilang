@@ -62,6 +62,14 @@ namespace eilang.Classes
                     new Bytecode(OpCode.RET)
                 }
             });
+            Functions.Add("split", new MemberFunction("split", Module, new List<string>{"char"}, this)
+            {
+                Code = 
+                {
+                    new Bytecode(OpCode.SPLIT),
+                    new Bytecode(OpCode.RET)
+                }
+            });
             Functions.Add("lower", new MemberFunction("lower", Module, new List<string>(), this)
             {
                 Code = 

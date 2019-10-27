@@ -38,6 +38,10 @@ namespace eilang
         Asterisk,
         Constructor,
         Plus,
+        PlusEquals,
+        MinusEquals,
+        TimesEquals,
+        DivideEquals,
         For,
         True,
         False,
@@ -70,6 +74,11 @@ namespace eilang
             Text = text;
             Integer = integer;
             Double = doubl;
+        }
+
+        public override string ToString()
+        {
+            return Type.ToString();
         }
     }
 }

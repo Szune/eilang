@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Text;
 using eilang.Classes;
 
@@ -388,6 +387,9 @@ namespace eilang
                                             break;
                                         case TypeOfValue.Double:
                                             _stack.Push(_valueFactory.String(GetString(left) + right.Get<double>()));
+                                            break;
+                                        case TypeOfValue.List:
+                                            _stack.Push(_valueFactory.String(GetString(left) + right));
                                             break;
                                         default:
                                             throw new InterpreterException("Type mismatch on '+' operator.");
@@ -859,6 +861,22 @@ namespace eilang
                     {
                         var str = _scopes.Peek().GetVariable(".string").Get<string>();
                         _stack.Push(_valueFactory.String(str.ToLowerInvariant()));
+                        break;
+                    }
+                    case OpCode.SPLIT:
+                    {
+                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
+                        var splitStr = GetString(_stack.Pop());
+                        var items = str.Split(splitStr, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(s => _valueFactory.String(s)).ToList();
+                        _stack.Push(_valueFactory.List(items));
+                        break;
+                    }
+                    case OpCode.ASKIP:
+                    {
+                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
+                        var count = _stack.Pop().Get<int>();
+                        _stack.Push(_valueFactory.List(list.Skip(count).ToList()));
                         break;
                     }
                     default:

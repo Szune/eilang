@@ -8,12 +8,10 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-            // TODO 0. implement string.split()
-            // TODO: 1. implement for loops
-            // TODO: 2. implement some form of string interpolation
-            // TODO: 3. implement 'function pointers' (e.g. saving a function to a variable,
+            // TODO: 1. implement some form of string interpolation
+            // TODO: 2. implement 'function pointers' (e.g. saving a function to a variable,
             // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
-            // TODO: 4. implement maps (dictionaries)
+            // TODO: 3. implement maps (dictionaries)
             
             //#define LOGGING
             var code = File.ReadAllText("test.ei");

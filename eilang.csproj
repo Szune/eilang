@@ -7,16 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="assignment_tests.ei">
+    <Content Include="Scripts\assignment_tests.ei">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="for_tests.ei">
+    <Content Include="Scripts\for_tests.ei">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\testold.ei">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="test.ei">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="testold.ei">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

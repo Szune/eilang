@@ -347,7 +347,8 @@ namespace eilang
             AddControlFlowOp(_forDepth, (function.Length, Continue));
             function.Write(OpCode.JMP, _valueFactory.Integer(-1));
         }
-        
+
+
         private void AddControlFlowOp(int forDepth, (int Index, int Type) values)
         {
             if (!_loopControlFlowOps.ContainsKey(forDepth))
@@ -444,6 +445,11 @@ namespace eilang
             function[addressOfFirstJmpT] = new Bytecode(OpCode.JMPT, _valueFactory.Integer(endOfLoop));
             AssignLoopControlFlowJumps(function, _forDepth, addressOfLoopStep, endOfLoop);
             _forDepth--;
+        }
+        
+        public void Visit(AstForInfinite memberFunc, Function function, Module mod)
+        {
+            throw new NotImplementedException();
         }
 
         private void AssignLoopControlFlowJumps(Function function, int forDepth, int loopStep, int loopEnd)

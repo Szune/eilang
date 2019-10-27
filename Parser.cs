@@ -402,6 +402,17 @@ namespace eilang
         {
             Require(TokenType.For);
             Require(TokenType.LeftParenthesis);
+            if (Match(TokenType.RightParenthesis))
+            {
+                // infinite loop
+                Require(TokenType.RightParenthesis);
+                var forBlock = new AstBlock();
+                _forDepth++;
+                ParseBlock(forBlock);
+                ast.Expressions.Add(new AstForInfinite(forBlock));
+                _forDepth--;
+                return;
+            }
             var expression = ParsePlusAndMinus();
             if (Match(TokenType.DoubleDot))
             {

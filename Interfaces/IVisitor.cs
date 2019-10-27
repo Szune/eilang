@@ -44,5 +44,6 @@ namespace eilang
         void Visit(AstIx memberFunc, Function function, Module mod);
         void Visit(AstBreak memberFunc, Function function, Module mod);
         void Visit(AstContinue memberFunc, Function function, Module mod);
+        void Visit(AstForInfinite memberFunc, Function function, Module mod);
     }
 }

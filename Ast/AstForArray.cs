@@ -16,4 +16,20 @@
             visitor.Visit(this, function, mod);
         }
     }
+    
+    public class AstForInfinite : AstExpression
+    {
+        public AstBlock Body { get; }
+
+        public AstForInfinite(AstBlock body)
+        {
+            Body = body;
+        }
+
+        public override void Accept(IVisitor visitor, Function function, Module mod)
+        {
+            visitor.Visit(this, function, mod);
+        }
+    }
+    
 }

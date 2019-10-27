@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using eilang.Ast;
 using eilang.Classes;
 
@@ -13,6 +14,12 @@ namespace eilang
         private readonly TextWriter _logger;
         private readonly IValueFactory _valueFactory;
         private int _forDepth = 0;
+        /// <summary>
+        /// key = loop depth (<see cref="_forDepth"/>)
+        /// </summary>
+        private readonly Dictionary<int, Stack<(int Index, int Type)>> _loopControlFlowOps = new Dictionary<int, Stack<(int Index, int Type)>>();
+        private const int Break = 0xBAD;
+        private const int Continue = 0xCAB;
 
         public Compiler(Env env, TextWriter logger, IValueFactory valueFactory)
         {
@@ -328,6 +335,28 @@ namespace eilang
             function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
         }
 
+        public void Visit(AstBreak memberFunc, Function function, Module mod)
+        {
+            AddControlFlowOp(_forDepth, (function.Length, Break));
+            function.Write(OpCode.JMP, _valueFactory.Integer(-1));
+        }
+
+
+        public void Visit(AstContinue memberFunc, Function function, Module mod)
+        {
+            AddControlFlowOp(_forDepth, (function.Length, Continue));
+            function.Write(OpCode.JMP, _valueFactory.Integer(-1));
+        }
+        
+        private void AddControlFlowOp(int forDepth, (int Index, int Type) values)
+        {
+            if (!_loopControlFlowOps.ContainsKey(forDepth))
+            {
+                _loopControlFlowOps[forDepth] = new Stack<(int Index, int Type)>();
+            }
+            _loopControlFlowOps[forDepth].Push(values);
+        }
+
         public void Visit(AstRange range, Function function, Module mod)
         {
             throw new NotImplementedException("should never arrive here");
@@ -369,6 +398,7 @@ namespace eilang
             function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
             function.Write(OpCode.SET, _valueFactory.String($".it{_forDepth}"));
             forArray.Body.Accept(this, function, mod);
+            var addressOfLoopStep = function.Length;
             function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
             function.Write(OpCode.PUSH, _valueFactory.Integer(1));
             function.Write(OpCode.ADD);
@@ -379,9 +409,11 @@ namespace eilang
             function.Write(OpCode.TMPC, _valueFactory.String($".alen{_forDepth}"));
             function[addressOfJmpT] = new Bytecode(OpCode.JMPT, _valueFactory.Integer(endOfLoop));
             function[addressOfFirstJmpZ] = new Bytecode(OpCode.JMPZ, _valueFactory.Integer(endOfLoop));
+            AssignLoopControlFlowJumps(function, _forDepth, addressOfLoopStep, endOfLoop);
             _forDepth--;
         }
-        
+
+
         public void Visit(AstForRange forRange, Function function, Module mod)
         {
             _forDepth++;
@@ -400,18 +432,41 @@ namespace eilang
             function.Write(OpCode.JMPT, _valueFactory.Integer(0));
             var addressOfJmpT = function.Code.Count - 1;
             forRange.Body.Accept(this, function, mod);
+            var addressOfLoopStep = function.Length;
             function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
             function.Write(OpCode.PUSH, _valueFactory.Integer(1));
             function.Write(OpCode.ADD);
             function.Write(OpCode.SET, _valueFactory.String($".ix{_forDepth}"));
             function.Write(OpCode.JMP, _valueFactory.Integer(addressOfCmp));
-            var endOfLoop = function.Code.Count;
+            var endOfLoop = function.Length;
             function.Write(OpCode.PSCP);
             function[addressOfJmpT] = new Bytecode(OpCode.JMPT, _valueFactory.Integer(endOfLoop));
             function[addressOfFirstJmpT] = new Bytecode(OpCode.JMPT, _valueFactory.Integer(endOfLoop));
+            AssignLoopControlFlowJumps(function, _forDepth, addressOfLoopStep, endOfLoop);
             _forDepth--;
         }
 
+        private void AssignLoopControlFlowJumps(Function function, int forDepth, int loopStep, int loopEnd)
+        {
+            if (!_loopControlFlowOps.TryGetValue(forDepth, out var stack) || stack.Count <= 0) 
+                return;
+            while (stack.Any())
+            {
+                var flow = stack.Pop();
+                switch (flow.Type)
+                {
+                    case Break:
+                        function.Code[flow.Index] = new Bytecode(OpCode.JMP, _valueFactory.Integer(loopEnd));
+                        break;
+                    case Continue:
+                        function.Code[flow.Index] = new Bytecode(OpCode.JMP, _valueFactory.Integer(loopStep));
+                        break;
+                    default:
+                        throw new CompilerException("Unknown control flow type of value " + flow.Type);
+                }
+            }
+        }
+        
         public void Visit(AstIt it, Function function, Module mod)
         {
             function.Write(OpCode.REF, _valueFactory.String($".it{_forDepth}"));

@@ -42,5 +42,7 @@ namespace eilang
         void Visit(AstAssignmentReference memberFunc, Function function, Module mod);
         void Visit(AstIdentifier identifier, Function function, Module mod);
         void Visit(AstIx memberFunc, Function function, Module mod);
+        void Visit(AstBreak memberFunc, Function function, Module mod);
+        void Visit(AstContinue memberFunc, Function function, Module mod);
     }
 }

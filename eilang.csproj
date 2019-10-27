@@ -10,6 +10,9 @@
     <Content Include="assignment_tests.ei">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="for_tests.ei">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="test.ei">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

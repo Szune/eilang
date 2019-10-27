@@ -28,7 +28,9 @@ namespace eilang
                 {"ctor", TokenType.Constructor},
                 {"true", TokenType.True},
                 {"false", TokenType.False},
-                {"me", TokenType.Me}
+                {"me", TokenType.Me},
+                {"continue", TokenType.Continue},
+                {"break", TokenType.Break},
             };
         }
 

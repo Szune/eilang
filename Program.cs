@@ -8,13 +8,22 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-            // TODO: 1. implement some form of string interpolation
-            // TODO: 2. implement 'function pointers' (e.g. saving a function to a variable,
+            // TODO: 0. implement infinite loops 
+            // TODO: 1. implement 'me' token to refer to current object (to be able to pass it on to other functions)
+            // TODO: 2. implement some form of string interpolation
+            // TODO: 3. implement 'function pointers' (e.g. saving a function to a variable,
             // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
-            // TODO: 3. implement maps (dictionaries)
-            // TODO: 4. implement modulo
+            // TODO: 4. implement maps (dictionaries)
+            // TODO: 5. implement modulo
+            // TODO: 6. implement includes
+            // TODO: 7. implement file i/o
+            // TODO: 8. implement networking
+            // TODO: 9. implement switch statements
+            // TODO: 10. implement calling external libraries, dlls and such
+            // TODO: 11. static analysis of types (i.e. type checking)
             
             //#define LOGGING
+            //var code = File.ReadAllText("assignment_tests.ei");
             var code = File.ReadAllText("test.ei");
             var oldcode = @"fun main() {
     #+

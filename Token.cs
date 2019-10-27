@@ -54,7 +54,9 @@ namespace eilang
         /// <summary>
         /// Current object access
         /// </summary>
-        Me
+        Me,
+        Continue,
+        Break
     }
     
     

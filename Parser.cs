@@ -8,7 +8,8 @@ namespace eilang
     {
         private readonly Lexer _lexer;
         private readonly Token[] _buffer = {new Token(), new Token()};
-        private bool _inMemberAssignment;
+        private bool InLoop => _forDepth > 0;
+        private int _forDepth;
 
         public Parser(Lexer lexer)
         {
@@ -246,12 +247,6 @@ namespace eilang
                     ParseReturn(ast);
                     return;
                 case TokenType.Var:
-                    if (_inMemberAssignment)
-                    {
-                        throw new ParserException(
-                            $"Unexpected variable declaration containing another member variable assignment at line {_buffer[0].Line}, col {_buffer[0].Col}");
-                    }
-
                     ParseDeclarationAssignment(ast);
                     return;
                 case TokenType.Identifier:
@@ -415,6 +410,7 @@ namespace eilang
                 var end = ParsePlusAndMinus();
                 Require(TokenType.RightParenthesis);
                 var forBlock = new AstBlock();
+                _forDepth++;
                 ParseBlock(forBlock);
                 ast.Expressions.Add(new AstForRange(new AstRange(expression, end), forBlock));
             }
@@ -423,9 +419,11 @@ namespace eilang
                 // for (array)
                 Require(TokenType.RightParenthesis);
                 var forBlock = new AstBlock();
+                _forDepth++;
                 ParseBlock(forBlock);
                 ast.Expressions.Add(new AstForArray(expression, forBlock));
             }
+            _forDepth--;
         }
 
         private void ParseIf(IHaveExpression ast)
@@ -732,6 +730,20 @@ namespace eilang
                     var expr = ParseOr();
                     Require(TokenType.RightParenthesis);
                     return expr;
+                case TokenType.Continue:
+                    if (!InLoop)
+                    {
+                        ThrowParserException("'continue' is only allowed in loops");
+                    }
+                    Consume();
+                    return new AstContinue();
+                case TokenType.Break:
+                    if (!InLoop)
+                    {
+                        ThrowParserException("'break' is only allowed in loops");
+                    }
+                    Consume();
+                    return new AstBreak();
                 case TokenType.String:
                     var str = Require(TokenType.String).Text;
                     return new AstStringConstant(str);

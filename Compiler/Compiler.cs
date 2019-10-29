@@ -447,9 +447,17 @@ namespace eilang
             _forDepth--;
         }
         
-        public void Visit(AstForInfinite memberFunc, Function function, Module mod)
+        public void Visit(AstForInfinite forInfinite, Function function, Module mod)
         {
-            throw new NotImplementedException();
+            _forDepth++;
+            function.Write(OpCode.NSCP);
+            var addressOfLoopStart = function.Length;
+            forInfinite.Body.Accept(this, function, mod);
+            function.Write(OpCode.JMP, _valueFactory.Integer(addressOfLoopStart));
+            var endOfLoop = function.Length;
+            function.Write(OpCode.PSCP);
+            AssignLoopControlFlowJumps(function, _forDepth, addressOfLoopStart, endOfLoop);
+            _forDepth--;
         }
 
         private void AssignLoopControlFlowJumps(Function function, int forDepth, int loopStep, int loopEnd)

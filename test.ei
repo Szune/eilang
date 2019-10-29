@@ -1,97 +1,22 @@
-﻿modu str {
-   fun join(strings, joiner) {
-        var finalStr = strings[0];
-        for (strings.skip(1)) {
-            finalStr += joiner + it;
+﻿fun main() {
+    var i = 0;
+    var stop = false;
+    for () {
+        if(stop && i == 2) {
+            println("stop on next!");
         }
-        ret finalStr;
-    }
-}
-
-fun join_range(strings, joiner) {
-    var finalStr = '';
-    for (0..strings.len()-1) {
-        if (ix == 0) {
-            finalStr = strings[ix];
-        } else {
-            finalStr = finalStr + joiner + strings[ix];
-        }
-    }
-    ret finalStr;
-}
-
-fun join_array(strings, joiner) {
-    var finalStr = strings[0];
-    for (strings.skip(1)) {
-        finalStr += joiner + it;
-    }
-    ret finalStr;
-}
-
-fun join_array2(strings, joiner) {
-    var finalStr = "";
-    for (strings) {
-        if(ix == 0) {
-            finalStr = it;
-        } else {
-        finalStr += joiner + it;
-        }
-    }
-    ret finalStr;
-}
-
-fun main() {
-    for(0..2) {
-        if(ix == 1) {
-            println("breaking because we're at index " + ix);
+        else if (stop && i == 3)
+        {
+            println("breaking!");
             break;
         }
-        println("at index: " + ix);
-    }
-    println("-----");
-    for(0..2) {
-        if(ix == 1) {
-            println("continuing because we're at index " + ix);
+        i += 1;
+        println("looping, i = " + i);
+        
+        if(i == 2) {
+            println("continuing infinite loop");
+            stop = true;
             continue;
         }
-        println("at index: " + ix);
     }
-    println("-----");
-    for (0..3) {
-        for(0..3) {
-            if(ix == 2) {
-                println("breaking inner loop");
-                break;
-            }
-            println("inner loop at index: " + ix);
-        } 
-        if(ix == 2) {
-            println("breaking outer loop");
-            break;
-        }
-        println("outer loop at index: " + ix);
-    }
-    println("-----");
-    for (0..3) {
-        for(0..3) {
-            if(ix == 2) {
-                println("continuing inner loop");
-                continue;
-            }
-            println("inner loop at index: " + ix);
-        } 
-        if(ix == 2) {
-            println("continuing outer loop");
-            continue;
-        }
-        println("outer loop at index: " + ix);
-    }
-    println("-----");
-    println(join_array("these three words".split(' '), '\n'));
-    println("-----");
-    println(join_array2("these are four words".split(' '), '\n'));
-    println("-----");
-    println(join_range("last join range".split(' '), '\n'));
-    println("-----");
-    println(str::join("hello me!".split(' '), '-'));
 }

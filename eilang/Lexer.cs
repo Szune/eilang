@@ -14,6 +14,7 @@ namespace eilang
         public bool IsEOF { get; private set; }
         static Lexer()
         {
+            //char x = (char) 65255;
             _keywords = new Dictionary<string, TokenType>{
                 {"if", TokenType.If},
                 {"else", TokenType.Else},
@@ -268,7 +269,7 @@ namespace eilang
                             // parse number
                         }
                         // add number parsing here
-                        throw new LexerException($"Unexpected token {_buffer[0]}");
+                        throw new LexerException($"Unexpected token {_buffer[0]} ({(int)_buffer[0]})");
                 }
                 Consume();
             }

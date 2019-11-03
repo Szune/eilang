@@ -355,7 +355,7 @@ namespace eilang
                 Consume();
                 var expr = ParseOr();
                 Require(TokenType.RightBracket);
-                idxExprs.Add(expr);
+                idxExprs.Add(new AstIndex(expr));
             }
             return new AstMemberIndexerRef(ident, idxExprs);
         }
@@ -368,7 +368,7 @@ namespace eilang
                 Consume();
                 var expr = ParseOr();
                 Require(TokenType.RightBracket);
-                idxExprs.Add(expr);
+                idxExprs.Add(new AstIndex(expr));
             }
             return new AstIndexerReference(name, idxExprs);
         }

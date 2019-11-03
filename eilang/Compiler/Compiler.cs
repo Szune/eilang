@@ -260,8 +260,15 @@ namespace eilang
                     break;
                 case AssignmentSet.Array:
                     assignment.Set.RequiredReferences.Accept(this, function, mod);
+                    for (int i = 0; i < assignment.Set.IndexExprs.Count - 1; i++)
+                    {
+                        function.Write(OpCode.TYPEGET);
+                        assignment.Set.IndexExprs[i].Accept(this, function, mod);
+                        function.Write(OpCode.PUSH, _valueFactory.Integer(1)); // arg count
+                        function.Write(OpCode.MCALL, _valueFactory.String("idx_get"));
+                    }
                     function.Write(OpCode.TYPEGET);
-                    assignment.Set.IndexExprs.Accept(this, function, mod);
+                    assignment.Set.IndexExprs[assignment.Set.IndexExprs.Count - 1].Accept(this, function, mod);
                     break;
             }
             
@@ -484,6 +491,11 @@ namespace eilang
             function.Write(OpCode.PSCP);
             AssignLoopControlFlowJumps(function, _forDepth, addressOfLoopStart, endOfLoop);
             _forDepth--;
+        }
+
+        public void Visit(AstIndex index, Function function, Module mod)
+        {
+            index.Index.Accept(this, function, mod);
         }
 
         private void AssignLoopControlFlowJumps(Function function, int forDepth, int loopStep, int loopEnd)

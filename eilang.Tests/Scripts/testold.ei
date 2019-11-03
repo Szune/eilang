@@ -1,4 +1,4 @@
-modu std {
+﻿modu std {
     typ f {
         fun write() {
             println('hello from f');
@@ -68,15 +68,6 @@ fun join(strings, joiner) {
         finalStr += joiner + it;
     }
     ret finalStr;
-    #+
-    for (0..(strings.len()-1)) {
-        if (ix == 0) {
-            finalStr = strings[ix];
-        } else {
-            finalStr = finalStr + joiner + strings[ix];
-        }
-    }
-    -#
 }
 
 
@@ -84,10 +75,12 @@ fun main() {
     println(join("these three words".split(' '), '\n'));
     println("these are different words".split(' '));
     println("hello".at(0));
+    assert("hello".at(0) == 'h', 'expected "hello".at(0) to be "h" but was ' + "hello".at(0));
     var ststst = "test";
     println(ststst[0] + ststst[2]);
     ststst[0] = 'f';
     println(ststst[0] + ststst[2]);
+    assert(ststst[0] == 'f', 'expected ststst[0] to be "f" but was ' + ststst[0]);
     var s = printTwo('hello', 'world');
     println("s: " + s);
     println("lower-to-upper".upper());
@@ -113,12 +106,16 @@ fun main() {
 	println(dd[0].arg[0]);
 	dd[0].arg[0] = 'whoa, changed value of dd[0].arg[0]';
 	println(dd[0].arg[0]);
+	assert(
+        dd[0].arg[0] == 'whoa, changed value of dd[0].arg[0]',
+        'expected dd[0].arg[0] to be "whoa, changed value of dd[0].arg[0]" but was ' + dd[0].arg[0]);
 	
 	var nx = *std::cmd();
 	nx.init3();
 	println(nx.arg[0][0]);
 	nx.arg[0][0] = 'new 3';
 	println(nx.arg[0][0]);
+	assert(nx.arg[0][0] == 'new 3', 'expected nx.arg[0][0] to be "new 3" but was ' + nx.arg[0][0]);
 	
 	var nlst = [];
 	nlst.add('hej');

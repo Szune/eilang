@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace eilang
 {
     public class Bytecode
@@ -24,6 +26,11 @@ namespace eilang
 
         public override string ToString()
         {
+            #if DEBUG
+            var values = new[] {Arg0, Arg1, Arg2}.Where(v => v != null).ToList();
+            var strings = values.Any() ? ": " + string.Join(", ", values) : "";
+            return $"{Op.ToString()}{strings}";
+            #endif
             return Op.ToString();
         }
     }

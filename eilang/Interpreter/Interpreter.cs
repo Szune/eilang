@@ -109,7 +109,7 @@ namespace eilang
                                     switch (right.Type)
                                     {
                                         case TypeOfValue.String:
-                                            _stack.Push(left.Get<string>() == right.Get<string>()
+                                            _stack.Push(GetString(left) == GetString(right)
                                                 ? _valueFactory.True()
                                                 : _valueFactory.False());
                                             break;
@@ -161,7 +161,7 @@ namespace eilang
                                     switch (right.Type)
                                     {
                                         case TypeOfValue.String:
-                                            _stack.Push(left.Get<string>() != right.Get<string>()
+                                            _stack.Push(GetString(left) != GetString(right)
                                                 ? _valueFactory.True()
                                                 : _valueFactory.False());
                                             break;
@@ -618,7 +618,14 @@ namespace eilang
                         }
                         else
                         {
-                            throw new NotImplementedException();
+                            var values = new List<IValue>();
+                            for (int i = 0; i < argLength; i++)
+                            {
+                                values.Add(_stack.Pop());
+                            }
+
+                            var list = _valueFactory.List(values);
+                            _env.ExportedFuncs[GetString(bc.Arg0)](_valueFactory, list);
                         }
                         break;
                     case OpCode.TYPEGET:

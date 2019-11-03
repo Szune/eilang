@@ -16,25 +16,29 @@ fun main() {
         }
         i++;
         println("looping, i = " + i);
-        
+
         if(i == 2) {
             println("continuing infinite loop");
             stop = true;
             continue;
         }
     }
-    
+
     var have = *haveNum(5);
     println("have.x = " + have.x);
     have.x++;
+    assert(have.x == 6, 'expected have.x to be 6 but was ' + have.x);
     println("have.x++;");
     println("have.x = " + have.x);
     println("have.x++ = " + have.x++);
-    
+    assert(have.x == 7, 'expected have.x to be 7 but was ' + have.x);
+
     var j = 0;
     println("j = " + j);
     j--;
     println("j--");
+    assert(j == -1, 'expected j to be -1 but was ' + j);
     println("j = " + j);
     println("j-- = " + j--);
+    assert(j == -2, 'expected j to be -2 but was ' + j);
 }

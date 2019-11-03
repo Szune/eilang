@@ -86,8 +86,13 @@ fun main() {
         }
         println("outer loop at index: " + ix);
     }
+    
+    
     println("-----");
     println(join_array("these three words".split(' '), '\n'));
+    assert(
+        join_array("these three words".split(' '), 'x') == 'thesexthreexwords',
+         'expected join_array() to join to thesexthreexwords');
     println("-----");
     println(join_array2("these are four words".split(' '), '\n'));
     println("-----");

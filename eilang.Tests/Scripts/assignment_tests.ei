@@ -21,12 +21,15 @@ fun testfun() {
 fun member_assignment_tests() {
     var test = *test("foo", *test2("bar", "baz"));
     println("test.val1 = " + test.val1);
+    assert(test.val1 == "foo", "expected test.val1 to be 'foo' but was " + test.val1);
     test.val1 += "bar";
     println("test.val1 = " + test.val1);
+    assert(test.val1 == "foobar", "expected test.val1 to be 'foobar' but was " + test.val1);
     test.val1 = "muhbar";
     println("test.val1 = " + test.val1);
     println("test.val2.val3 = " + test.val2.val3);
     test.val2.val3 = "_moo_";
+    assert(test.val2.val3 == "_moo_", "expected test.val2.val3 to be '_moo_' but was " + test.val2.val3);
     println("test.val2.val3 = " + test.val2.val3);
 
 }

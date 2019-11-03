@@ -6,7 +6,11 @@
         DivideEquals,
         TimesEquals,
         PlusEquals,
-        MinusEquals
+        MinusEquals,
+        Increment,
+        Decrement,
+        IncrementAndReference,
+        DecrementAndReference
     }
     public class AstAssignmentValue : AstExpression
     {

@@ -303,6 +303,24 @@ namespace eilang
                     assignment.Value.Accept(this, function, mod);
                     function.Write(OpCode.ADD);
                     break;
+                case Assignment.Increment:
+                    assignment.Reference.Accept(this, function, mod);
+                    function.Write(OpCode.INC);
+                    break;
+                case Assignment.Decrement:
+                    assignment.Reference.Accept(this, function, mod);
+                    function.Write(OpCode.DEC);
+                    break;
+                case Assignment.IncrementAndReference:
+                    assignment.Reference.Accept(this, function, mod);
+                    function.Write(OpCode.INC);
+                    break;
+                case Assignment.DecrementAndReference:
+                    assignment.Reference.Accept(this, function, mod);
+                    function.Write(OpCode.DEC);
+                    break;
+                default:
+                    throw new CompilerException($"Unknown assignment type {assignment.Value.Type}");
             }
 
             switch (assignment.Set.Type)
@@ -316,6 +334,14 @@ namespace eilang
                     break;
                 case AssignmentSet.MemberVariable:
                     function.Write(OpCode.MSET, _valueFactory.String(assignment.Set.OptionalIdentifier));
+                    break;
+            }
+
+            switch (assignment.Value.Type)
+            {
+                case Assignment.IncrementAndReference:
+                case Assignment.DecrementAndReference:
+                    assignment.Reference.Accept(this, function, mod);
                     break;
             }
         }

@@ -220,6 +220,14 @@ namespace eilang
         /// <summary>
         /// Array skip
         /// </summary>
-        ASKIP
+        ASKIP,
+        /// <summary>
+        /// Increment unary operator
+        /// </summary>
+        INC,
+        /// <summary>
+        /// Decrement unary operator
+        /// </summary>
+        DEC
     }
 }

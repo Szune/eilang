@@ -154,6 +154,11 @@ namespace eilang
                             token = GetToken(TokenType.PlusEquals);
                             Consume();
                         }
+                        else if (_buffer[1] == '+')
+                        {
+                            token = GetToken(TokenType.PlusPlus);
+                            Consume();
+                        }
                         else
                         {
                             token = GetToken(TokenType.Plus);
@@ -163,6 +168,11 @@ namespace eilang
                         if (_buffer[1] == '=')
                         {
                             token = GetToken(TokenType.MinusEquals);
+                            Consume();
+                        }
+                        else if (_buffer[1] == '-')
+                        {
+                            token = GetToken(TokenType.MinusMinus);
                             Consume();
                         }
                         else

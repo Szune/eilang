@@ -8,7 +8,6 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-            // TODO: 0. implement unary math ops ++, --
             // TODO: 1. implement 'me' token to refer to current object (to be able to pass it on to other functions)
             // TODO: 2. implement some form of string interpolation
             // TODO: 3. implement 'function pointers' (e.g. saving a function to a variable,

@@ -56,7 +56,9 @@ namespace eilang
         /// </summary>
         Me,
         Continue,
-        Break
+        Break,
+        PlusPlus,
+        MinusMinus
     }
     
     

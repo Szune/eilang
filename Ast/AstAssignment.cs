@@ -11,7 +11,7 @@
 
         public AstAssignmentReference Reference { get; }
         public AstAssignmentValue Value { get; }
-        public AstAssignmentSet  Set { get; }
+        public AstAssignmentSet Set { get; }
 
         public override void Accept(IVisitor visitor, Function function, Module mod)
         {

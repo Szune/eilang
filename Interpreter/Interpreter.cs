@@ -799,14 +799,46 @@ namespace eilang
                         }
                         break;
                     }
-                    
+                    case OpCode.INC:
+                    {
+                        var val = _stack.Pop();
+                        switch (val.Type)
+                        {
+                            case TypeOfValue.Integer:
+                                _stack.Push(_valueFactory.Integer(val.Get<int>() + 1));
+                                break;
+                            case TypeOfValue.Double:
+                                _stack.Push(_valueFactory.Double(val.Get<double>() + 1));
+                                break;
+                            default:
+                                throw new InvalidOperationException();
+                        }
+                        break;
+                    }
+                    case OpCode.DEC:
+                    {
+                        var val = _stack.Pop();
+                        switch (val.Type)
+                        {
+                            case TypeOfValue.Integer:
+                                _stack.Push(_valueFactory.Integer(val.Get<int>() - 1));
+                                break;
+                            case TypeOfValue.Double:
+                                _stack.Push(_valueFactory.Double(val.Get<double>() - 1));
+                                break;
+                            default:
+                                throw new InvalidOperationException();
+                        }
+
+                        break;
+                    }
                     case OpCode.NOT:
                     {
                         var val = _stack.Pop();
                         switch (val.Type)
                         {
                             case TypeOfValue.Bool:
-                                _stack.Push((!val.Get<bool>()) 
+                                _stack.Push(!val.Get<bool>()
                                     ? _valueFactory.True() 
                                     : _valueFactory.False());
                                 break;

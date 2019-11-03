@@ -4,7 +4,7 @@ namespace eilang.Ast
     {
         None,
         Minus,
-        Not
+        Not,
     }
     
     public class AstUnaryMathOperation : AstExpression

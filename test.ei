@@ -1,4 +1,8 @@
-﻿fun main() {
+﻿typ haveNum {
+    x: int;
+    ctor(x);
+}
+fun main() {
     var i = 0;
     var stop = false;
     for () {
@@ -10,7 +14,7 @@
             println("breaking!");
             break;
         }
-        i += 1;
+        i++;
         println("looping, i = " + i);
         
         if(i == 2) {
@@ -19,4 +23,18 @@
             continue;
         }
     }
+    
+    var have = *haveNum(5);
+    println("have.x = " + have.x);
+    have.x++;
+    println("have.x++;");
+    println("have.x = " + have.x);
+    println("have.x++ = " + have.x++);
+    
+    var j = 0;
+    println("j = " + j);
+    j--;
+    println("j--");
+    println("j = " + j);
+    println("j-- = " + j--);
 }

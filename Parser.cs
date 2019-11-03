@@ -268,18 +268,26 @@ namespace eilang
             AstExpression expression;
             if (references is AstMultiReference members)
             {
-                expression = ParseLeftMemberIdentifierExpression(members);
+                expression = ParseLeftMemberVariableExpression(members);
             }
             else
             {
-                expression = ParseLeftNonMemberIdentifierExpression(references);
+                expression = ParseLeftLocalOrGlobalVariableExpression(references);
             }
             ast.Expressions.Add(expression);
         }
 
-        private AstExpression ParseLeftNonMemberIdentifierExpression(AstExpression references)
+        /// <summary>
+        /// For local/global variables
+        /// </summary>
+        /// <param name="references"></param>
+        /// <returns></returns>
+        private AstExpression ParseLeftLocalOrGlobalVariableExpression(AstExpression references)
         {
-            if (references is AstFunctionCall || references is AstClassInitialization)
+            if (references is AstFunctionCall || 
+                references is AstClassInitialization || 
+                references is AstUnaryMathOperation || 
+                references is AstAssignment)
             {
                 Require(TokenType.Semicolon);
                 return references;
@@ -291,31 +299,18 @@ namespace eilang
             }
 
             var value = ParseAssignmentValue();
-            var set = AssignmentSet.None;
-            var ident = "";
-            List<AstExpression> indexExprs = null;
-            AstExpression requiredExpressions = null;
-            if (references is AstIdentifier id)
-            {
-                set = AssignmentSet.Variable;
-                ident = id.Ident;
-                requiredExpressions = id;
-            }
-            else if (references is AstIndexerReference p)
-            {
-                set = AssignmentSet.Array;
-                indexExprs = p.IndexExprs;
-                requiredExpressions = new AstIdentifier(p.Identifier);
-            }
-            else
-            {
-                ThrowParserException("Unknown assignment type");
-            }
+            var set = GetAssignmentSet(references);
+
             return new AstAssignment(
-                new AstAssignmentReference(references), value, new AstAssignmentSet(ident, set, requiredExpressions, indexExprs));
+                new AstAssignmentReference(references), value, set);
         }
 
-        private AstExpression ParseLeftMemberIdentifierExpression(AstMultiReference members)
+        /// <summary>
+        /// For member variables
+        /// </summary>
+        /// <param name="members"></param>
+        /// <returns></returns>
+        private AstExpression ParseLeftMemberVariableExpression(AstMultiReference members)
         {
             ThrowIfMultiReferenceContainsFunctionCallButDoesNotEndWithFunctionCall(members);
             var lastExpr = members.GetLastExpression();
@@ -329,30 +324,10 @@ namespace eilang
             if (!IsNextAssignment())
                 ThrowParserException("Expecting an assignment or function call for left expression");
             var value = ParseAssignmentValue();
+            var set = GetAssignmentSet(members);
 
-            var set = AssignmentSet.None;
-            var ident = "";
-            AstExpression requiredReferences = null;
-            List<AstExpression> indexExprs = null;
-            if (lastExpr is AstMemberIndexerRef indx)
-            {
-                set = AssignmentSet.Array;
-                requiredReferences = new AstMultiReference(members.First, new AstMemberReference(indx.Ident));
-                indexExprs = indx.IndexExprs;
-            }
-            else if (lastExpr is AstMemberReference id)
-            {
-                set = AssignmentSet.MemberVariable;
-                ident = id.Ident;
-                requiredReferences = members.First;
-            }
-            else
-            {
-                ThrowParserException("Unknown assignment type");
-            }
-            
             return new AstAssignment(
-                new AstAssignmentReference(members), value, new AstAssignmentSet(ident, set, requiredReferences, indexExprs));
+                new AstAssignmentReference(members), value, set);
         }
 
         private void ThrowIfMultiReferenceContainsFunctionCallButDoesNotEndWithFunctionCall(AstMultiReference multi)
@@ -616,19 +591,19 @@ namespace eilang
 
         private AstExpression ParseMultiplicationAndDivision()
         {
-            var expression = ParseDots();
+            var expression = ParseIncrementDecrementUnaryOperators();
             while (Match(TokenType.Asterisk) || Match(TokenType.Slash))
             {
                 if (Match(TokenType.Asterisk))
                 {
                     Consume();
-                    var right = ParseDots();
+                    var right = ParseIncrementDecrementUnaryOperators();
                     expression = new AstBinaryMathOperation(BinaryMath.Times, expression, right);
                 }
                 else if (Match(TokenType.Slash))
                 {
                     Consume();
-                    var right = ParseDots();
+                    var right = ParseIncrementDecrementUnaryOperators();
                     expression = new AstBinaryMathOperation(BinaryMath.Division, expression, right);
                 }
                 else
@@ -640,13 +615,66 @@ namespace eilang
             return expression;
         }
 
+        private AstExpression ParseIncrementDecrementUnaryOperators()
+        {
+            var expression = ParseDots();
+            if (Match(TokenType.PlusPlus))
+            {
+                Consume();
+                var assignmentSet = GetAssignmentSet(expression);
+                expression = new AstAssignment(
+                    new AstAssignmentReference(expression),
+                    new AstAssignmentValue(AstEmpty.Value, Assignment.IncrementAndReference), 
+                    assignmentSet);
+            }
+            else if (Match(TokenType.MinusMinus))
+            {
+                Consume();
+                var assignmentSet = GetAssignmentSet(expression);
+                expression = new AstAssignment(
+                    new AstAssignmentReference(expression),
+                    new AstAssignmentValue(AstEmpty.Value, Assignment.DecrementAndReference), 
+                    assignmentSet);
+            }
+
+            return expression;
+        }
+
+        private AstAssignmentSet GetAssignmentSet(AstExpression expression)
+        {
+            switch (expression)
+            {
+                case AstIdentifier id:
+                    return new AstAssignmentSet(id.Ident, AssignmentSet.Variable, id);
+                case AstIndexerReference refer:
+                    return new AstAssignmentSet("", AssignmentSet.Array, new AstIdentifier(refer.Identifier),
+                        refer.IndexExprs);
+                case AstMultiReference members:
+                {
+                    switch (members.GetLastExpression())
+                    {
+                        case AstMemberIndexerRef membIdx:
+                            return new AstAssignmentSet("",
+                                AssignmentSet.Array,
+                                new AstMultiReference(members.First, new AstMemberReference(membIdx.Ident)),
+                                membIdx.IndexExprs);
+                        case AstMemberReference membId:
+                            return new AstAssignmentSet(membId.Ident, AssignmentSet.MemberVariable, members.First);
+                        default:
+                            return ThrowParserException("Unknown assignment type");
+                    }
+                }
+                default:
+                    return ThrowParserException("Unknown assignment type");
+            }
+        }
+
         private AstExpression ParseDots()
         {
             var expression = ParseReferences();
             while (Match(TokenType.Dot))
             {
                 expression = new AstMultiReference(expression, ParseMemberAccess());
-                //ParseMemberAccess()
             }
 
             return expression;
@@ -682,6 +710,8 @@ namespace eilang
                    Match(TokenType.DivideEquals) ||
                    Match(TokenType.TimesEquals) ||
                    Match(TokenType.PlusEquals) ||
+                   Match(TokenType.PlusPlus) ||
+                   Match(TokenType.MinusMinus) ||
                    Match(TokenType.MinusEquals);
         }
 
@@ -691,33 +721,43 @@ namespace eilang
             {
                 case TokenType.Equals:
                 {
-                    Require(TokenType.Equals);
+                    Consume();
                     var value = ParseOr();
                     return new AstAssignmentValue(value, Assignment.Equals);
                 }
                 case TokenType.DivideEquals:
                 {
-                    Require(TokenType.DivideEquals);
+                    Consume();
                     var value = ParseOr();
                     return new AstAssignmentValue(value, Assignment.DivideEquals);
                 }
                 case TokenType.TimesEquals:
                 {
-                    Require(TokenType.TimesEquals);
+                    Consume();
                     var value = ParseOr();
                     return new AstAssignmentValue(value, Assignment.TimesEquals);
                 }
                 case TokenType.PlusEquals:
                 {
-                    Require(TokenType.PlusEquals);
+                    Consume();
                     var value = ParseOr();
                     return new AstAssignmentValue(value, Assignment.PlusEquals);
                 }
                 case TokenType.MinusEquals:
                 {
-                    Require(TokenType.MinusEquals);
+                    Consume();
                     var value = ParseOr();
                     return new AstAssignmentValue(value, Assignment.MinusEquals);
+                }
+                case TokenType.PlusPlus:
+                {
+                    Consume();
+                    return new AstAssignmentValue(AstEmpty.Value, Assignment.Increment);
+                }
+                case TokenType.MinusMinus:
+                {
+                    Consume();
+                    return new AstAssignmentValue(AstEmpty.Value, Assignment.Decrement);
                 }
             }
 

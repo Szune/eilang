@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define LOGGING
+using System;
 using System.Collections.Generic;
 using System.IO;
 using eilang.Classes;
@@ -12,19 +13,16 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-            // TODO: 1. implement 'function pointers' (e.g. saving a function to a variable,
-            // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
-            // TODO: 2. implement maps (dictionaries)
-            // TODO: 3. implement modulo
-            // TODO: 4. implement includes
-            // TODO: 5. implement file i/o
-            // TODO: 6. implement networking
-            // TODO: 7. implement reflection-like functionality
-            // TODO: 8. implement switch statements
-            // TODO: 9. implement calling external libraries, dlls and such
-            // TODO: 10. static analysis of types (i.e. type checking)
+            // TODO: 1. implement maps (dictionaries)
+            // TODO: 2. implement modulo
+            // TODO: 3. implement includes
+            // TODO: 4. implement file i/o
+            // TODO: 5. implement networking
+            // TODO: 6. implement reflection-like functionality
+            // TODO: 7. implement switch statements
+            // TODO: 8. implement calling external libraries, dlls and such
+            // TODO: 9. static analysis of types (i.e. type checking)
 
-            //#define LOGGING
             //var cod5 = File.ReadAllText("assignment_tests.ei");
             var code = File.ReadAllText("test.ei");
             //var code = File.ReadAllText(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\ternary_tests.ei");

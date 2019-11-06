@@ -1,78 +1,13 @@
-﻿typ haveNum {
-    x: int;
-    ctor(x);
-}
-fun main() {
-    var i = 0;
-    var stop = false;
-    for () {
-        if(stop && i == 2) {
-            println("stop on next!");
-        }
-        else if (stop && i == 3)
-        {
-            println("breaking!");
-            break;
-        }
-        i++;
-        println("looping, i = " + i);
-
-        if(i == 2) {
-            println("continuing infinite loop");
-            stop = true;
-            continue;
-        }
-    }
-
-    var have = *haveNum(5);
-    println("have.x = " + have.x);
-    have.x++;
-    println("have.x++;");
-    println("have.x = " + have.x);
-    println("have.x++ = " + have.x++);
-
-    var j = 0;
-    println("j = " + j);
-    j--;
-    println("j--");
-    println("j = " + j);
-    println("j-- = " + j--);
-
+﻿fun main() {
     #var env = *env();
-    #var args = *cmd::args(env.get_args().skip(1));
+    #var args = *cmd::args(env.get_args().skip(1)); # skip file name (may be some OS where that won't work, fix later if necessary)
     var args = *cmd::args(["-greeting", "hello world", "-bye", "ciao world and so forth"]);
     for(args.parse()) {
-        println('"' + it.name + '" with value "' + it.value + '"');
+        println($'"{it.name}" with value "{it.value}"');
     }
     println(args.parse());
-    
-    *someBuilder("hello").add_and_ret(" world").add_and_ret(", happy times!").print();
-    
-    var other_str = 'helloooo';
-    var worl = 'world';
-    println($'{other_str} {worl}! {args.parse()}');
-    println(other_str + ' ' + worl + '!');
 }
 
-typ printer {
-    ctor(obj_with_text);
-    fun print() {
-        println('printer.print()');
-        println(obj_with_text.text);
-    }
-}
-
-typ someBuilder {
-    ctor(text);
-    fun add_and_ret(str) {
-        text += str;
-        ret me;
-    }
-    fun print() {
-        println('someBuilder.print()');
-        *printer(me).print();
-    }
-}
 
 modu cmd {
     typ arg {

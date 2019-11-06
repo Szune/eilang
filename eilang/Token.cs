@@ -62,7 +62,8 @@ namespace eilang
         Break,
         PlusPlus,
         MinusMinus,
-        QuestionMark
+        QuestionMark,
+        At
     }
     
     

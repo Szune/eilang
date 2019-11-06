@@ -1,0 +1,26 @@
+﻿fun main() {
+    *someBuilder("hello").add_and_ret(" world").add_and_ret(", happy times!").print();
+    assert(
+        *someBuilder("hello").add_and_ret(" world").add_and_ret(", happy times!").text == 'hello world, happy times!',
+        'expected *someBuilder to return itself and keep adding to the same variable');
+}
+
+typ printer {
+    ctor(obj_with_text);
+    fun print() {
+        println('printer.print()');
+        println(obj_with_text.text);
+    }
+}
+
+typ someBuilder {
+    ctor(text);
+    fun add_and_ret(str) {
+        text += str;
+        ret me;
+    }
+    fun print() {
+        println('someBuilder.print()');
+        *printer(me).print();
+    }
+}

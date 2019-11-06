@@ -1,16 +1,18 @@
 ﻿using System.Collections.Generic;
 using eilang.Compiler;
+using eilang.Interfaces;
 
 namespace eilang.Classes
 {
     public class StringClass : Class
     {
-        public StringClass () : base(SpecialVariables.String, ".internal")
+        public StringClass (IValueFactory factory) : base(SpecialVariables.String, ".internal")
         {
             Functions.Add("len", new MemberFunction("len", Module, new List<string>(), this)
             {
                 Code =
                 {
+                    new Bytecode(OpCode.POP), // pops unused argument count
                     new Bytecode(OpCode.SLEN),
                     new Bytecode(OpCode.RET)
                 }
@@ -19,6 +21,7 @@ namespace eilang.Classes
             {
                 Code = 
                 {
+                    new Bytecode(OpCode.POP),
                     new Bytecode(OpCode.SIDXG),
                     new Bytecode(OpCode.RET)
                 }
@@ -27,6 +30,7 @@ namespace eilang.Classes
             {
                 Code = 
                 {
+                    new Bytecode(OpCode.POP),
                     new Bytecode(OpCode.SIDXG),
                     new Bytecode(OpCode.RET)
                 }
@@ -35,6 +39,7 @@ namespace eilang.Classes
             {
                 Code = 
                 {
+                    new Bytecode(OpCode.POP),
                     new Bytecode(OpCode.SIDXS),
                     new Bytecode(OpCode.RET)
                 }
@@ -43,6 +48,7 @@ namespace eilang.Classes
             {
                 Code = 
                 {
+                    new Bytecode(OpCode.POP),
                     new Bytecode(OpCode.SVIEW),
                     new Bytecode(OpCode.RET)
                 }
@@ -51,6 +57,7 @@ namespace eilang.Classes
             {
                 Code = 
                 {
+                    new Bytecode(OpCode.POP),
                     new Bytecode(OpCode.SIDXO),
                     new Bytecode(OpCode.RET)
                 }
@@ -59,6 +66,7 @@ namespace eilang.Classes
             {
                 Code = 
                 {
+                    new Bytecode(OpCode.POP),
                     new Bytecode(OpCode.SRPLA),
                     new Bytecode(OpCode.RET)
                 }
@@ -67,6 +75,7 @@ namespace eilang.Classes
             {
                 Code = 
                 {
+                    new Bytecode(OpCode.POP),
                     new Bytecode(OpCode.SPLIT),
                     new Bytecode(OpCode.RET)
                 }
@@ -75,6 +84,7 @@ namespace eilang.Classes
             {
                 Code = 
                 {
+                    new Bytecode(OpCode.POP),
                     new Bytecode(OpCode.SLOW),
                     new Bytecode(OpCode.RET)
                 }
@@ -83,6 +93,7 @@ namespace eilang.Classes
             {
                 Code = 
                 {
+                    new Bytecode(OpCode.POP),
                     new Bytecode(OpCode.SUP),
                     new Bytecode(OpCode.RET)
                 }
@@ -91,6 +102,7 @@ namespace eilang.Classes
             {
                 Code = 
                 {
+                    new Bytecode(OpCode.POP),
                     new Bytecode(OpCode.SINS),
                     new Bytecode(OpCode.RET)
                 }

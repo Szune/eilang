@@ -545,20 +545,21 @@ namespace eilang.Interpreter
                             frame.Address = bc.Arg0.Get<int>() - 1;
                             break;
                         case OpCode.CALL:
+                            var funcName = bc.Arg0 != null ? GetString(bc.Arg0) : GetString(_stack.Pop());
                             var callArgCount = _stack.Pop().Get<int>();
-                            if (_env.Functions.ContainsKey($"{Compiler.Compiler.GlobalFunctionAndModuleName}::{GetString(bc.Arg0)}"))
+                            if (_env.Functions.ContainsKey($"{Compiler.Compiler.GlobalFunctionAndModuleName}::{funcName}"))
                             {
                                 _frames.Push(new CallFrame(
-                                    _env.Functions[$"{Compiler.Compiler.GlobalFunctionAndModuleName}::{GetString(bc.Arg0)}"]));
+                                    _env.Functions[$"{Compiler.Compiler.GlobalFunctionAndModuleName}::{funcName}"]));
                             }
-                            else if (_env.Functions.ContainsKey(GetString(bc.Arg0)))
+                            else if (_env.Functions.ContainsKey(funcName))
                             {
                                 _frames.Push(new CallFrame(
-                                    _env.Functions[GetString(bc.Arg0)]));
+                                    _env.Functions[funcName]));
                             }
                             else
                             {
-                                throw new InterpreterException($"Function '{GetString(bc.Arg0)}' not found.");
+                                throw new InterpreterException($"Function '{funcName}' not found.");
                             }
                             var currentScope = _scopes.Peek();
                             _scopes.Push(new Scope(currentScope));
@@ -662,6 +663,7 @@ namespace eilang.Interpreter
                             if (!callingClass.TryGetFunction(GetString(bc.Arg0), out var membFunc))
                                 throw new InvalidOperationException(
                                     $"Member function '{GetString(bc.Arg0)}' not found in class '{callingClass.FullName}'");
+                            _stack.Push(_valueFactory.Integer(mCallArgCount));
                             _frames.Push(new CallFrame(membFunc));
                             _scopes.Push(new Scope(callingInstance.Scope));
                             break;

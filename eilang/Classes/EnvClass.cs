@@ -14,6 +14,7 @@ namespace eilang.Classes
             CtorForMembersWithValues.Write(OpCode.RET);
             _args = Environment.GetCommandLineArgs();
             var get_args = new MemberFunction("get_args", Module, new List<string>(), this);
+            get_args.Write(OpCode.DEF, factory.String(SpecialVariables.ArgumentCount));
             for (int i = _args.Length - 1; i > -1; i--)
             {
                 get_args.Write(OpCode.PUSH, factory.String(_args[i]));

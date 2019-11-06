@@ -524,6 +524,11 @@ namespace eilang.Compiler
             function[jmpOpCodeIndex] = new Bytecode(OpCode.JMP, _valueFactory.Integer(falseEndIndex));
         }
 
+        public void Visit(AstFunctionPointer funcPointer, Function function, Module mod)
+        {
+            function.Write(OpCode.PUSH, _valueFactory.FunctionPointer(funcPointer.Ident));
+        }
+
         private void AssignLoopControlFlowJumps(Function function, int forDepth, int loopStep, int loopEnd)
         {
             if (!_loopControlFlowOps.TryGetValue(forDepth, out var stack) || stack.Count <= 0) 
@@ -683,6 +688,8 @@ namespace eilang.Compiler
         {
             Log($"Compiling member function declaration '{memberFunc.Name}'");
             var func = new MemberFunction(memberFunc.Name, clas.FullName, memberFunc.Arguments, clas);
+            
+            func.Write(OpCode.DEF, _valueFactory.String(SpecialVariables.ArgumentCount));
             for (int i = memberFunc.Arguments.Count - 1; i > -1; i--)
             {
                 func.Write(OpCode.DEF, _valueFactory.String(memberFunc.Arguments[i]));

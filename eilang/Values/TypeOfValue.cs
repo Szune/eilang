@@ -13,6 +13,7 @@ namespace eilang.Values
         Class = 16,
         Instance = 32,
         Void = 64,
-        List = 128
+        List = 128,
+        FunctionPointer = 256
     }
 }

@@ -1,0 +1,18 @@
+﻿fun fun_pointer_add(val1, val2) {
+    ret val1 + val2;
+}
+
+fun fun_pointer_sub(val1, val2) {
+    ret val1 - val2;
+}
+
+fun main() {
+    var func = @fun_pointer_add;
+    var arg1 = 10;
+    var arg2 = 7;
+    println($'function call (add) func.call({arg1}, {arg2}) == {func.call(arg1, arg2)}');
+    assert(func.call(arg1, arg2) == 17, 'expected function call to fun_pointer_add, result should be 17');
+    func = @fun_pointer_sub;
+    println($'function call (sub) func.call({arg1}, {arg2}) == {func.call(arg1, arg2)}');
+    assert(func.call(arg1, arg2) == 3, 'expected function call to fun_pointer_sub, result should be 3');
+}

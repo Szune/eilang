@@ -42,6 +42,22 @@ namespace eilang.Tests
         }
         
         [Fact]
+        public void RunFunctionPointerTests()
+        {
+            var code = File.ReadAllText("Scripts/function_pointer_tests.ei");
+            RunScript(code);
+            Console.WriteLine("Function pointer tests completed");
+        }
+        
+        [Fact]
+        public void RunMeTests()
+        {
+            var code = File.ReadAllText("Scripts/me_tests.ei");
+            RunScript(code);
+            Console.WriteLine("Me tests completed");
+        }
+        
+        [Fact]
         public void RunStringInterpolationTests()
         {
             var code = File.ReadAllText("Scripts/str_interpolation_tests.ei");

@@ -134,6 +134,9 @@ namespace eilang
                     case '?':
                         token = GetToken(TokenType.QuestionMark);
                         break;
+                    case '@':
+                        token = GetToken(TokenType.At);
+                        break;
                     case ';':
                         token = GetToken(TokenType.Semicolon);
                         break;

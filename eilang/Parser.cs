@@ -859,6 +859,9 @@ namespace eilang
                     return new AstIx();
                 case TokenType.Identifier:
                     return ParseModuleAccess();
+                case TokenType.At:
+                    Consume();
+                    return new AstFunctionPointer(GetModuledClassName());
             }
 
             return ThrowParserException("not implemented");

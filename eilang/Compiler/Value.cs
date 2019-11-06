@@ -72,7 +72,7 @@ namespace eilang
                                    .Get<List<IValue>>().Select(item => item.ToString())) + "]";
                 case TypeOfValue.Instance:
                     return "<" + Get<Instance>().Owner.FullName + ">{" + string.Join(", ", Get<Instance>().Scope
-                               .GetAllVariables().Select(item => $"{item.Key}: {item.Value}"))
+                               .GetAllVariables().Where(i => i.Key != ".me").Select(item => $"{item.Key}: {item.Value}"))
                         + "}";
                 default:
                     return _value?.ToString() ?? "{null}";

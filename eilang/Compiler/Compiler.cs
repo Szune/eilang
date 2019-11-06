@@ -91,6 +91,7 @@ namespace eilang
         {
             Log($"Compiling ctor for '{clas.Name}'");
             var newCtor = new MemberFunction(ctor.Name, "", ctor.Arguments, clas);
+            newCtor.Write(OpCode.DEF, _valueFactory.String(".me"));
             foreach (var arg in ctor.Arguments)
             {
                 newCtor.Write(OpCode.DEF, _valueFactory.String(arg));
@@ -498,6 +499,11 @@ namespace eilang
             index.Index.Accept(this, function, mod);
         }
 
+        public void Visit(AstMe me, Function function, Module mod)
+        {
+            function.Write(OpCode.REF, _valueFactory.String(".me"));
+        }
+
         private void AssignLoopControlFlowJumps(Function function, int forDepth, int loopStep, int loopEnd)
         {
             if (!_loopControlFlowOps.TryGetValue(forDepth, out var stack) || stack.Count <= 0) 
@@ -582,6 +588,7 @@ namespace eilang
         {
             Log($"Compiling class declaration '{clas.Name}'");
             var newClass = new Class(clas.Name, mod.Name);
+            newClass.CtorForMembersWithValues.Write(OpCode.DEF, _valueFactory.String(".me"));
             clas.Variables.Accept(this, newClass, mod);
             newClass.CtorForMembersWithValues.Write(OpCode.RET);
             clas.Functions.Accept(this, newClass, mod);

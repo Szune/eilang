@@ -46,5 +46,6 @@ namespace eilang
         void Visit(AstContinue memberFunc, Function function, Module mod);
         void Visit(AstForInfinite memberFunc, Function function, Module mod);
         void Visit(AstIndex memberFunc, Function function, Module mod);
+        void Visit(AstMe me, Function function, Module mod);
     }
 }

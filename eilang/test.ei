@@ -37,4 +37,91 @@ fun main() {
     println("j--");
     println("j = " + j);
     println("j-- = " + j--);
+
+    #var env = *env();
+    #var args = *cmd::args(env.get_args().skip(1));
+    var args = *cmd::args(["-greeting", "hello world", "-bye", "ciao world and so forth"]);
+    for(args.parse()) {
+        println('"' + it.name + '" with value "' + it.value + '"');
+    }
+    println(args.parse());
+    
+    *someBuilder("hello").add_and_ret(" world").add_and_ret(", happy times!").print();
+    
+    var other_str = 'helloooo';
+    var worl = 'world';
+    #println($'{other_str} {worl}!');
+    println(other_str + ' ' + worl + '!');
+}
+
+typ printer {
+    ctor(obj_with_text);
+    fun print() {
+        println('printer.print()');
+        println(obj_with_text.text);
+    }
+}
+
+typ someBuilder {
+    ctor(text);
+    fun add_and_ret(str) {
+        text += str;
+        ret me;
+    }
+    fun print() {
+        println('someBuilder.print()');
+        *printer(me).print();
+    }
+}
+
+modu cmd {
+    typ arg {
+        ctor(name,value);
+    }
+
+    typ args {
+        ctor(arg_list);
+
+        fun parse() {
+            var cursor = 0;
+            var all = [];
+            var arg_name = "";
+            var arg_val = [];
+            for {
+                if (arg_list[cursor][0] == '-') {
+                    arg_name = arg_list[cursor];
+                    arg_val = [];
+                    for {
+                        cursor++;
+                        if (cursor > arg_list.len() - 1) {
+                            break;
+                        } else if (arg_list[cursor][0] == '-') {
+                            cursor--;
+                            break;
+                        }
+                        arg_val.add(arg_list[cursor]);
+                    }
+
+                    all.add(*cmd::arg(arg_name, str::join(arg_val, " ")));
+                } else {
+                    break;
+                }
+                cursor++;
+                if(cursor > arg_list.len() - 1) {
+                    break;
+                }
+            }
+            ret all;
+        }
+    }
+}
+
+modu str {
+   fun join(strings, joiner) {
+        var finalStr = strings[0];
+        for (strings.skip(1)) {
+            finalStr += joiner + it;
+        }
+        ret finalStr;
+    }
 }

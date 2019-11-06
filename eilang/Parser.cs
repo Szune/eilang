@@ -10,6 +10,7 @@ namespace eilang
         private readonly Token[] _buffer = {new Token(), new Token()};
         private bool InLoop => _forDepth > 0;
         private int _forDepth;
+        private bool _inClass;
 
         public Parser(Lexer lexer)
         {
@@ -78,6 +79,7 @@ namespace eilang
             var ident = Require(TokenType.Identifier).Text;
             var clas = new AstClass(ident);
             Require(TokenType.LeftBrace);
+            _inClass = true;
             while (!Match(TokenType.RightBrace) && !Match(TokenType.EOF))
             {
                 switch (_buffer[0].Type)
@@ -98,6 +100,7 @@ namespace eilang
             }
 
             Require(TokenType.RightBrace);
+            _inClass = false;
             ast.Classes.Add(clas);
         }
 
@@ -376,11 +379,16 @@ namespace eilang
         private void ParseFor(IHaveExpression ast)
         {
             Require(TokenType.For);
-            Require(TokenType.LeftParenthesis);
-            if (Match(TokenType.RightParenthesis))
+            if (_buffer[0].Match(TokenType.LeftBrace) || 
+                (_buffer[0].Match(TokenType.LeftParenthesis) && 
+                 _buffer[1].Match(TokenType.RightParenthesis)))
             {
                 // infinite loop
-                Require(TokenType.RightParenthesis);
+                if (Match(TokenType.LeftParenthesis))
+                {
+                    Consume();
+                    Consume();
+                }
                 var forBlock = new AstBlock();
                 _forDepth++;
                 ParseBlock(forBlock);
@@ -388,6 +396,7 @@ namespace eilang
                 _forDepth--;
                 return;
             }
+            Require(TokenType.LeftParenthesis);
             var expression = ParsePlusAndMinus();
             if (Match(TokenType.DoubleDot))
             {
@@ -804,6 +813,13 @@ namespace eilang
                 case TokenType.Double:
                     var doubl = Require(TokenType.Double).Double;
                     return new AstDoubleConstant(doubl);
+                case TokenType.Me:
+                    if (!_inClass)
+                    {
+                        ThrowParserException($"Token '{nameof(TokenType.Me)}' may only live inside classes");
+                    }
+                    Consume();
+                    return new AstMe();
                 case TokenType.True:
                     Consume();
                     return new AstTrue();

@@ -606,6 +606,9 @@ namespace eilang
                             {
                                 _stack.Push(args[i]);
                             }
+                            
+                            // push new instance for constructor to be used for 'me' token to refer to self
+                            _stack.Push(_valueFactory.Instance(newInstance));
                         }
 
                         break;

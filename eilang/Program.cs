@@ -5,12 +5,12 @@ using eilang.Classes;
 
 namespace eilang
 {
-   public class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            // TODO: 1. implement 'me' token to refer to current object (to be able to pass it on to other functions)
-            // TODO: 2. implement some form of string interpolation
+            // TODO: 1. implement some form of string interpolation
+            // TODO: 2. implement ternary operators, i.e. bool ? true : false
             // TODO: 3. implement 'function pointers' (e.g. saving a function to a variable,
             // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
             // TODO: 4. implement maps (dictionaries)
@@ -21,7 +21,7 @@ namespace eilang
             // TODO: 9. implement switch statements
             // TODO: 10. implement calling external libraries, dlls and such
             // TODO: 11. static analysis of types (i.e. type checking)
-            
+
             //#define LOGGING
             //var code = File.ReadAllText("assignment_tests.ei");
             var code = File.ReadAllText("test.ei");
@@ -79,14 +79,14 @@ namespace eilang
     -#
 }
 ";
-            
+
             var lexer = new Lexer(code);
             var parser = new Parser(lexer);
-            var newParser = new NewParser(lexer);
+            //var newParser = new NewParser(lexer);
             var ast = parser.Parse();
 
+#if LOGGING
             var walker = new AstWalker(ast);
-#if  LOGGING
             walker.PrintAst();
 #endif
 
@@ -96,17 +96,17 @@ namespace eilang
             var envClass = new EnvClass(new ValueFactory());
             env.Classes.Add(envClass.FullName, envClass);
 
-            Compiler.Compile(env, ast 
-#if LOGGING 
-                ,logger: Console.Out 
+            Compiler.Compile(env, ast
+#if LOGGING
+                ,logger: Console.Out
 #endif
-                );
+            );
 
             var interpreter = new Interpreter(env
-                #if LOGGING
+#if LOGGING
                 ,logger: Console.Out
-                #endif
-                );
+#endif
+            );
             interpreter.Interpret();
         }
 
@@ -133,11 +133,12 @@ namespace eilang
             {
                 throw new InvalidOperationException("Can only assert bool values");
             }
+
             if (message != null && message.Type != TypeOfValue.String)
                 throw new InvalidOperationException("Message can only be of type string");
             if (assert.Get<bool>())
                 return fac.Void();
-            throw new AssertionException("Assertion was false" + (message != null ? ": " + GetString(message)  : "."));
+            throw new AssertionException("Assertion was false" + (message != null ? ": " + GetString(message) : "."));
         }
 
         private static string GetString(IValue val)
@@ -154,6 +155,7 @@ namespace eilang
         {
             var ind = '.';
             PrintLineInner(fac, value);
+
             void PrintLineInner(IValueFactory factory, IValue val, int indent = 0)
             {
                 Console.Write(new string(ind, indent * 2));
@@ -182,9 +184,9 @@ namespace eilang
                         break;
                     default:
                         throw new InvalidOperationException("println does not work with " + val.Type);
-
                 }
             }
+
             return fac.Void();
         }
 
@@ -216,39 +218,6 @@ fun main() {
     println(t[0]);
     t._x[0] = 'hello :(';
     println(t._x[0]);
-}";
-            return code;
-        }
-
-        private static string test_list_and_indexers()
-        {
-            var code = @"
-fun main() {
-    var x = []; # new list
-    x.add(5);
-    println('x.len() = ' + x.len());
-    x.rem(5);
-    println('x.len() = ' + x.len());
-    x.add(100);
-    x.ins(0, 50);
-    var y = x[0]; # reference item by index
-    println('x[0] = ' + y);
-    var u = x[1];
-    println('x[1] = ' + u);
-    x.rem_at(0);
-    println('x[0] = ' + x[0]);
-    var z = [1,2,3,4,5]; # new list with initial items
-    println('z[3] = ' + z[3]);
-    z[3] = 137;
-    println('z[3] = ' + z[3]);
-    println('z len = ' + z.len());
-    z.clr();
-    println('z len = ' + z.len());
-    z.add([10,12]);
-    println('z[0][1] = ' + z[0][1]);
-    var p = z[0]; # fix parser to enable writing z[0].add()
-    p.add([13,15]);
-    println('z[0][2][1] = ' + z[0][2][1]);
 }";
             return code;
         }

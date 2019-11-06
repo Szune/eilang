@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using eilang.Classes;
+using eilang.Compiler;
+using eilang.Values;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -40,6 +42,14 @@ namespace eilang.Tests
         }
         
         [Fact]
+        public void RunStringInterpolationTests()
+        {
+            var code = File.ReadAllText("Scripts/str_interpolation_tests.ei");
+            RunScript(code);
+            Console.WriteLine("String interpolation tests completed");
+        }
+        
+        [Fact]
         public void RunTestOld()
         {
             var code = File.ReadAllText("Scripts/testold.ei");
@@ -61,8 +71,8 @@ namespace eilang.Tests
             var envClass = new EnvClass(new ValueFactory());
             env.Classes.Add(envClass.FullName, envClass);
 
-            Compiler.Compile(env, ast);
-            var interpreter = new Interpreter(env);
+            Compiler.Compiler.Compile(env, ast);
+            var interpreter = new Interpreter.Interpreter(env);
             interpreter.Interpret();
         }
     }

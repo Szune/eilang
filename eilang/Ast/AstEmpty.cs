@@ -1,4 +1,6 @@
 ﻿using System;
+using eilang.Compiler;
+using eilang.Interfaces;
 
 namespace eilang.Ast
 {

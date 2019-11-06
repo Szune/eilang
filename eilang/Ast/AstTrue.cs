@@ -1,3 +1,6 @@
+using eilang.Compiler;
+using eilang.Interfaces;
+
 namespace eilang.Ast
 {
     public class AstTrue : AstExpression

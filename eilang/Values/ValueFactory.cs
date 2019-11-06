@@ -1,22 +1,10 @@
 using System.Collections.Generic;
 using eilang.Classes;
+using eilang.Interfaces;
+using eilang.Interpreter;
 
-namespace eilang
+namespace eilang.Values
 {
-    public interface IValueFactory
-    {
-        IValue String(string str);
-        IValue InternalString(string str);
-        IValue Integer(int inte);
-        IValue Double(double doub);
-        IValue True();
-        IValue False();
-        IValue Instance(Instance instance, TypeOfValue type = TypeOfValue.Instance);
-        IValue Class(Class clas);
-        IValue Void();
-        IValue List(List<IValue> items = default);
-    }
-
     public class ValueFactory : IValueFactory
     {
         private static readonly Value _empty = new Value(TypeOfValue.Void, "Void");
@@ -50,7 +38,7 @@ namespace eilang
         public IValue String(string str)
         {
             var scope = new Scope();
-            scope.DefineVariable(".string", new Value(TypeOfValue.String, str));
+            scope.DefineVariable(SpecialVariables.String, new Value(TypeOfValue.String, str));
             return Instance(new Instance(scope, new StringClass()), TypeOfValue.String);
         }
 
@@ -72,7 +60,7 @@ namespace eilang
         public IValue List(List<IValue> items = default)
         {
             var scope = new Scope();
-            scope.DefineVariable(".list", new Value(TypeOfValue.List, items ?? new List<IValue>()));
+            scope.DefineVariable(SpecialVariables.List, new Value(TypeOfValue.List, items ?? new List<IValue>()));
             return Instance(new Instance(scope, new ListClass()), TypeOfValue.List);
         }
     }

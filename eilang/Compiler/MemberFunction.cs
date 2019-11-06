@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using eilang.Classes;
 
-namespace eilang
+namespace eilang.Compiler
 {
     public class MemberFunction : Function
     {

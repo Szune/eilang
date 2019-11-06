@@ -1,4 +1,7 @@
-﻿namespace eilang.Ast
+﻿using eilang.Compiler;
+using eilang.Interfaces;
+
+namespace eilang.Ast
 {
     public class AstAssignmentReference : AstExpression
     {

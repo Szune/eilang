@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using eilang.Classes;
+using eilang.Compiler;
+using eilang.Interfaces;
 
 namespace eilang
 {

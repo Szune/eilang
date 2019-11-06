@@ -157,19 +157,5 @@ namespace eilang
                 }
             }
         }
-
-        private string GetFullName(List<Reference> idents)
-        {
-            if(idents.Count == 1)
-                return $"{Compiler.GlobalFunctionAndModuleName}::{idents[0].Ident}";
-            var full = idents[0].Ident + (idents[0].IsModule ? "::" : ".");
-            for (int i = 1; i < idents.Count - 2; i++)
-            {
-                full += idents[i].Ident + (idents[i].IsModule ? "::" : ".");
-            }
-
-            full += idents[idents.Count - 1].Ident;
-            return full;
-        }
     }
 }

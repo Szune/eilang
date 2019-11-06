@@ -38,7 +38,8 @@
 			var en = *env();
 			var args = en.get_args();
 			var cmds = [];
-			#println(args.len());
+			println('found ' + args.len() + ' args:');
+			println(args);
 			if(args.len() == 1) {
 				ret cmds;
 			}

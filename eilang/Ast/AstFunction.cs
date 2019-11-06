@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using eilang.Compiler;
+using eilang.Interfaces;
 
 namespace eilang.Ast
 {

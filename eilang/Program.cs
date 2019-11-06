@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using eilang.Classes;
+using eilang.Compiler;
+using eilang.Interfaces;
+using eilang.Values;
 
 namespace eilang
 {
@@ -9,22 +12,22 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-            // TODO: 1. implement some form of string interpolation
-            // TODO: 2. implement ternary operators, i.e. bool ? true : false
-            // TODO: 3. implement 'function pointers' (e.g. saving a function to a variable,
+            // TODO: 1. implement ternary operators, i.e. bool ? true : false
+            // TODO: 2. implement 'function pointers' (e.g. saving a function to a variable,
             // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
-            // TODO: 4. implement maps (dictionaries)
-            // TODO: 5. implement modulo
-            // TODO: 6. implement includes
-            // TODO: 7. implement file i/o
-            // TODO: 8. implement networking
-            // TODO: 9. implement switch statements
-            // TODO: 10. implement calling external libraries, dlls and such
-            // TODO: 11. static analysis of types (i.e. type checking)
+            // TODO: 3. implement maps (dictionaries)
+            // TODO: 4. implement modulo
+            // TODO: 5. implement includes
+            // TODO: 6. implement file i/o
+            // TODO: 7. implement networking
+            // TODO: 8. implement switch statements
+            // TODO: 9. implement calling external libraries, dlls and such
+            // TODO: 10. static analysis of types (i.e. type checking)
 
             //#define LOGGING
-            //var code = File.ReadAllText("assignment_tests.ei");
-            var code = File.ReadAllText("test.ei");
+            //var cod5 = File.ReadAllText("assignment_tests.ei");
+            //var code = File.ReadAllText("test.ei");
+            var code = File.ReadAllText(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\str_interpolation_tests.ei");
             var oldcode = @"fun main() {
     #+
     var n = *net();
@@ -96,13 +99,13 @@ namespace eilang
             var envClass = new EnvClass(new ValueFactory());
             env.Classes.Add(envClass.FullName, envClass);
 
-            Compiler.Compile(env, ast
+            Compiler.Compiler.Compile(env, ast
 #if LOGGING
                 ,logger: Console.Out
 #endif
             );
 
-            var interpreter = new Interpreter(env
+            var interpreter = new Interpreter.Interpreter(env
 #if LOGGING
                 ,logger: Console.Out
 #endif
@@ -143,12 +146,12 @@ namespace eilang
 
         private static string GetString(IValue val)
         {
-            return val.Get<Instance>().Scope.GetVariable(".string").Get<string>();
+            return val.Get<Instance>().GetVariable(SpecialVariables.String).Get<string>();
         }
 
         private static List<IValue> GetList(IValue val)
         {
-            return val.Get<Instance>().Scope.GetVariable(".list").Get<List<IValue>>();
+            return val.Get<Instance>().GetVariable(SpecialVariables.List).Get<List<IValue>>();
         }
 
         public static IValue PrintLine(IValueFactory fac, IValue value)
@@ -162,7 +165,7 @@ namespace eilang
                 switch (val.Type)
                 {
                     case TypeOfValue.String:
-                        Console.WriteLine(val.Get<Instance>().Scope.GetVariable(".string").Get<string>());
+                        Console.WriteLine(val.Get<Instance>().GetVariable(SpecialVariables.String).Get<string>());
                         break;
                     case TypeOfValue.Double:
                         Console.WriteLine(val.Get<double>());

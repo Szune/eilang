@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace eilang
@@ -6,16 +7,20 @@ namespace eilang
     public class Lexer
     {
         private readonly string _code;
-        private readonly char[] _buffer = { ' ', ' ' };
+        private readonly char[] _buffer = {' ', ' '};
         private int _pos;
         private int _col;
         private int _line;
         private static readonly Dictionary<string, TokenType> _keywords;
         public bool IsEOF { get; private set; }
+        
+        private Queue<Token> _interpolatedTokens = new Queue<Token>();
+
         static Lexer()
         {
             //char x = (char) 65255;
-            _keywords = new Dictionary<string, TokenType>{
+            _keywords = new Dictionary<string, TokenType>
+            {
                 {"if", TokenType.If},
                 {"else", TokenType.Else},
                 {"ret", TokenType.Return},
@@ -42,11 +47,19 @@ namespace eilang
             Consume();
         }
 
-        private Token GetToken(TokenType type){
+        private Token GetToken(TokenType type)
+        {
             return new Token(type, _line, _col);
         }
 
         public Token NextToken()
+        {
+            if (_interpolatedTokens.Any())
+                return _interpolatedTokens.Dequeue();
+            return GetToken();
+        }
+
+        private Token GetToken()
         {
             Token token = new Token();
             while (token.Type == TokenType.None)
@@ -54,10 +67,11 @@ namespace eilang
                 switch (_buffer[0])
                 {
                     case ' ':
-                        while(_buffer[0] == ' ' && !IsEOF)
+                        while (_buffer[0] == ' ' && !IsEOF)
                         {
                             Consume();
                         }
+
                         continue;
                     case '\t':
                         break;
@@ -78,15 +92,29 @@ namespace eilang
                                 Consume();
                             }
                         }
+
                         break;
                     case '\r':
                         break;
                     case '\n':
-                        if(IsEOF)
+                        if (IsEOF)
                             return GetToken(TokenType.EOF);
                         _line++;
                         _col = 0;
                         break;
+                    case '$':
+                        switch (_buffer[1])
+                        {
+                            case '\'':
+                                //return new Token(TokenType.String, _line, _col, text: GetInterpolatedString('\''));
+                                GetInterpolatedString('\'');
+                                return _interpolatedTokens.Dequeue();
+                            case '"':
+                                GetInterpolatedString('"');
+                                return _interpolatedTokens.Dequeue();
+                            default:
+                                throw new LexerException($"Unexpected token {_buffer[0]} ({(int) _buffer[0]})");
+                        }
                     case '\'':
                         return new Token(TokenType.String, _line, _col, text: GetString('\''));
                     case '"':
@@ -101,6 +129,7 @@ namespace eilang
                         {
                             token = GetToken(TokenType.Colon);
                         }
+
                         break;
                     case ';':
                         token = GetToken(TokenType.Semicolon);
@@ -127,6 +156,7 @@ namespace eilang
                         {
                             token = GetToken(TokenType.Not);
                         }
+
                         break;
                     case '=':
                         if (_buffer[1] == '=')
@@ -164,6 +194,7 @@ namespace eilang
                         {
                             token = GetToken(TokenType.Plus);
                         }
+
                         break;
                     case '-':
                         if (_buffer[1] == '=')
@@ -180,6 +211,7 @@ namespace eilang
                         {
                             token = GetToken(TokenType.Minus);
                         }
+
                         break;
                     case '/':
                         if (_buffer[1] == '=')
@@ -191,6 +223,7 @@ namespace eilang
                         {
                             token = GetToken(TokenType.Slash);
                         }
+
                         break;
                     case '.':
                         if (_buffer[1] == '.')
@@ -214,6 +247,7 @@ namespace eilang
                         {
                             token = GetToken(TokenType.Asterisk);
                         }
+
                         break;
                     case '&':
                         if (_buffer[1] == '&')
@@ -221,6 +255,7 @@ namespace eilang
                             token = GetToken(TokenType.And);
                             Consume();
                         }
+
                         break;
                     case '|':
                         if (_buffer[1] == '|')
@@ -228,6 +263,7 @@ namespace eilang
                             token = GetToken(TokenType.Or);
                             Consume();
                         }
+
                         break;
                     case '<':
                         if (_buffer[1] == '=')
@@ -239,6 +275,7 @@ namespace eilang
                         {
                             token = GetToken(TokenType.LessThan);
                         }
+
                         break;
                     case '>':
                         if (_buffer[1] == '=')
@@ -250,6 +287,7 @@ namespace eilang
                         {
                             token = GetToken(TokenType.GreaterThan);
                         }
+
                         break;
                     default:
                         if (IsIdentifierStart(_buffer[0]))
@@ -264,17 +302,21 @@ namespace eilang
                                 return new Token(TokenType.Identifier, _line, _col, text: identifier);
                             }
                         }
-                        else if (IsNumberStart(_buffer[0])) {
+                        else if (IsNumberStart(_buffer[0]))
+                        {
                             return GetNumberToken();
                             // parse number
                         }
-                        // add number parsing here
-                        throw new LexerException($"Unexpected token {_buffer[0]} ({(int)_buffer[0]})");
+
+                        throw new LexerException($"Unexpected token {_buffer[0]} ({(int) _buffer[0]})");
                 }
+
                 Consume();
             }
+
             return token;
         }
+
 
         private Token GetNumberToken()
         {
@@ -285,9 +327,9 @@ namespace eilang
             Consume();
             while (IsNumber(_buffer[0]) || (!decimalPoint && _buffer[0] == deci) && !IsEOF)
             {
-                if(_buffer[0] == deci && _buffer[1] != deci)
+                if (_buffer[0] == deci && _buffer[1] != deci)
                 {
-                    if(!decimalPoint)
+                    if (!decimalPoint)
                     {
                         decimalPoint = true;
                     }
@@ -300,10 +342,12 @@ namespace eilang
                 {
                     return new Token(TokenType.Integer, _line, _col, integer: int.Parse(sb.ToString()));
                 }
+
                 sb.Append(_buffer[0]);
                 Consume();
             }
-            if(decimalPoint)
+
+            if (decimalPoint)
                 return new Token(TokenType.Double, _line, _col, doubl: double.Parse(sb.ToString()));
             else
                 return new Token(TokenType.Integer, _line, _col, integer: int.Parse(sb.ToString()));
@@ -329,6 +373,7 @@ namespace eilang
                 sb.Append(_buffer[0]);
                 Consume();
             }
+
             return sb.ToString();
         }
 
@@ -340,6 +385,97 @@ namespace eilang
         private bool IsIdentifierChar(char chr)
         {
             return char.IsLetterOrDigit(chr) || chr == '_';
+        }
+        
+        private void GetInterpolatedString(char stringChar)
+        {
+            Consume(); // consume $
+            Consume(); // consume start char
+            var sb = new StringBuilder();
+            
+            while (_buffer[0] != stringChar && !IsEOF)
+            {
+                if (_buffer[0] == '\\' && _buffer[1] == stringChar)
+                {
+                    // escaped string char
+                    sb.Append(stringChar);
+                    Consume(); // consume escape char
+                }
+                else if (_buffer[0] == '\\' && _buffer[1] == '\\')
+                {
+                    sb.Append('\\');
+                    Consume();
+                }
+                else if (_buffer[0] == '\\' && _buffer[1] == 'n')
+                {
+                    sb.Append('\n');
+                    Consume(); // consume slash
+                }
+                else if (_buffer[0] == '\\' && _buffer[1] == 't')
+                {
+                    sb.Append('\t');
+                    Consume(); // consume slash
+                }
+                else if (_buffer[0] == '\'' && _buffer[1] == '{')
+                {
+                    sb.Append('{');
+                    Consume(); // consume slash
+                }
+                else if (_buffer[0] == '\'' && _buffer[1] == '}')
+                {
+                    sb.Append('}');
+                    Consume(); // consume slash
+                }
+                else if (_buffer[0] == '{')
+                {
+                    if (sb.ToString() != "")
+                    {
+                        if (_interpolatedTokens.Any())
+                        {
+                            _interpolatedTokens.Enqueue(new Token(TokenType.Plus, _line, _col));
+                        }
+                        _interpolatedTokens.Enqueue(new Token(TokenType.String, _line, _col, text: sb.ToString()));
+                        _interpolatedTokens.Enqueue(new Token(TokenType.Plus, _line, _col));
+                        sb.Clear();
+                    }
+                    Consume();
+                    QueueTokensUntil('}');
+                }
+                else
+                {
+                    sb.Append(_buffer[0]);
+                }
+
+                Consume(); // consume appended char
+            }
+
+            if (!_interpolatedTokens.Any())
+            {
+                _interpolatedTokens.Enqueue(new Token(TokenType.String, _line, _col, text: sb.ToString()));
+                Consume(); // consume terminating char
+                return;
+            }
+
+            if(_interpolatedTokens.Peek().Type != TokenType.Plus)
+            {
+                _interpolatedTokens.Enqueue(new Token(TokenType.Plus, _line, _col));
+            }
+            _interpolatedTokens.Enqueue(new Token(TokenType.String, _line, _col, text: sb.ToString()));
+
+            Consume(); // consume terminating char
+        }
+
+        private void QueueTokensUntil(char token)
+        {
+            while (_buffer[0] != token && !IsEOF)
+            {
+                _interpolatedTokens.Enqueue(GetToken());
+            }
+        }
+
+        private IEnumerable<Token> GetTokensUntil(TokenType rightBrace)
+        {
+            throw new System.NotImplementedException();
         }
 
         private string GetString(char stringChar)
@@ -373,8 +509,10 @@ namespace eilang
                 {
                     sb.Append(_buffer[0]);
                 }
+
                 Consume(); // consume appended char
             }
+
             Consume(); // consume terminating char
             return sb.ToString();
         }

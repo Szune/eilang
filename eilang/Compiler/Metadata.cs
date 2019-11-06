@@ -1,4 +1,4 @@
-﻿namespace eilang
+﻿namespace eilang.Compiler
 {
     public class Metadata
     {

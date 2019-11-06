@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using eilang.Interfaces;
 
-namespace eilang
+namespace eilang.Interpreter
 {
-    public class Scope
+    public class Scope : IScope
     {
         private Scope _parent;
         private Dictionary<string, IValue> _variables = new Dictionary<string,IValue>();

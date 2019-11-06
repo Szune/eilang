@@ -1,8 +1,10 @@
 using eilang.Classes;
+using eilang.Interfaces;
+using eilang.Interpreter;
 
-namespace eilang
+namespace eilang.Values
 {
-    public class Instance
+    public class Instance : IScope
     {
         public Scope Scope { get; }
         public Class Owner { get; }
@@ -11,6 +13,11 @@ namespace eilang
         {
             Scope = scope;
             Owner = owner;
+        }
+
+        public IValue GetVariable(string name)
+        {
+            return Scope.GetVariable(name);
         }
     }
 }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using eilang.Ast;
 
-namespace eilang
+namespace eilang.Interfaces
 {
     public interface IHaveClass
     {

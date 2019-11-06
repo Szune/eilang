@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using eilang.Ast;
+using eilang.Interfaces;
 
 namespace eilang
 {

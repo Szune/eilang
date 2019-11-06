@@ -1,30 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using eilang.Interfaces;
 
-namespace eilang
+namespace eilang.Values
 {
-    [Flags]
-    public enum TypeOfValue
-    {
-        None = 0,
-        String = 1,
-        Integer = 2,
-        Double = 4,
-        Bool = 8,
-        Class = 16,
-        Instance = 32,
-        Void = 64,
-        List = 128
-    }
-
-    public interface IValue
-    {
-        TypeOfValue Type { get; }
-        T Get<T>();
-        object Debug { get; }
-    }
-
     public class Value : IValue
     {
         public Value(TypeOfValue type, object value)
@@ -65,14 +44,14 @@ namespace eilang
             switch (Type)
             {
                 case TypeOfValue.String:
-                    return Get<Instance>()?.Scope.GetVariable(".string").Debug?.ToString() ?? "{null}";
+                    return Get<Instance>()?.GetVariable(SpecialVariables.String).Debug?.ToString() ?? "{null}";
                 case TypeOfValue.List:
                     return "[" + string.Join(", ", 
-                               Get<Instance>().Scope.GetVariable(".list")
+                               Get<Instance>().GetVariable(SpecialVariables.List)
                                    .Get<List<IValue>>().Select(item => item.ToString())) + "]";
                 case TypeOfValue.Instance:
                     return "<" + Get<Instance>().Owner.FullName + ">{" + string.Join(", ", Get<Instance>().Scope
-                               .GetAllVariables().Where(i => i.Key != ".me").Select(item => $"{item.Key}: {item.Value}"))
+                               .GetAllVariables().Where(i => i.Key != SpecialVariables.Me).Select(item => $"{item.Key}: {item.Value}"))
                         + "}";
                 default:
                     return _value?.ToString() ?? "{null}";

@@ -1,7 +1,8 @@
 using eilang.Ast;
 using eilang.Classes;
+using eilang.Compiler;
 
-namespace eilang
+namespace eilang.Interfaces
 {
     public interface IVisitor
     {

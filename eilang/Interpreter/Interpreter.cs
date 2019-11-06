@@ -4,8 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using eilang.Classes;
+using eilang.Compiler;
+using eilang.Interfaces;
+using eilang.Values;
 
-namespace eilang
+namespace eilang.Interpreter
 {
     public class Interpreter
     {
@@ -52,28 +55,32 @@ namespace eilang
             var startFunc = GetStartFunction();
             _frames.Push(new CallFrame(startFunc));
             _scopes.Push(new Scope());
+            var bc = new Bytecode(OpCode.None);
+            var frame = new CallFrame(new Function("<FailBeforeStart>", "<FailBeforeStart>", new List<string>()));
 
-            while (_frames.Count > 0)
+            try
             {
-                var frame = _frames.Peek();
-                var bc = frame.Function[frame.Address];
-
-                PrintBc(bc);
-                switch (bc.Op)
+                while (_frames.Count > 0)
                 {
-                    case OpCode.PUSH:
-                        _stack.Push(bc.Arg0);
-                        break;
-                    case OpCode.DEF:
-                        var defVal = _stack.Pop();
-                        _scopes.Peek().DefineVariable(GetString(bc.Arg0), defVal);
-                        break;
-                    case OpCode.SET:
-                        var setVal = _stack.Pop();
-                        _scopes.Peek().SetVariable(GetString(bc.Arg0), setVal);
-                        break;
+                    frame = _frames.Peek();
+                    bc = frame.Function[frame.Address];
 
-                    case OpCode.EQ:
+                    PrintBc(bc);
+                    switch (bc.Op)
+                    {
+                        case OpCode.PUSH:
+                            _stack.Push(bc.Arg0);
+                            break;
+                        case OpCode.DEF:
+                            var defVal = _stack.Pop();
+                            _scopes.Peek().DefineVariable(GetString(bc.Arg0), defVal);
+                            break;
+                        case OpCode.SET:
+                            var setVal = _stack.Pop();
+                            _scopes.Peek().SetVariable(GetString(bc.Arg0), setVal);
+                            break;
+
+                        case OpCode.EQ:
                         {
                             var right = _stack.Pop();
                             var left = _stack.Pop();
@@ -123,9 +130,9 @@ namespace eilang
                                     break;
                             }
                         }
-                        break;
+                            break;
                     
-                    case OpCode.NEQ:
+                        case OpCode.NEQ:
                         {
                             var right = _stack.Pop();
                             var left = _stack.Pop();
@@ -175,9 +182,9 @@ namespace eilang
                                     break;
                             }
                         }
-                        break;
+                            break;
                     
-                    case OpCode.GT:
+                        case OpCode.GT:
                         {
                             var right = _stack.Pop();
                             var left = _stack.Pop();
@@ -215,9 +222,9 @@ namespace eilang
                                     break;
                             }
                         }
-                        break;
+                            break;
 
-                    case OpCode.GTE:
+                        case OpCode.GTE:
                         {
                             var right = _stack.Pop();
                             var left = _stack.Pop();
@@ -255,10 +262,10 @@ namespace eilang
                                     break;
                             }
                         }
-                        break;
+                            break;
                     
                     
-                    case OpCode.LT:
+                        case OpCode.LT:
                         {
                             var right = _stack.Pop();
                             var left = _stack.Pop();
@@ -296,9 +303,9 @@ namespace eilang
                                     break;
                             }
                         }
-                        break;
+                            break;
 
-                    case OpCode.LTE:
+                        case OpCode.LTE:
                         {
                             var right = _stack.Pop();
                             var left = _stack.Pop();
@@ -336,9 +343,9 @@ namespace eilang
                                     break;
                             }
                         }
-                        break;
+                            break;
 
-                    case OpCode.ADD:
+                        case OpCode.ADD:
                         {
                             var right = _stack.Pop();
                             var left = _stack.Pop();
@@ -399,9 +406,9 @@ namespace eilang
                                     throw new InterpreterException("Invalid values used with '+' operator.");
                             }
                         }
-                        break;
+                            break;
                     
-                    case OpCode.SUB:
+                        case OpCode.SUB:
                         {
                             var right = _stack.Pop();
                             var left = _stack.Pop();
@@ -438,9 +445,9 @@ namespace eilang
                                     throw new InterpreterException("Invalid values used with '-' operator.");
                             }
                         }
-                        break;
+                            break;
 
-                    case OpCode.MUL:
+                        case OpCode.MUL:
                         {
                             var right = _stack.Pop();
                             var left = _stack.Pop();
@@ -476,9 +483,9 @@ namespace eilang
                                     throw new InterpreterException("Invalid values used with '*' operator.");
                             }
                         }
-                        break;
+                            break;
                     
-                    case OpCode.DIV:
+                        case OpCode.DIV:
                         {
                             var right = _stack.Pop();
                             var left = _stack.Pop();
@@ -514,442 +521,455 @@ namespace eilang
                                     throw new InterpreterException("Invalid values used with '/' operator.");
                             }
                         }
-                        break;
+                            break;
                     
-                    case OpCode.JMPF:
-                        var jmpf = _stack.Pop().Get<bool>();
-                        if (jmpf == false)
+                        case OpCode.JMPF:
+                            var jmpf = _stack.Pop().Get<bool>();
+                            if (jmpf == false)
+                                frame.Address = bc.Arg0.Get<int>() - 1;
+                            // - 1 because we need to adjust for the address++ at the start of the loop
+                            break;
+                        case OpCode.JMPT:
+                            var jmpt = _stack.Pop().Get<bool>();
+                            if (jmpt == true)
+                                frame.Address = bc.Arg0.Get<int>() - 1;
+                            // - 1 because we need to adjust for the address++ at the start of the loop
+                            break;
+                        case OpCode.JMPZ:
+                            var jmpz = _stack.Pop().Get<int>();
+                            if (jmpz == 0)
+                                frame.Address = bc.Arg0.Get<int>() - 1;
+                            // - 1 because we need to adjust for the address++ at the start of the loop
+                            break;
+                        case OpCode.JMP:
                             frame.Address = bc.Arg0.Get<int>() - 1;
-                        // - 1 because we need to adjust for the address++ at the start of the loop
-                        break;
-                    case OpCode.JMPT:
-                        var jmpt = _stack.Pop().Get<bool>();
-                        if (jmpt == true)
-                            frame.Address = bc.Arg0.Get<int>() - 1;
-                        // - 1 because we need to adjust for the address++ at the start of the loop
-                        break;
-                    case OpCode.JMPZ:
-                        var jmpz = _stack.Pop().Get<int>();
-                        if (jmpz == 0)
-                            frame.Address = bc.Arg0.Get<int>() - 1;
-                        // - 1 because we need to adjust for the address++ at the start of the loop
-                        break;
-                    case OpCode.JMP:
-                        frame.Address = bc.Arg0.Get<int>() - 1;
-                        break;
-                    case OpCode.CALL:
-                        var callArgCount = _stack.Pop().Get<int>();
-                        if (_env.Functions.ContainsKey($"{Compiler.GlobalFunctionAndModuleName}::{GetString(bc.Arg0)}"))
-                        {
-                            _frames.Push(new CallFrame(
-                                _env.Functions[$"{Compiler.GlobalFunctionAndModuleName}::{GetString(bc.Arg0)}"]));
-                        }
-                        else if (_env.Functions.ContainsKey(GetString(bc.Arg0)))
-                        {
-                            _frames.Push(new CallFrame(
-                                _env.Functions[GetString(bc.Arg0)]));
-                        }
-                        else
-                        {
-                            throw new InterpreterException($"Function '{GetString(bc.Arg0)}' not found.");
-                        }
-                        var currentScope = _scopes.Peek();
-                        _scopes.Push(new Scope(currentScope));
-                        break;
-                    case OpCode.REF:
-                        var refVal = _scopes.Peek().GetVariable(GetString(bc.Arg0));
-                        if (refVal == null)
-                            throw new InvalidOperationException(
-                                $"Variable '{GetString(bc.Arg0)}' could not be found.");
-                        _stack.Push(refVal);
-                        break;
-                    case OpCode.POP:
-                        _stack.Pop();
-                        break;
-                    case OpCode.RET:
-                        _frames.Pop();
-                        _scopes.Pop();
-                        break;
-                    case OpCode.INIT:
-                        var argCount = _stack.Pop().Get<int>();
-                        if (!_env.Classes.TryGetValue(GetString(bc.Arg0), out var clas))
-                            throw new InvalidOperationException($"Class not found {GetString(bc.Arg0)}");
-                        var instScope = new Scope();
-                        var newInstance = new Instance(instScope, clas);
-                        // figure out which constructor to call (should probably do that in the parser though)
-                        var ctor = clas.Constructors.FirstOrDefault(c => c.Arguments.Count == argCount);
-                        if (ctor == null && argCount > 0)
-                            throw new InvalidOperationException(
-                                $"No constructor exists which takes {argCount} arguments.");
-                        else if ((ctor == null && argCount == 0) || ctor?.Length == 1)
-                            ctor = clas.CtorForMembersWithValues;
-                        _frames.Push(new CallFrame(ctor));
-                        _scopes.Push(instScope);
-                        if (argCount == 0)
-                        {
-                            _stack.Push(_valueFactory.Instance(newInstance));
-                        }
-                        else
-                        {
-                            var args = new List<IValue>();
-                            // get args from stack
-                            for (int i = 0; i < argCount; i++)
+                            break;
+                        case OpCode.CALL:
+                            var callArgCount = _stack.Pop().Get<int>();
+                            if (_env.Functions.ContainsKey($"{Compiler.Compiler.GlobalFunctionAndModuleName}::{GetString(bc.Arg0)}"))
                             {
-                                args.Add(_stack.Pop());
+                                _frames.Push(new CallFrame(
+                                    _env.Functions[$"{Compiler.Compiler.GlobalFunctionAndModuleName}::{GetString(bc.Arg0)}"]));
                             }
-
-                            // push instance to return
-                            _stack.Push(_valueFactory.Instance(newInstance));
-
-                            // push args for constructor
-                            for (int i = 0; i < argCount; i++)
+                            else if (_env.Functions.ContainsKey(GetString(bc.Arg0)))
                             {
-                                _stack.Push(args[i]);
+                                _frames.Push(new CallFrame(
+                                    _env.Functions[GetString(bc.Arg0)]));
                             }
+                            else
+                            {
+                                throw new InterpreterException($"Function '{GetString(bc.Arg0)}' not found.");
+                            }
+                            var currentScope = _scopes.Peek();
+                            _scopes.Push(new Scope(currentScope));
+                            break;
+                        case OpCode.REF:
+                            var refVal = _scopes.Peek().GetVariable(GetString(bc.Arg0));
+                            if (refVal == null)
+                                throw new InvalidOperationException(
+                                    $"Variable '{GetString(bc.Arg0)}' could not be found.");
+                            _stack.Push(refVal);
+                            break;
+                        case OpCode.POP:
+                            _stack.Pop();
+                            break;
+                        case OpCode.RET:
+                            _frames.Pop();
+                            _scopes.Pop();
+                            break;
+                        case OpCode.INIT:
+                            var argCount = _stack.Pop().Get<int>();
+                            if (!_env.Classes.TryGetValue(GetString(bc.Arg0), out var clas))
+                                throw new InvalidOperationException($"Class not found {GetString(bc.Arg0)}");
+                            var instScope = new Scope();
+                            var newInstance = new Instance(instScope, clas);
+                            // figure out which constructor to call (should probably do that in the parser though)
+                            var ctor = clas.Constructors.FirstOrDefault(c => c.Arguments.Count == argCount);
+                            if (ctor == null && argCount > 0)
+                                throw new InvalidOperationException(
+                                    $"No constructor exists which takes {argCount} arguments.");
+                            else if ((ctor == null && argCount == 0) || ctor?.Length == 1)
+                                ctor = clas.CtorForMembersWithValues;
+                            _frames.Push(new CallFrame(ctor));
+                            _scopes.Push(instScope);
+                            if (argCount == 0)
+                            {
+                                // push instance to return
+                                _stack.Push(_valueFactory.Instance(newInstance));
+                                // push new instance for constructor to be used for 'me' token to refer to self
+                                _stack.Push(_valueFactory.Instance(newInstance));
+                            }
+                            else
+                            {
+                                var args = new List<IValue>();
+                                // get args from stack
+                                for (int i = 0; i < argCount; i++)
+                                {
+                                    args.Add(_stack.Pop());
+                                }
+
+                                // push instance to return
+                                _stack.Push(_valueFactory.Instance(newInstance));
+
+                                // push args for constructor
+                                for (int i = 0; i < argCount; i++)
+                                {
+                                    _stack.Push(args[i]);
+                                }
                             
-                            // push new instance for constructor to be used for 'me' token to refer to self
-                            _stack.Push(_valueFactory.Instance(newInstance));
-                        }
-
-                        break;
-                    case OpCode.ECALL:
-                        var argLength = _stack.Pop().Get<int>();
-                        if (argLength == 1)
-                        {
-                            var val = _stack.Pop();
-                            _env.ExportedFuncs[GetString(bc.Arg0)](_valueFactory, val);
-                        }
-                        else
-                        {
-                            var values = new List<IValue>();
-                            for (int i = 0; i < argLength; i++)
-                            {
-                                values.Add(_stack.Pop());
+                                // push new instance for constructor to be used for 'me' token to refer to self
+                                _stack.Push(_valueFactory.Instance(newInstance));
                             }
 
-                            var list = _valueFactory.List(values);
-                            _env.ExportedFuncs[GetString(bc.Arg0)](_valueFactory, list);
+                            break;
+                        case OpCode.ECALL:
+                            var argLength = _stack.Pop().Get<int>();
+                            if (argLength == 1)
+                            {
+                                var val = _stack.Pop();
+                                _env.ExportedFuncs[GetString(bc.Arg0)](_valueFactory, val);
+                            }
+                            else
+                            {
+                                var values = new List<IValue>();
+                                for (int i = 0; i < argLength; i++)
+                                {
+                                    values.Add(_stack.Pop());
+                                }
+
+                                var list = _valueFactory.List(values);
+                                _env.ExportedFuncs[GetString(bc.Arg0)](_valueFactory, list);
+                            }
+                            break;
+                        case OpCode.TYPEGET:
+                            var type = _stack.Peek().Get<Instance>().Owner;
+                            _stack.Push(_valueFactory.Class(type));
+                            break;
+                        case OpCode.MCALL:
+                            var mCallArgCount = _stack.Pop().Get<int>();
+                            var tmpValues = new Stack<IValue>();
+                            for (int i = 0; i < mCallArgCount; i++)
+                            {
+                                var val = _stack.Pop();
+                                tmpValues.Push(val);
+                            }
+                            var callingClass = _stack.Pop().Get<Class>();
+                            var callingInstance = _stack.Pop().Get<Instance>();
+                            for (int i = 0; i < mCallArgCount; i++)
+                            {
+                                _stack.Push(tmpValues.Pop());
+                            }
+                            if (!callingClass.TryGetFunction(GetString(bc.Arg0), out var membFunc))
+                                throw new InvalidOperationException(
+                                    $"Member function '{GetString(bc.Arg0)}' not found in class '{callingClass.FullName}'");
+                            _frames.Push(new CallFrame(membFunc));
+                            _scopes.Push(new Scope(callingInstance.Scope));
+                            break;
+                        case OpCode.MREF:
+                            var inst = _stack.Pop().Get<Instance>();
+                            var mRefVar = inst.GetVariable(GetString(bc.Arg0));
+                            if (mRefVar == null)
+                                ThrowVariableNotFound(GetString(bc.Arg0));
+                            _stack.Push(mRefVar);
+                            break;
+                        case OpCode.MSET:
+                            var mSetVal = _stack.Pop();
+                            var mSetInst = _stack.Pop().Get<Instance>();
+                            mSetInst.Scope.SetVariable(GetString(bc.Arg0), mSetVal);
+                            break;
+                        case OpCode.AND:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            _stack.Push((left.Get<bool>() && right.Get<bool>()) 
+                                ? _valueFactory.True() 
+                                : _valueFactory.False());
+                            break;
                         }
-                        break;
-                    case OpCode.TYPEGET:
-                        var type = _stack.Peek().Get<Instance>().Owner;
-                        _stack.Push(_valueFactory.Class(type));
-                        break;
-                    case OpCode.MCALL:
-                        var mCallArgCount = _stack.Pop().Get<int>();
-                        var tmpValues = new Stack<IValue>();
-                        for (int i = 0; i < mCallArgCount; i++)
+                        case OpCode.OR:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            _stack.Push((left.Get<bool>() || right.Get<bool>()) 
+                                ? _valueFactory.True() 
+                                : _valueFactory.False());
+                            break;
+                        }
+                        case OpCode.NLIST:
+                        {
+                            var initCount = _stack.Pop();
+                            if (initCount.Get<int>() < 1)
+                            {
+                                _stack.Push(_valueFactory.List());
+                            }
+                            else
+                            {
+                                var list = _valueFactory.List();
+                                var actList = list.Get<Instance>().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                                for (int i = 0; i < initCount.Get<int>(); i++)
+                                {
+                                    actList.Add(_stack.Pop());
+                                }
+
+                                _stack.Push(list);
+                            }
+                            break;
+                        }
+                        case OpCode.AADD:
+                        {
+                            var list = _scopes.Peek().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                            var val = _stack.Pop();
+                            list.Add(val);
+                            break;
+                        }
+                        case OpCode.ALEN:
+                        {
+                            var list = _scopes.Peek().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                            _stack.Push(_valueFactory.Integer(list.Count));
+                            break;
+                        }
+                        case OpCode.AREM:
+                        {
+                            var list = _scopes.Peek().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                            var val = _stack.Pop();
+                            list.Remove(val);
+                            break;
+                        }
+                        case OpCode.AREMA:
+                        {
+                            var list = _scopes.Peek().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                            var index = _stack.Pop().Get<int>();
+                            list.RemoveAt(index);
+                            break;
+                        }
+                        case OpCode.AIDXG:
+                        {
+                            var list = _scopes.Peek().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                            var index = _stack.Pop().Get<int>();
+                            if (index > list.Count - 1 || index < 0)
+                            {
+                                // find metadata to print error containing the indexed array's name
+                                _frames.Pop(); // pop current method call frame for "idx_get"
+                                var errorFrame = _frames.Peek();
+                                var arrayName = errorFrame.GetNearestMethodCallAboveCurrentAddress("idx_get")?.Metadata?.Variable;
+                                throw new InterpreterException($"Index out of range: {arrayName}[{index}],\nitems in list ({list.Count} total): {{{string.Join("}, {", list)}}}");
+                            }
+                            _stack.Push(list[index]);
+                            break;
+                        }
+                        case OpCode.AIDXS:
+                        {
+                            var list = _scopes.Peek().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                            var val = _stack.Pop();
+                            var index = _stack.Pop().Get<int>();
+                            list[index] = val;
+                            break;
+                        }
+                        case OpCode.AINS:
+                        {
+                            var list = _scopes.Peek().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                            var val = _stack.Pop();
+                            var index = _stack.Pop().Get<int>();
+                            list.Insert(index, val);
+                            break;
+                        }
+                        case OpCode.ACLR:
+                        {
+                            var list = _scopes.Peek().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                            list.Clear();
+                            break;
+                        }
+                        case OpCode.TMPV:
                         {
                             var val = _stack.Pop();
-                            tmpValues.Push(val);
+                            _tmpVars[GetString(bc.Arg0)] = val;
+                            break;
                         }
-                        var callingClass = _stack.Pop().Get<Class>();
-                        var callingInstance = _stack.Pop().Get<Instance>();
-                        for (int i = 0; i < mCallArgCount; i++)
+                        case OpCode.TMPR:
                         {
-                            _stack.Push(tmpValues.Pop());
+                            _stack.Push(_tmpVars[GetString(bc.Arg0)]);
+                            break;
                         }
-                        if (!callingClass.TryGetFunction(GetString(bc.Arg0), out var membFunc))
-                            throw new InvalidOperationException(
-                                $"Member function '{GetString(bc.Arg0)}' not found in class '{callingClass.FullName}'");
-                        _frames.Push(new CallFrame(membFunc));
-                        _scopes.Push(new Scope(callingInstance.Scope));
-                        break;
-                    case OpCode.MREF:
-                        var inst = _stack.Pop().Get<Instance>();
-                        var mRefVar = inst.Scope.GetVariable(GetString(bc.Arg0));
-                        if (mRefVar == null)
-                            ThrowVariableNotFound(GetString(bc.Arg0));
-                        _stack.Push(mRefVar);
-                        break;
-                    case OpCode.MSET:
-                        var mSetVal = _stack.Pop();
-                        var mSetInst = _stack.Pop().Get<Instance>();
-                        mSetInst.Scope.SetVariable(GetString(bc.Arg0), mSetVal);
-                        break;
-                    case OpCode.AND:
-                    {
-                        var right = _stack.Pop();
-                        var left = _stack.Pop();
-                        _stack.Push((left.Get<bool>() && right.Get<bool>()) 
-                            ? _valueFactory.True() 
-                            : _valueFactory.False());
-                        break;
-                    }
-                    case OpCode.OR:
-                    {
-                        var right = _stack.Pop();
-                        var left = _stack.Pop();
-                        _stack.Push((left.Get<bool>() || right.Get<bool>()) 
-                            ? _valueFactory.True() 
-                            : _valueFactory.False());
-                        break;
-                    }
-                    case OpCode.NLIST:
-                    {
-                        var initCount = _stack.Pop();
-                        if (initCount.Get<int>() < 1)
+                        case OpCode.TMPC:
                         {
-                            _stack.Push(_valueFactory.List());
+                            _tmpVars.Remove(GetString(bc.Arg0));
+                            break;
                         }
-                        else
-                        {
-                            var list = _valueFactory.List();
-                            var actList = list.Get<Instance>().Scope.GetVariable(".list").Get<List<IValue>>();
-                            for (int i = 0; i < initCount.Get<int>(); i++)
-                            {
-                                actList.Add(_stack.Pop());
-                            }
-
-                            _stack.Push(list);
-                        }
-                        break;
-                    }
-                    case OpCode.AADD:
-                    {
-                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
-                        var val = _stack.Pop();
-                        list.Add(val);
-                        break;
-                    }
-                    case OpCode.ALEN:
-                    {
-                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
-                        _stack.Push(_valueFactory.Integer(list.Count));
-                        break;
-                    }
-                    case OpCode.AREM:
-                    {
-                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
-                        var val = _stack.Pop();
-                        list.Remove(val);
-                        break;
-                    }
-                    case OpCode.AREMA:
-                    {
-                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
-                        var index = _stack.Pop().Get<int>();
-                        list.RemoveAt(index);
-                        break;
-                    }
-                    case OpCode.AIDXG:
-                    {
-                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
-                        var index = _stack.Pop().Get<int>();
-                        if (index > list.Count - 1 || index < 0)
-                        {
-                            // find metadata to print error containing the indexed array's name
-                            _frames.Pop(); // pop current method call frame for "idx_get"
-                            var errorFrame = _frames.Peek();
-                            var arrayName = errorFrame.GetNearestMethodCallAboveCurrentAddress("idx_get")?.Metadata?.Variable;
-                            throw new InterpreterException($"Index out of range: {arrayName}[{index}],\nitems in list ({list.Count} total): {{{string.Join("}, {", list)}}}");
-                        }
-                        _stack.Push(list[index]);
-                        break;
-                    }
-                    case OpCode.AIDXS:
-                    {
-                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
-                        var val = _stack.Pop();
-                        var index = _stack.Pop().Get<int>();
-                        list[index] = val;
-                        break;
-                    }
-                    case OpCode.AINS:
-                    {
-                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
-                        var val = _stack.Pop();
-                        var index = _stack.Pop().Get<int>();
-                        list.Insert(index, val);
-                        break;
-                    }
-                    case OpCode.ACLR:
-                    {
-                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
-                        list.Clear();
-                        break;
-                    }
-                    case OpCode.TMPV:
-                    {
-                        var val = _stack.Pop();
-                        _tmpVars[GetString(bc.Arg0)] = val;
-                        break;
-                    }
-                    case OpCode.TMPR:
-                    {
-                        _stack.Push(_tmpVars[GetString(bc.Arg0)]);
-                        break;
-                    }
-                    case OpCode.TMPC:
-                    {
-                        _tmpVars.Remove(GetString(bc.Arg0));
-                        break;
-                    }
-                    case OpCode.NSCP:
-                        _scopes.Push(new Scope(_scopes.Peek()));
-                        break;
-                    case OpCode.PSCP:
-                        _scopes.Pop();
-                        break;
+                        case OpCode.NSCP:
+                            _scopes.Push(new Scope(_scopes.Peek()));
+                            break;
+                        case OpCode.PSCP:
+                            _scopes.Pop();
+                            break;
                     
-                    case OpCode.NEG:
-                    {
-                        var val = _stack.Pop();
-                        switch (val.Type)
+                        case OpCode.NEG:
                         {
-                            case TypeOfValue.Integer:
+                            var val = _stack.Pop();
+                            switch (val.Type)
+                            {
+                                case TypeOfValue.Integer:
                                 
-                                _stack.Push(_valueFactory.Integer(-val.Get<int>()));
-                                break;
-                            case TypeOfValue.Double:
-                                _stack.Push(_valueFactory.Double(-val.Get<double>()));
-                                break;
-                            default:
-                                throw new InvalidOperationException();
+                                    _stack.Push(_valueFactory.Integer(-val.Get<int>()));
+                                    break;
+                                case TypeOfValue.Double:
+                                    _stack.Push(_valueFactory.Double(-val.Get<double>()));
+                                    break;
+                                default:
+                                    throw new InvalidOperationException();
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case OpCode.INC:
-                    {
-                        var val = _stack.Pop();
-                        switch (val.Type)
+                        case OpCode.INC:
                         {
-                            case TypeOfValue.Integer:
-                                _stack.Push(_valueFactory.Integer(val.Get<int>() + 1));
-                                break;
-                            case TypeOfValue.Double:
-                                _stack.Push(_valueFactory.Double(val.Get<double>() + 1));
-                                break;
-                            default:
-                                throw new InvalidOperationException();
+                            var val = _stack.Pop();
+                            switch (val.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    _stack.Push(_valueFactory.Integer(val.Get<int>() + 1));
+                                    break;
+                                case TypeOfValue.Double:
+                                    _stack.Push(_valueFactory.Double(val.Get<double>() + 1));
+                                    break;
+                                default:
+                                    throw new InvalidOperationException();
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case OpCode.DEC:
-                    {
-                        var val = _stack.Pop();
-                        switch (val.Type)
+                        case OpCode.DEC:
                         {
-                            case TypeOfValue.Integer:
-                                _stack.Push(_valueFactory.Integer(val.Get<int>() - 1));
-                                break;
-                            case TypeOfValue.Double:
-                                _stack.Push(_valueFactory.Double(val.Get<double>() - 1));
-                                break;
-                            default:
-                                throw new InvalidOperationException();
-                        }
+                            var val = _stack.Pop();
+                            switch (val.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    _stack.Push(_valueFactory.Integer(val.Get<int>() - 1));
+                                    break;
+                                case TypeOfValue.Double:
+                                    _stack.Push(_valueFactory.Double(val.Get<double>() - 1));
+                                    break;
+                                default:
+                                    throw new InvalidOperationException();
+                            }
 
-                        break;
-                    }
-                    case OpCode.NOT:
-                    {
-                        var val = _stack.Pop();
-                        switch (val.Type)
-                        {
-                            case TypeOfValue.Bool:
-                                _stack.Push(!val.Get<bool>()
-                                    ? _valueFactory.True() 
-                                    : _valueFactory.False());
-                                break;
-                            default:
-                                throw new NotImplementedException(bc.Op.ToString());
+                            break;
                         }
-                        break;
+                        case OpCode.NOT:
+                        {
+                            var val = _stack.Pop();
+                            switch (val.Type)
+                            {
+                                case TypeOfValue.Bool:
+                                    _stack.Push(!val.Get<bool>()
+                                        ? _valueFactory.True() 
+                                        : _valueFactory.False());
+                                    break;
+                                default:
+                                    throw new NotImplementedException(bc.Op.ToString());
+                            }
+                            break;
+                        }
+                        case OpCode.SLEN:
+                        {
+                            var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
+                            _stack.Push(_valueFactory.Integer(str.Length));
+                            break;
+                        }
+                        case OpCode.SIDXG:
+                        {
+                            var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
+                            var idx = _stack.Pop().Get<int>();
+                            _stack.Push(_valueFactory.String(str[idx].ToString()));
+                            break;
+                        }
+                        case OpCode.SIDXS:
+                        {
+                            var str = new StringBuilder(_scopes.Peek().GetVariable(SpecialVariables.String).Get<string>());
+                            var val = GetString(_stack.Pop());
+                            var index = _stack.Pop().Get<int>();
+                            str[index] = val[0];
+                            _scopes.Peek().SetVariable(SpecialVariables.String, _valueFactory.InternalString(str.ToString()));
+                            break;
+                        }
+                        case OpCode.SVIEW:
+                        {
+                            var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
+                            var end = _stack.Pop().Get<int>();
+                            var start = _stack.Pop().Get<int>();
+                            _stack.Push(_valueFactory.String(str.Substring(start, end - start)));
+                            break;
+                        }
+                        case OpCode.SIDXO:
+                        {
+                            var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
+                            var startIndex = _stack.Pop().Get<int>();
+                            var find = GetString(_stack.Pop());
+                            _stack.Push(_valueFactory.Integer(str.IndexOf(find, startIndex, StringComparison.InvariantCulture)));
+                            break;
+                        }
+                        case OpCode.SINS:
+                        {
+                            var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
+                            var insert = GetString(_stack.Pop());
+                            var index = _stack.Pop().Get<int>();
+                            _stack.Push(_valueFactory.String(str.Insert(index, insert)));
+                            break;
+                        }
+                        case OpCode.SRPLA:
+                        {
+                            var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
+                            var newStr = GetString(_stack.Pop());
+                            var oldStr = GetString(_stack.Pop());
+                            _stack.Push(_valueFactory.String(str.Replace(oldStr, newStr)));
+                            break;
+                        }
+                        case OpCode.SUP:
+                        {
+                            var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
+                            _stack.Push(_valueFactory.String(str.ToUpperInvariant()));
+                            break;
+                        }
+                        case OpCode.SLOW:
+                        {
+                            var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
+                            _stack.Push(_valueFactory.String(str.ToLowerInvariant()));
+                            break;
+                        }
+                        case OpCode.SPLIT:
+                        {
+                            var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
+                            var splitStr = GetString(_stack.Pop());
+                            var items = str.Split(splitStr, StringSplitOptions.RemoveEmptyEntries)
+                                .Select(s => _valueFactory.String(s)).ToList();
+                            _stack.Push(_valueFactory.List(items));
+                            break;
+                        }
+                        case OpCode.ASKIP:
+                        {
+                            var list = _scopes.Peek().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                            var count = _stack.Pop().Get<int>();
+                            _stack.Push(_valueFactory.List(list.Skip(count).ToList()));
+                            break;
+                        }
+                        default:
+                            throw new NotImplementedException(bc.Op.ToString());
                     }
-                    case OpCode.SLEN:
-                    {
-                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
-                        _stack.Push(_valueFactory.Integer(str.Length));
-                        break;
-                    }
-                    case OpCode.SIDXG:
-                    {
-                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
-                        var idx = _stack.Pop().Get<int>();
-                        _stack.Push(_valueFactory.String(str[idx].ToString()));
-                        break;
-                    }
-                    case OpCode.SIDXS:
-                    {
-                        var str = new StringBuilder(_scopes.Peek().GetVariable(".string").Get<string>());
-                        var val = GetString(_stack.Pop());
-                        var index = _stack.Pop().Get<int>();
-                        str[index] = val[0];
-                        _scopes.Peek().SetVariable(".string", _valueFactory.InternalString(str.ToString()));
-                        break;
-                    }
-                    case OpCode.SVIEW:
-                    {
-                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
-                        var end = _stack.Pop().Get<int>();
-                        var start = _stack.Pop().Get<int>();
-                        _stack.Push(_valueFactory.String(str.Substring(start, end - start)));
-                        break;
-                    }
-                    case OpCode.SIDXO:
-                    {
-                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
-                        var startIndex = _stack.Pop().Get<int>();
-                        var find = GetString(_stack.Pop());
-                        _stack.Push(_valueFactory.Integer(str.IndexOf(find, startIndex, StringComparison.InvariantCulture)));
-                        break;
-                    }
-                    case OpCode.SINS:
-                    {
-                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
-                        var insert = GetString(_stack.Pop());
-                        var index = _stack.Pop().Get<int>();
-                        _stack.Push(_valueFactory.String(str.Insert(index, insert)));
-                        break;
-                    }
-                    case OpCode.SRPLA:
-                    {
-                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
-                        var newStr = GetString(_stack.Pop());
-                        var oldStr = GetString(_stack.Pop());
-                        _stack.Push(_valueFactory.String(str.Replace(oldStr, newStr)));
-                        break;
-                    }
-                    case OpCode.SUP:
-                    {
-                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
-                        _stack.Push(_valueFactory.String(str.ToUpperInvariant()));
-                        break;
-                    }
-                    case OpCode.SLOW:
-                    {
-                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
-                        _stack.Push(_valueFactory.String(str.ToLowerInvariant()));
-                        break;
-                    }
-                    case OpCode.SPLIT:
-                    {
-                        var str = _scopes.Peek().GetVariable(".string").Get<string>();
-                        var splitStr = GetString(_stack.Pop());
-                        var items = str.Split(splitStr, StringSplitOptions.RemoveEmptyEntries)
-                            .Select(s => _valueFactory.String(s)).ToList();
-                        _stack.Push(_valueFactory.List(items));
-                        break;
-                    }
-                    case OpCode.ASKIP:
-                    {
-                        var list = _scopes.Peek().GetVariable(".list").Get<List<IValue>>();
-                        var count = _stack.Pop().Get<int>();
-                        _stack.Push(_valueFactory.List(list.Skip(count).ToList()));
-                        break;
-                    }
-                    default:
-                        throw new NotImplementedException(bc.Op.ToString());
+
+                    frame.Address++;
                 }
-
-                frame.Address++;
+            }
+            catch (Exception e)
+            {
+                if (frame.Address > 0)
+                {
+                    throw new InterpreterException(
+                        $"Failure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.\nPrevious bytecode was '{frame.Function[frame.Address-1]}'.", e);
+                }
+                throw new InterpreterException($"Failure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.", e);
             }
         }
 
         private string GetString(IValue val)
         {
-            return val.Get<Instance>().Scope.GetVariable(".string").Get<string>();
+            return val.Get<Instance>().GetVariable(SpecialVariables.String).Get<string>();
         }
 
         private void ThrowVariableNotFound(string variable)
@@ -1009,12 +1029,12 @@ namespace eilang
             {
                 ret = m;
             }
-            else if (_env.Classes.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::app", out var globApp) &&
+            else if (_env.Classes.TryGetValue($"{Compiler.Compiler.GlobalFunctionAndModuleName}::app", out var globApp) &&
                      globApp.Functions.TryGetValue(main, out var ma))
             {
                 ret = ma;
             }
-            else if (_env.Functions.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::{main}", out var globMain))
+            else if (_env.Functions.TryGetValue($"{Compiler.Compiler.GlobalFunctionAndModuleName}::{main}", out var globMain))
             {
                 ret = globMain;
             }
@@ -1026,7 +1046,7 @@ namespace eilang
             else
             {
                 var func = _env.Functions[
-                    $"{Compiler.GlobalFunctionAndModuleName}::{Compiler.GlobalFunctionAndModuleName}"];
+                    $"{Compiler.Compiler.GlobalFunctionAndModuleName}::{Compiler.Compiler.GlobalFunctionAndModuleName}"];
                 func.Write(OpCode.RET);
                 return func;
             }

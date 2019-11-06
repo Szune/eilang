@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using eilang.Classes;
+using eilang.Interfaces;
 
-namespace eilang
+namespace eilang.Compiler
 {
     public delegate IValue ExportedFunction(IValueFactory valueFactory, IValue args);
 

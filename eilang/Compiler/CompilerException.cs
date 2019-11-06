@@ -1,6 +1,6 @@
 using System;
 
-namespace eilang
+namespace eilang.Compiler
 {
     public class CompilerException : Exception
     {

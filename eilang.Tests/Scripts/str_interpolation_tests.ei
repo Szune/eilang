@@ -1,0 +1,28 @@
+﻿fun expect(str, hold) {
+    ret 'expected variable ' + str + ' to hold "' + hold + '"';
+}
+
+fun main() {
+    var other_str = 'helloooo';
+    var worl = 'world';
+    var newWorld = $"{other_str} {worl}!";
+    println(newWorld);
+    assert(newWorld == 'helloooo world!', expect('newWorld', 'helloooo world!'));
+    
+    var emptyInterpStr = $'';
+    println(emptyInterpStr);
+    assert(emptyInterpStr == '', expect('emptyInterpStr', ''));
+    
+    var onlyIdentifier = "hellos";
+    var interpStrHoldingOnlyIdentifier = $'{onlyIdentifier}';
+    println(interpStrHoldingOnlyIdentifier);
+    assert(interpStrHoldingOnlyIdentifier == 'hellos', expect('interpStrHoldingOnlyIdentifier', 'hellos'));
+    
+    var startWithIdentEndWithStr = $"{onlyIdentifier} worls";
+    println(startWithIdentEndWithStr);
+    assert(startWithIdentEndWithStr == 'hellos worls', expect('startWithIdentEndWithStr ', 'hellos worls'));
+    
+    var startWithStrEndWithIdent = $"worls, {onlyIdentifier}";
+    println(startWithStrEndWithIdent);
+    assert(startWithStrEndWithIdent  == 'worls, hellos', expect('startWithStrEndWithIdent  ', 'worls, hellos'));
+}

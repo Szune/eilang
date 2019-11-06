@@ -15,7 +15,7 @@ namespace eilang.Classes
                 {
                     new Bytecode(OpCode.REF, factory.String(SpecialVariables.Function)),
                     new Bytecode(OpCode.CALL),
-                    new Bytecode(OpCode.RET)
+                    new Bytecode(OpCode.RET),
                 }
             });
         }

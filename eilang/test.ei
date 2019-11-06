@@ -1,17 +1,6 @@
-﻿fun main() {
-    var x = 4;
-    x %= 2;
-    if (x == 0) {
-        println("(x = 4) % 2 == 0");
-    }
-    if (2 % 2 == 0) {
-        println("2 % 2 == 0");
-    }
-    if (1 % 2 == 0) {
-        println("1 % 2 == 0");
-    } else {
-        println("1 % 2 != 0");
-    }
+﻿import 'str';
+
+fun main() {
     var env = *env();
     var args = *cmd::args(env.get_args().skip(1)); # skip file name (may be some OS where that won't work, fix later if necessary)
     #var args = *cmd::args(["-greeting", "hello world", "-bye", "ciao world and so forth"]);
@@ -53,7 +42,7 @@ modu cmd {
                         arg_val.add(arg_list[cursor]);
                     }
 
-                    all.add(*cmd::arg(arg_name, str::join(arg_val, " ")));
+                    all.add(*cmd::arg(arg_name, str::join(" ", arg_val)));
                 } else {
                     break;
                 }
@@ -64,15 +53,5 @@ modu cmd {
             }
             ret all;
         }
-    }
-}
-
-modu str {
-   fun join(strings, joiner) {
-        var finalStr = strings[0];
-        for (strings.skip(1)) {
-            finalStr += joiner + it;
-        }
-        ret finalStr;
     }
 }

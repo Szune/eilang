@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-
 namespace eilang
 {
     public enum TokenType
@@ -65,7 +62,8 @@ namespace eilang
         QuestionMark,
         At,
         Percent,
-        ModuloEquals
+        ModuloEquals,
+        Import
     }
     
     

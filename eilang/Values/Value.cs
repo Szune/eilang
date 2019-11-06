@@ -45,6 +45,8 @@ namespace eilang.Values
             {
                 case TypeOfValue.String:
                     return Get<Instance>()?.GetVariable(SpecialVariables.String).Debug?.ToString() ?? "{null}";
+                case TypeOfValue.FunctionPointer:
+                    return "@" + Get<Instance>()?.GetVariable(SpecialVariables.Function).Get<Instance>().GetVariable(SpecialVariables.String).Debug ?? "@{null}";
                 case TypeOfValue.List:
                     return "[" + string.Join(", ", 
                                Get<Instance>().GetVariable(SpecialVariables.List)

@@ -152,10 +152,6 @@ namespace eilang.Compiler
         /// </summary>
         TMPV,
         /// <summary>
-        /// Clear temporary variable
-        /// </summary>
-        TMPC,
-        /// <summary>
         /// Reference temporary variable 
         /// </summary>
         TMPR,

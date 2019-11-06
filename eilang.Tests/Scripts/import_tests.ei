@@ -1,0 +1,12 @@
+﻿import 'test_str';
+
+fun main() {
+    var join = @str::join;
+    var starts = @str::starts_with;
+    var ends = @str::ends_with;
+    println($'does "cellar door" end with "door"? {(ends.call('cellar door', 'door') ? 'yes' : 'no')}');
+    println($'does "cellar door" end with "cellar"? {(ends.call('cellar door', 'cellar') ? 'yes' : 'no')}');
+    println($'does "cellar door" start with "cellar"? {(starts.call('cellar door', 'cellar') ? 'yes' : 'no')}');
+    println($'does "cellar door" start with "door"? {(starts.call('cellar door', 'door') ? 'yes' : 'no')}');
+    assert((ends.call('cellar door', 'door') ? 'yes' : 'no') == 'yes', 'expected cellar door to end with door');
+}

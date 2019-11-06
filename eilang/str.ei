@@ -1,0 +1,43 @@
+﻿modu str {
+   fun join(joiner, strings) {
+        var finalStr = strings[0];
+        for (strings.skip(1)) {
+            finalStr += joiner + it;
+        }
+        ret finalStr;
+    }
+    
+    fun ends_with(str, find) {
+        var len_str = str.len();
+        var len_find = find.len();
+        if(len_find > len_str) {
+            ret false;
+        }
+        
+        var c = 0;
+        for(len_str - len_find..len_str - 1) {
+            if(str[ix] != find[c]) {
+                ret false;
+            }
+            c++;
+        }
+        ret true;
+    }
+    
+    fun starts_with(str, find) {
+        var len_str = str.len();
+        var len_find = find.len();
+        if(len_find > len_str) {
+            ret false;
+        }
+        
+        var c = 0;
+        for(0..len_find - 1) {
+            if(str[ix] != find[c]) {
+                ret false;
+            }
+            c++;
+        }
+        ret true;
+    }
+}

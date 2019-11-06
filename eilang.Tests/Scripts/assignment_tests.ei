@@ -79,7 +79,6 @@ fun main() {
     mod %= 2;
     assert(mod == 0, $'expected 10 % 2 to be 0 but was {mod}');
     
-    var mod2 = 11;
-    mod2 %= 2;
+    var mod2 = 11 % 2;
     assert(mod2 == 1, $'expected 11 % 2 to be 1 but was {mod2}');
 }

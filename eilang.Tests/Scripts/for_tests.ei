@@ -99,4 +99,25 @@ fun main() {
     println(join_range("last join range".split(' '), '\n'));
     println("-----");
     println(str::join("hello me!".split(' '), '-'));
+    
+    test_loops_in_different_funcs();
+}
+
+fun test_loops_in_different_funcs() {
+	var array = [1, 2, 3, 4];
+	for(array) {
+		println(it);
+		otherLoop();
+		assert(it == 1, '"it" should be 1');
+		break;
+	}
+}
+
+fun otherLoop() {
+	var array = [6, 7, 8, 9];	
+	for(array) {
+		println(it);
+		assert(it == 6, '"it" should be 6');
+		break;
+	}
 }

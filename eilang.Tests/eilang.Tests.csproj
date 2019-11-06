@@ -49,6 +49,14 @@
       <Content Include="Scripts\function_pointer_tests.ei">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
+      <None Remove="Scripts\import_tests.ei" />
+      <Content Include="Scripts\import_tests.ei">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Scripts\str.ei" />
+      <Content Include="Scripts\test_str.ei">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

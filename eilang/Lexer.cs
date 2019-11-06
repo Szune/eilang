@@ -37,6 +37,7 @@ namespace eilang
                 {"me", TokenType.Me},
                 {"continue", TokenType.Continue},
                 {"break", TokenType.Break},
+//                {"import", TokenType.Import}
             };
         }
 

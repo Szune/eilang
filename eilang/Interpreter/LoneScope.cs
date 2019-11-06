@@ -1,0 +1,28 @@
+﻿using System;
+using System.Collections.Generic;
+using eilang.Interfaces;
+
+namespace eilang.Interpreter
+{
+    public class LoneScope : IScope
+    {
+        private Dictionary<string, IValue> _variables = new Dictionary<string,IValue>();
+
+        public IValue GetVariable(string name)
+        {
+            if (_variables.TryGetValue(name, out var val))
+                return val;
+            return null;
+        }
+
+        public void SetVariable(string name, IValue value)
+        {
+            _variables[name] = value;
+        }
+
+        public void Clear()
+        {
+            _variables.Clear();
+        }
+    }
+}

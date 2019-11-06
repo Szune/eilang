@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using eilang.Classes;
 using eilang.Compiler;
+using eilang.Imports;
 using eilang.Values;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,8 +20,7 @@ namespace eilang.Tests
         [Fact]
         public void RunAssignmentTests()
         {
-            var code = File.ReadAllText("Scripts/assignment_tests.ei");
-            RunScript(code);
+            RunScript("Scripts/assignment_tests.ei");
             Console.WriteLine("Assignment tests completed");
         }
 
@@ -28,48 +28,49 @@ namespace eilang.Tests
         [Fact]
         public void RunForTests()
         {
-            var code = File.ReadAllText("Scripts/for_tests.ei");
-            RunScript(code);
+            RunScript("Scripts/for_tests.ei");
             Console.WriteLine("For tests completed");
+        }
+        
+        [Fact]
+        public void RunImportTests()
+        {
+            RunScript("Scripts/import_tests.ei");
+            Console.WriteLine("Import tests completed");
         }
         
         [Fact]
         public void RunIncrementAndDecrementTests()
         {
-            var code = File.ReadAllText("Scripts/inc_dec_tests.ei");
-            RunScript(code);
+            RunScript("Scripts/inc_dec_tests.ei");
             Console.WriteLine("Increment and decrement tests completed");
         }
         
         [Fact]
         public void RunFunctionPointerTests()
         {
-            var code = File.ReadAllText("Scripts/function_pointer_tests.ei");
-            RunScript(code);
+            RunScript("Scripts/function_pointer_tests.ei");
             Console.WriteLine("Function pointer tests completed");
         }
         
         [Fact]
         public void RunMeTests()
         {
-            var code = File.ReadAllText("Scripts/me_tests.ei");
-            RunScript(code);
+            RunScript("Scripts/me_tests.ei");
             Console.WriteLine("Me tests completed");
         }
         
         [Fact]
         public void RunStringInterpolationTests()
         {
-            var code = File.ReadAllText("Scripts/str_interpolation_tests.ei");
-            RunScript(code);
+            RunScript("Scripts/str_interpolation_tests.ei");
             Console.WriteLine("String interpolation tests completed");
         }
         
         [Fact]
         public void RunTernaryTests()
         {
-            var code = File.ReadAllText("Scripts/ternary_tests.ei");
-            RunScript(code);
+            RunScript("Scripts/ternary_tests.ei");
             Console.WriteLine("Ternary tests completed");
         }
         
@@ -77,14 +78,15 @@ namespace eilang.Tests
         [Fact]
         public void RunOldRegressionTests()
         {
-            var code = File.ReadAllText("Scripts/testold.ei");
-            RunScript(code);
+            RunScript("Scripts/testold.ei");
             Console.WriteLine("Old regression tests completed");
         }
         
         
-        private static void RunScript(string code)
+        private static void RunScript(string path)
         {
+            var imports = new ImportResolver().ResolveImports(path);
+            var code = new ImportMerger().Merge(imports);
             var lexer = new Lexer(code);
             var parser = new Parser(lexer);
             var ast = parser.Parse();

@@ -814,7 +814,7 @@ namespace eilang
                     return ParseListInit();
                 case TokenType.LeftParenthesis:
                     Consume();
-                    var expr = ParseOr();
+                    var expr = ParseTernaryOperator();
                     Require(TokenType.RightParenthesis);
                     return expr;
                 case TokenType.Continue:

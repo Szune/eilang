@@ -17,7 +17,8 @@ namespace eilang.Interpreter
         private readonly Stack<CallFrame> _frames = new Stack<CallFrame>();
         private readonly StackWithoutNullItems<IValue> _stack = new StackWithoutNullItems<IValue>();
         private readonly Stack<Scope> _scopes = new Stack<Scope>();
-        private readonly Dictionary<string, IValue> _tmpVars = new Dictionary<string, IValue>();
+        private readonly Stack<LoneScope> _tmpVars = new Stack<LoneScope>();
+        //private readonly Dictionary<string, IValue> _tmpVars = new Dictionary<string, IValue>();
         private readonly TextWriter _logger;
 
         public Interpreter(Env env, IValueFactory valueFactory = null, TextWriter logger = null)
@@ -383,6 +384,16 @@ namespace eilang.Interpreter
                                             throw new InterpreterException("Type mismatch on '+' operator.");
                                     }
                                     break;
+                                case TypeOfValue.Bool:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.String:
+                                            _stack.Push(_valueFactory.String(left.Get<bool>() + GetString(right)));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '+' operator.");
+                                    }
+                                    break;
                                 case TypeOfValue.String:
                                     switch (right.Type)
                                     {
@@ -394,6 +405,9 @@ namespace eilang.Interpreter
                                             break;
                                         case TypeOfValue.Double:
                                             _stack.Push(_valueFactory.String(GetString(left) + right.Get<double>()));
+                                            break;
+                                        case TypeOfValue.Bool:
+                                            _stack.Push(_valueFactory.String(GetString(left) + right.Get<bool>()));
                                             break;
                                         case TypeOfValue.List:
                                             _stack.Push(_valueFactory.String(GetString(left) + right));
@@ -614,6 +628,11 @@ namespace eilang.Interpreter
                         case OpCode.RET:
                             _frames.Pop();
                             _scopes.Pop();
+                            if (bc.Arg0?.Get<int>() == Compiler.Compiler.InLoopReturn)
+                            {
+                                _scopes.Pop();
+                                _tmpVars.Pop().Clear();
+                            }
                             break;
                         case OpCode.INIT:
                             var argCount = _stack.Pop().Get<int>();
@@ -821,26 +840,22 @@ namespace eilang.Interpreter
                         case OpCode.TMPV:
                         {
                             var val = _stack.Pop();
-                            _tmpVars[GetString(bc.Arg0)] = val;
+                            _tmpVars.Peek().SetVariable(GetString(bc.Arg0), val);
                             break;
                         }
                         case OpCode.TMPR:
                         {
-                            _stack.Push(_tmpVars[GetString(bc.Arg0)]);
-                            break;
-                        }
-                        case OpCode.TMPC:
-                        {
-                            _tmpVars.Remove(GetString(bc.Arg0));
+                            _stack.Push(_tmpVars.Peek().GetVariable(GetString(bc.Arg0)));
                             break;
                         }
                         case OpCode.NSCP:
                             _scopes.Push(new Scope(_scopes.Peek()));
+                            _tmpVars.Push(new LoneScope());
                             break;
                         case OpCode.PSCP:
                             _scopes.Pop();
+                            _tmpVars.Pop().Clear();
                             break;
-                    
                         case OpCode.NEG:
                         {
                             var val = _stack.Pop();
@@ -1089,6 +1104,35 @@ namespace eilang.Interpreter
                 func.Write(OpCode.RET);
                 return func;
             }
+        }
+
+        /// <summary>
+        /// Inlines function calls for easier debugging
+        /// </summary>
+        public void DumpBytecode(string name)
+        {
+            var lines = new List<string>();
+            var startFunc = GetStartFunction();
+            
+            lines.Add($"--Function {startFunc.FullName}");
+            for (int i = 0; i < startFunc.Length; i++)
+            {
+                lines.Add($"[{i}] {startFunc[i]}");
+            }
+
+            foreach (var func in _env.Functions.Values)
+            {
+                if (func.FullName == startFunc.FullName)
+                    continue;
+                lines.Add("");
+                lines.Add($"--Function {func.FullName}");
+                for (int i = 0; i < func.Length; i++)
+                {
+                    lines.Add($"[{i}] {func[i]}");
+                }
+            }
+            
+            File.WriteAllLines(name, lines);
         }
     }
 }

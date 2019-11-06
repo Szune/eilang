@@ -22,6 +22,7 @@ namespace eilang.Compiler
         private readonly Dictionary<int, Stack<(int Index, int Type)>> _loopControlFlowOps = new Dictionary<int, Stack<(int Index, int Type)>>();
         private const int Break = 0xBAD;
         private const int Continue = 0xCAB;
+        public const int InLoopReturn = 0xCAF0;
 
         public Compiler(Env env, TextWriter logger, IValueFactory valueFactory)
         {
@@ -249,6 +250,8 @@ namespace eilang.Compiler
         {
             if (ret.RetExpr != null)
                 ret.RetExpr.Accept(this, function, mod);
+            if(_forDepth > 0)
+                AddControlFlowOp(_forDepth, (function.Length, InLoopReturn));
             function.Write(OpCode.RET);
         }
 
@@ -451,7 +454,6 @@ namespace eilang.Compiler
             function.Write(OpCode.JMP, _valueFactory.Integer(addressOfCmp));
             var endOfLoop = function.Code.Count;
             function.Write(OpCode.PSCP);
-            function.Write(OpCode.TMPC, _valueFactory.String($".alen{_forDepth}"));
             function[addressOfJmpT] = new Bytecode(OpCode.JMPT, _valueFactory.Integer(endOfLoop));
             function[addressOfFirstJmpZ] = new Bytecode(OpCode.JMPZ, _valueFactory.Integer(endOfLoop));
             AssignLoopControlFlowJumps(function, _forDepth, addressOfLoopStep, endOfLoop);
@@ -551,6 +553,10 @@ namespace eilang.Compiler
                         break;
                     case Continue:
                         function.Code[flow.Index] = new Bytecode(OpCode.JMP, _valueFactory.Integer(loopStep));
+                        break;
+                    case InLoopReturn:
+                        // TODO: may have to let the RET know the forDepth
+                        function.Code[flow.Index] = new Bytecode(OpCode.RET, _valueFactory.Integer(InLoopReturn));
                         break;
                     default:
                         throw new CompilerException("Unknown control flow type of value " + flow.Type);
@@ -688,6 +694,8 @@ namespace eilang.Compiler
                 newFunc.Write(OpCode.RET);
             }
 
+            if(_env.Functions.ContainsKey(newFunc.FullName))
+                throw new CompilerException($"Function '{newFunc.Name}' has already been declared in namespace '{mod.Name}'.");
             _env.Functions.Add(newFunc.FullName, newFunc);
         }
 

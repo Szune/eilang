@@ -4,27 +4,28 @@ using System.Collections.Generic;
 using System.IO;
 using eilang.Classes;
 using eilang.Compiler;
+using eilang.Imports;
 using eilang.Interfaces;
 using eilang.Values;
 
 namespace eilang
 {
-    public class Program
+    public static class Program
     {
         static void Main(string[] args)
         {
             // TODO: 1. implement maps (dictionaries)
-            // TODO: 2. implement includes
-            // TODO: 3. implement file i/o
-            // TODO: 4. implement networking
-            // TODO: 5. implement reflection-like functionality
-            // TODO: 6. implement switch statements
-            // TODO: 7. implement calling external libraries, dlls and such
-            // TODO: 8. static analysis of types (i.e. type checking)
+            // TODO: 2. implement file i/o
+            // TODO: 3. implement networking
+            // TODO: 4. implement reflection-like functionality
+            // TODO: 5. implement switch statements
+            // TODO: 6. implement calling external libraries, dlls and such
+            // TODO: 7. static analysis of types (i.e. type checking)
 
             //var cod5 = File.ReadAllText("assignment_tests.ei");
-            var code = File.ReadAllText("test.ei");
-            //var code = File.ReadAllText(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\ternary_tests.ei");
+            //var imports = new ImportResolver().ResolveImports(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");
+            var imports = new ImportResolver().ResolveImports("test.ei");
+            var code = new ImportMerger().Merge(imports);
             var oldcode = @"fun main() {
     #+
     var n = *net();
@@ -154,15 +155,18 @@ namespace eilang
         public static IValue PrintLine(IValueFactory fac, IValue value)
         {
             var ind = '.';
-            PrintLineInner(fac, value);
+            PrintLineInner(value);
 
-            void PrintLineInner(IValueFactory factory, IValue val, int indent = 0)
+            void PrintLineInner(IValue val, int indent = 0)
             {
                 Console.Write(new string(ind, indent * 2));
                 switch (val.Type)
                 {
                     case TypeOfValue.String:
                         Console.WriteLine(val.Get<Instance>().GetVariable(SpecialVariables.String).Get<string>());
+                        break;
+                    case TypeOfValue.FunctionPointer:
+                        Console.WriteLine(val.Get<Instance>().GetVariable(SpecialVariables.Function).Get<Instance>().GetVariable(SpecialVariables.String).Get<string>());
                         break;
                     case TypeOfValue.Double:
                         Console.WriteLine(val.Get<double>());

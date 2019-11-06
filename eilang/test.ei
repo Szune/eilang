@@ -1,7 +1,7 @@
 ﻿fun main() {
-    #var env = *env();
-    #var args = *cmd::args(env.get_args().skip(1)); # skip file name (may be some OS where that won't work, fix later if necessary)
-    var args = *cmd::args(["-greeting", "hello world", "-bye", "ciao world and so forth"]);
+    var env = *env();
+    var args = *cmd::args(env.get_args().skip(1)); # skip file name (may be some OS where that won't work, fix later if necessary)
+    #var args = *cmd::args(["-greeting", "hello world", "-bye", "ciao world and so forth"]);
     for(args.parse()) {
         println($'"{it.name}" with value "{it.value}"');
     }
@@ -18,6 +18,9 @@ modu cmd {
         ctor(arg_list);
 
         fun parse() {
+            if(arg_list.len() < 1) {
+                ret [];
+            }
             var cursor = 0;
             var all = [];
             var arg_name = "";

@@ -255,6 +255,18 @@ namespace eilang
                         }
 
                         break;
+                    case '%':
+                        if (_buffer[1] == '=')
+                        {
+                            token = GetToken(TokenType.ModuloEquals);
+                            Consume();
+                        }
+                        else
+                        {
+                            token = GetToken(TokenType.Percent);
+                        }
+
+                        break;
                     case '&':
                         if (_buffer[1] == '&')
                         {

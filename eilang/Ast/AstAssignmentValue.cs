@@ -13,7 +13,8 @@ namespace eilang.Ast
         Increment,
         Decrement,
         IncrementAndReference,
-        DecrementAndReference
+        DecrementAndReference,
+        ModuloEquals
     }
     public class AstAssignmentValue : AstExpression
     {

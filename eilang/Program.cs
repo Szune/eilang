@@ -14,14 +14,13 @@ namespace eilang
         static void Main(string[] args)
         {
             // TODO: 1. implement maps (dictionaries)
-            // TODO: 2. implement modulo
-            // TODO: 3. implement includes
-            // TODO: 4. implement file i/o
-            // TODO: 5. implement networking
-            // TODO: 6. implement reflection-like functionality
-            // TODO: 7. implement switch statements
-            // TODO: 8. implement calling external libraries, dlls and such
-            // TODO: 9. static analysis of types (i.e. type checking)
+            // TODO: 2. implement includes
+            // TODO: 3. implement file i/o
+            // TODO: 4. implement networking
+            // TODO: 5. implement reflection-like functionality
+            // TODO: 6. implement switch statements
+            // TODO: 7. implement calling external libraries, dlls and such
+            // TODO: 8. static analysis of types (i.e. type checking)
 
             //var cod5 = File.ReadAllText("assignment_tests.ei");
             var code = File.ReadAllText("test.ei");

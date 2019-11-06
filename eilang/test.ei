@@ -1,4 +1,17 @@
 ﻿fun main() {
+    var x = 4;
+    x %= 2;
+    if (x == 0) {
+        println("(x = 4) % 2 == 0");
+    }
+    if (2 % 2 == 0) {
+        println("2 % 2 == 0");
+    }
+    if (1 % 2 == 0) {
+        println("1 % 2 == 0");
+    } else {
+        println("1 % 2 != 0");
+    }
     var env = *env();
     var args = *cmd::args(env.get_args().skip(1)); # skip file name (may be some OS where that won't work, fix later if necessary)
     #var args = *cmd::args(["-greeting", "hello world", "-bye", "ciao world and so forth"]);

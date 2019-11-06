@@ -111,6 +111,9 @@ namespace eilang.Compiler
         /// Jump
         /// </summary>
         JMP,
+        /// <summary>
+        /// Create new list
+        /// </summary>
         NLIST,
         /// <summary>
         /// Array add
@@ -124,6 +127,9 @@ namespace eilang.Compiler
         /// Array remove at
         /// </summary>
         AREMA,
+        /// <summary>
+        /// Array length
+        /// </summary>
         ALEN,
         /// <summary>
         /// Array clear
@@ -228,6 +234,10 @@ namespace eilang.Compiler
         /// <summary>
         /// Decrement unary operator
         /// </summary>
-        DEC
+        DEC,
+        /// <summary>
+        /// Modulo
+        /// </summary>
+        MOD
     }
 }

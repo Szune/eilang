@@ -485,6 +485,43 @@ namespace eilang.Interpreter
                         }
                             break;
                     
+                        case OpCode.MOD:
+                        {
+                            var right = _stack.Pop();
+                            var left = _stack.Pop();
+                            switch (left.Type)
+                            {
+                                case TypeOfValue.Integer:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.Integer(left.Get<int>() % right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.Double(left.Get<int>() % right.Get<double>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '%' operator.");
+                                    }
+                                    break;
+                                case TypeOfValue.Double:
+                                    switch (right.Type)
+                                    {
+                                        case TypeOfValue.Integer:
+                                            _stack.Push(_valueFactory.Double(left.Get<double>() % right.Get<int>()));
+                                            break;
+                                        case TypeOfValue.Double:
+                                            _stack.Push(_valueFactory.Double(left.Get<double>() % right.Get<double>()));
+                                            break;
+                                        default:
+                                            throw new InterpreterException("Type mismatch on '%' operator.");
+                                    }
+                                    break;
+                                default:
+                                    throw new InterpreterException("Invalid values used with '%' operator.");
+                            }
+                        }
+                            break;
                         case OpCode.DIV:
                         {
                             var right = _stack.Pop();
@@ -958,7 +995,7 @@ namespace eilang.Interpreter
                     frame.Address++;
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (!(e is AssertionException))
             {
                 if (frame.Address > 0)
                 {

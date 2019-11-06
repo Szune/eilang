@@ -63,7 +63,9 @@ namespace eilang
         PlusPlus,
         MinusMinus,
         QuestionMark,
-        At
+        At,
+        Percent,
+        ModuloEquals
     }
     
     

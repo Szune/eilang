@@ -9,7 +9,8 @@ namespace eilang.Ast
         Plus,
         Minus,
         Times,
-        Division
+        Division,
+        Modulo
     }
 
     public class AstBinaryMathOperation : AstExpression

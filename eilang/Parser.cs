@@ -588,19 +588,19 @@ namespace eilang
 
         private AstExpression ParsePlusAndMinus()
         {
-            var expression = ParseMultiplicationAndDivision();
+            var expression = ParseMultiplicationAndDivisionAndModulo();
             while (Match(TokenType.Plus) || Match(TokenType.Minus))
             {
                 if (Match(TokenType.Plus))
                 {
                     Consume();
-                    var right = ParseMultiplicationAndDivision();
+                    var right = ParseMultiplicationAndDivisionAndModulo();
                     expression = new AstBinaryMathOperation(BinaryMath.Plus, expression, right);
                 }
                 else if (Match(TokenType.Minus))
                 {
                     Consume();
-                    var right = ParseMultiplicationAndDivision();
+                    var right = ParseMultiplicationAndDivisionAndModulo();
                     expression = new AstBinaryMathOperation(BinaryMath.Minus, expression, right);
                 }
                 else
@@ -612,10 +612,10 @@ namespace eilang
             return expression;
         }
 
-        private AstExpression ParseMultiplicationAndDivision()
+        private AstExpression ParseMultiplicationAndDivisionAndModulo()
         {
             var expression = ParseIncrementDecrementUnaryOperators();
-            while (Match(TokenType.Asterisk) || Match(TokenType.Slash))
+            while (Match(TokenType.Asterisk) || Match(TokenType.Slash) || Match(TokenType.Percent))
             {
                 if (Match(TokenType.Asterisk))
                 {
@@ -628,6 +628,12 @@ namespace eilang
                     Consume();
                     var right = ParseIncrementDecrementUnaryOperators();
                     expression = new AstBinaryMathOperation(BinaryMath.Division, expression, right);
+                }
+                else if (Match(TokenType.Percent))
+                {
+                    Consume();
+                    var right = ParseIncrementDecrementUnaryOperators();
+                    expression = new AstBinaryMathOperation(BinaryMath.Modulo, expression, right);
                 }
                 else
                 {
@@ -733,6 +739,7 @@ namespace eilang
                    Match(TokenType.DivideEquals) ||
                    Match(TokenType.TimesEquals) ||
                    Match(TokenType.PlusEquals) ||
+                   Match(TokenType.ModuloEquals) ||
                    Match(TokenType.PlusPlus) ||
                    Match(TokenType.MinusMinus) ||
                    Match(TokenType.MinusEquals);
@@ -759,6 +766,12 @@ namespace eilang
                     Consume();
                     var value = ParseTernaryOperator();
                     return new AstAssignmentValue(value, Assignment.TimesEquals);
+                }
+                case TokenType.ModuloEquals:
+                {
+                    Consume();
+                    var value = ParseTernaryOperator();
+                    return new AstAssignmentValue(value, Assignment.ModuloEquals);
                 }
                 case TokenType.PlusEquals:
                 {

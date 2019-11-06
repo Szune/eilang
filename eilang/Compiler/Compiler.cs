@@ -122,6 +122,9 @@ namespace eilang.Compiler
                 case BinaryMath.Division:
                     function.Write(OpCode.DIV);
                     break;
+                case BinaryMath.Modulo:
+                    function.Write(OpCode.MOD);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -302,6 +305,11 @@ namespace eilang.Compiler
                     assignment.Reference.Accept(this, function, mod);
                     assignment.Value.Accept(this, function, mod);
                     function.Write(OpCode.MUL);
+                    break;
+                case Assignment.ModuloEquals:
+                    assignment.Reference.Accept(this, function, mod);
+                    assignment.Value.Accept(this, function, mod);
+                    function.Write(OpCode.MOD);
                     break;
                 case Assignment.MinusEquals:
                     assignment.Reference.Accept(this, function, mod);

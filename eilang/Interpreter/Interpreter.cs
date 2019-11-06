@@ -18,7 +18,6 @@ namespace eilang.Interpreter
         private readonly StackWithoutNullItems<IValue> _stack = new StackWithoutNullItems<IValue>();
         private readonly Stack<Scope> _scopes = new Stack<Scope>();
         private readonly Stack<LoneScope> _tmpVars = new Stack<LoneScope>();
-        //private readonly Dictionary<string, IValue> _tmpVars = new Dictionary<string, IValue>();
         private readonly TextWriter _logger;
 
         public Interpreter(Env env, IValueFactory valueFactory = null, TextWriter logger = null)

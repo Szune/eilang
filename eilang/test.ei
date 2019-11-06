@@ -1,24 +1,6 @@
 ﻿import 'str';
-fun doLoop(){
-    for(0..10) {
-        for(1..10) {
-            doLoop2();
-        }
-    }
-    ret 10;
-}
-
-fun doLoop2() {
-    for(0..10) {
-        for(1..15) {
-            ret 15;
-        }
-    }
-}
 
 fun main() {
-    var val = doLoop();
-    println(val);
     var env = *env();
     var args = *cmd::args(env.get_args().skip(1)); # skip file name (may be some OS where that won't work, fix later if necessary)
     #var args = *cmd::args(["-greeting", "hello world", "-bye", "ciao world and so forth"]);

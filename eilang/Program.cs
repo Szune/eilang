@@ -20,7 +20,9 @@ namespace eilang
             // TODO: 4. implement reflection-like functionality
             // TODO: 5. implement switch statements
             // TODO: 6. implement calling external libraries, dlls and such
-            // TODO: 7. static analysis of types (i.e. type checking)
+            // TODO: 7. perform analysis to remove unhandled return values from the stack,
+            // currently the stack gets filled with unhandled return values if calling a function that returns a value inside a loop
+            // TODO: 8. static analysis of types (i.e. type checking)
 
             //var cod5 = File.ReadAllText("assignment_tests.ei");
             //var imports = new ImportResolver().ResolveImports(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");

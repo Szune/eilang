@@ -4,6 +4,7 @@
     {
             public const string Me = ".me";
             public const string List = ".list";
-            public const string String = ".string";
+            public const string String = ".str";
+            public const string Function = ".func";
     }
 }

@@ -50,11 +50,20 @@ namespace eilang.Tests
         }
         
         [Fact]
-        public void RunTestOld()
+        public void RunTernaryTests()
+        {
+            var code = File.ReadAllText("Scripts/ternary_tests.ei");
+            RunScript(code);
+            Console.WriteLine("Ternary tests completed");
+        }
+        
+        
+        [Fact]
+        public void RunOldRegressionTests()
         {
             var code = File.ReadAllText("Scripts/testold.ei");
             RunScript(code);
-            Console.WriteLine("Old tests completed");
+            Console.WriteLine("Old regression tests completed");
         }
         
         

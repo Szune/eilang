@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using eilang.Ast;
 using eilang.Interfaces;
 
@@ -347,7 +348,7 @@ namespace eilang
                 ast.Expressions.Add(new AstReturn(null));
                 return;
             }
-            var retExpr = ParseOr();
+            var retExpr = ParseTernaryOperator();
             ast.Expressions.Add(new AstReturn(retExpr));
         }
 
@@ -484,9 +485,21 @@ namespace eilang
             var ident = Require(TokenType.Identifier).Text;
             Require(TokenType.Equals);
             // ⚠Important⚠ initial expression, cannot allow +=, -= etc
-            var value = ParseOr();
+            var value = ParseTernaryOperator();
             Require(TokenType.Semicolon);
             ast.Expressions.Add(new AstDeclarationAssignment(ident, value));
+        }
+
+        private AstExpression ParseTernaryOperator()
+        {
+            var expression = ParseOr();
+            if (!Match(TokenType.QuestionMark))
+                return expression;
+            Consume(); // Consume question mark
+            var trueExpr = ParseTernaryOperator();
+            Require(TokenType.Colon);
+            var falseExpr = ParseTernaryOperator();
+            return new AstTernary(expression, trueExpr, falseExpr);
         }
 
         private AstExpression ParseOr()
@@ -732,31 +745,31 @@ namespace eilang
                 case TokenType.Equals:
                 {
                     Consume();
-                    var value = ParseOr();
+                    var value = ParseTernaryOperator();
                     return new AstAssignmentValue(value, Assignment.Equals);
                 }
                 case TokenType.DivideEquals:
                 {
                     Consume();
-                    var value = ParseOr();
+                    var value = ParseTernaryOperator();
                     return new AstAssignmentValue(value, Assignment.DivideEquals);
                 }
                 case TokenType.TimesEquals:
                 {
                     Consume();
-                    var value = ParseOr();
+                    var value = ParseTernaryOperator();
                     return new AstAssignmentValue(value, Assignment.TimesEquals);
                 }
                 case TokenType.PlusEquals:
                 {
                     Consume();
-                    var value = ParseOr();
+                    var value = ParseTernaryOperator();
                     return new AstAssignmentValue(value, Assignment.PlusEquals);
                 }
                 case TokenType.MinusEquals:
                 {
                     Consume();
-                    var value = ParseOr();
+                    var value = ParseTernaryOperator();
                     return new AstAssignmentValue(value, Assignment.MinusEquals);
                 }
                 case TokenType.PlusPlus:

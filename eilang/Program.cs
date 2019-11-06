@@ -12,22 +12,22 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-            // TODO: 1. implement ternary operators, i.e. bool ? true : false
-            // TODO: 2. implement 'function pointers' (e.g. saving a function to a variable,
+            // TODO: 1. implement 'function pointers' (e.g. saving a function to a variable,
             // TODO: calling a function with another function as a parameter) -> @method *method or smth else?
-            // TODO: 3. implement maps (dictionaries)
-            // TODO: 4. implement modulo
-            // TODO: 5. implement includes
-            // TODO: 6. implement file i/o
-            // TODO: 7. implement networking
+            // TODO: 2. implement maps (dictionaries)
+            // TODO: 3. implement modulo
+            // TODO: 4. implement includes
+            // TODO: 5. implement file i/o
+            // TODO: 6. implement networking
+            // TODO: 7. implement reflection-like functionality
             // TODO: 8. implement switch statements
             // TODO: 9. implement calling external libraries, dlls and such
             // TODO: 10. static analysis of types (i.e. type checking)
 
             //#define LOGGING
             //var cod5 = File.ReadAllText("assignment_tests.ei");
-            //var code = File.ReadAllText("test.ei");
-            var code = File.ReadAllText(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\str_interpolation_tests.ei");
+            var code = File.ReadAllText("test.ei");
+            //var code = File.ReadAllText(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\ternary_tests.ei");
             var oldcode = @"fun main() {
     #+
     var n = *net();

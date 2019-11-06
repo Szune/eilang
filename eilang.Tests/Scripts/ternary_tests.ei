@@ -1,0 +1,13 @@
+﻿fun main() {
+    var ternary1 = 100 < 120 ? 100 > 90 ? "yas" : "nas1" : "nas2";
+    println(ternary1);
+    assert(ternary1 == "yas", "expected ternary1 to be 'yas'");
+    
+    var ternary2 = 100 < 120 ? 100 > 120 ? "yas" : "nas1" : "nas2";
+    println(ternary2);
+    assert(ternary2 == "nas1", "expected ternary2 to be 'nas1'");
+    
+    var ternary3 = 150 < 120 ? 100 > 90 ? "yas" : "nas1" : "nas2";
+    println(ternary3);
+    assert(ternary3 == "nas2", "expected ternary3 to be 'nas2'");
+}

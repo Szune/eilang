@@ -506,6 +506,24 @@ namespace eilang.Compiler
             function.Write(OpCode.REF, _valueFactory.String(SpecialVariables.Me));
         }
 
+        public void Visit(AstTernary ternary, Function function, Module mod)
+        {
+            Log($"Compiling ternary operator");
+            ternary.Condition.Accept(this, function, mod);
+            function.Write(OpCode.JMPF, _valueFactory.Integer(0));
+            var jmpfOpCodeIndex = function.Code.Count - 1;
+
+            ternary.TrueExpr.Accept(this, function, mod);
+            function.Write(OpCode.JMP, _valueFactory.Integer(0));
+            var jmpOpCodeIndex = function.Code.Count - 1;
+            var trueEndIndex = function.Code.Count;
+            function[jmpfOpCodeIndex] = new Bytecode(OpCode.JMPF, _valueFactory.Integer(trueEndIndex));
+
+            ternary.FalseExpr.Accept(this, function, mod);
+            var falseEndIndex = function.Code.Count;
+            function[jmpOpCodeIndex] = new Bytecode(OpCode.JMP, _valueFactory.Integer(falseEndIndex));
+        }
+
         private void AssignLoopControlFlowJumps(Function function, int forDepth, int loopStep, int loopEnd)
         {
             if (!_loopControlFlowOps.TryGetValue(forDepth, out var stack) || stack.Count <= 0) 

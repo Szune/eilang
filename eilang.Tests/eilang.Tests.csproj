@@ -37,6 +37,10 @@
       <Content Include="Scripts\str_interpolation_tests.ei">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
+      <None Remove="Scripts\ternary_tests.ei" />
+      <Content Include="Scripts\ternary_tests.ei">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

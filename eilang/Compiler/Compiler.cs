@@ -555,8 +555,7 @@ namespace eilang.Compiler
                         function.Code[flow.Index] = new Bytecode(OpCode.JMP, _valueFactory.Integer(loopStep));
                         break;
                     case InLoopReturn:
-                        // TODO: may have to let the RET know the forDepth
-                        function.Code[flow.Index] = new Bytecode(OpCode.RET, _valueFactory.Integer(InLoopReturn));
+                        function.Code[flow.Index] = new Bytecode(OpCode.RET, _valueFactory.Integer(InLoopReturn), _valueFactory.Integer(forDepth));
                         break;
                     default:
                         throw new CompilerException("Unknown control flow type of value " + flow.Type);

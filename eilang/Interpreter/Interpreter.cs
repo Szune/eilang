@@ -630,8 +630,11 @@ namespace eilang.Interpreter
                             _scopes.Pop();
                             if (bc.Arg0?.Get<int>() == Compiler.Compiler.InLoopReturn)
                             {
-                                _scopes.Pop();
-                                _tmpVars.Pop().Clear();
+                                for (int i = 0; i < bc.Arg1.Get<int>(); i++)
+                                {
+                                    _scopes.Pop();
+                                    _tmpVars.Pop().Clear();
+                                }
                             }
                             break;
                         case OpCode.INIT:

@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using eilang.Compiler;
-using eilang.Interfaces;
 
 namespace eilang.Classes
 {
     public class ListClass : Class
     {
-        public ListClass(IValueFactory factory) : base(SpecialVariables.List, ".internal")
+        public ListClass() : base(SpecialVariables.List, ".internal")
         {
             Functions.Add("len", new MemberFunction("len", Module, new List<string>(), this)
             {

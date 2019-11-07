@@ -39,13 +39,13 @@ namespace eilang.Interpreter
             var args = new List<object>();
             var stack = "";
             if (_stack.TryPeek(out var peeky))
-                stack = $"{peeky.Debug}";
+                stack = $"{peeky.Value}";
             if (bc.Arg0 != null)
-                args.Add(bc.Arg0.Debug);
+                args.Add(bc.Arg0.Value);
             if (bc.Arg1 != null)
-                args.Add(bc.Arg1.Debug);
+                args.Add(bc.Arg1.Value);
             if (bc.Arg2 != null)
-                args.Add(bc.Arg2.Debug);
+                args.Add(bc.Arg2.Value);
             Log($"Op: {bc.Op}, args: {string.Join(", ", args)}, top of stack: {stack}");
         }
 
@@ -73,11 +73,11 @@ namespace eilang.Interpreter
                             break;
                         case OpCode.DEF:
                             var defVal = _stack.Pop();
-                            _scopes.Peek().DefineVariable(GetString(bc.Arg0), defVal);
+                            _scopes.Peek().DefineVariable(bc.Arg0.As<StringValue>().Item, defVal);
                             break;
                         case OpCode.SET:
                             var setVal = _stack.Pop();
-                            _scopes.Peek().SetVariable(GetString(bc.Arg0), setVal);
+                            _scopes.Peek().SetVariable(bc.Arg0.As<StringValue>().Item, setVal);
                             break;
 
                         case OpCode.EQ:
@@ -116,7 +116,7 @@ namespace eilang.Interpreter
                                     switch (right.Type)
                                     {
                                         case TypeOfValue.String:
-                                            _stack.Push(GetString(left) == GetString(right)
+                                            _stack.Push(left.As<StringValue>().Item == right.As<StringValue>().Item
                                                 ? _valueFactory.True()
                                                 : _valueFactory.False());
                                             break;
@@ -168,7 +168,7 @@ namespace eilang.Interpreter
                                     switch (right.Type)
                                     {
                                         case TypeOfValue.String:
-                                            _stack.Push(GetString(left) != GetString(right)
+                                            _stack.Push(left.As<StringValue>().Item != right.As<StringValue>().Item
                                                 ? _valueFactory.True()
                                                 : _valueFactory.False());
                                             break;
@@ -361,7 +361,7 @@ namespace eilang.Interpreter
                                             _stack.Push(_valueFactory.Double(left.Get<int>() + right.Get<double>()));
                                             break;
                                         case TypeOfValue.String:
-                                            _stack.Push(_valueFactory.String(left.Get<int>() + GetString(right)));
+                                            _stack.Push(_valueFactory.String(left.Get<int>() + right.As<StringValue>().Item));
                                             break;
                                         default:
                                             throw new InterpreterException("Type mismatch on '+' operator.");
@@ -377,7 +377,7 @@ namespace eilang.Interpreter
                                             _stack.Push(_valueFactory.Double(left.Get<double>() + right.Get<double>()));
                                             break;
                                         case TypeOfValue.String:
-                                            _stack.Push(_valueFactory.String(left.Get<double>() + GetString(right)));
+                                            _stack.Push(_valueFactory.String(left.Get<double>() + right.As<StringValue>().Item));
                                             break;
                                         default:
                                             throw new InterpreterException("Type mismatch on '+' operator.");
@@ -387,7 +387,7 @@ namespace eilang.Interpreter
                                     switch (right.Type)
                                     {
                                         case TypeOfValue.String:
-                                            _stack.Push(_valueFactory.String(left.Get<bool>() + GetString(right)));
+                                            _stack.Push(_valueFactory.String(left.Get<bool>() + right.As<StringValue>().Item));
                                             break;
                                         default:
                                             throw new InterpreterException("Type mismatch on '+' operator.");
@@ -397,19 +397,19 @@ namespace eilang.Interpreter
                                     switch (right.Type)
                                     {
                                         case TypeOfValue.String:
-                                            _stack.Push(_valueFactory.String(GetString(left) + GetString(right)));
+                                            _stack.Push(_valueFactory.String(left.As<StringValue>().Item + right.As<StringValue>().Item));
                                             break;
                                         case TypeOfValue.Integer:
-                                            _stack.Push(_valueFactory.String(GetString(left) + right.Get<int>()));
+                                            _stack.Push(_valueFactory.String(left.As<StringValue>().Item + right.Get<int>()));
                                             break;
                                         case TypeOfValue.Double:
-                                            _stack.Push(_valueFactory.String(GetString(left) + right.Get<double>()));
+                                            _stack.Push(_valueFactory.String(left.As<StringValue>().Item + right.Get<double>()));
                                             break;
                                         case TypeOfValue.Bool:
-                                            _stack.Push(_valueFactory.String(GetString(left) + right.Get<bool>()));
+                                            _stack.Push(_valueFactory.String(left.As<StringValue>().Item + right.Get<bool>()));
                                             break;
                                         case TypeOfValue.List:
-                                            _stack.Push(_valueFactory.String(GetString(left) + right));
+                                            _stack.Push(_valueFactory.String(left.As<StringValue>().Item + right));
                                             break;
                                         default:
                                             throw new InterpreterException("Type mismatch on '+' operator.");
@@ -595,7 +595,7 @@ namespace eilang.Interpreter
                             frame.Address = bc.Arg0.Get<int>() - 1;
                             break;
                         case OpCode.CALL:
-                            var funcName = bc.Arg0 != null ? GetString(bc.Arg0) : GetString(_stack.Pop());
+                            var funcName = bc.Arg0 != null ? bc.Arg0.As<StringValue>().Item : _stack.Pop().As<InternalStringValue>().Item;
                             var callArgCount = _stack.Pop().Get<int>();
                             if (_env.Functions.ContainsKey($"{Compiler.Compiler.GlobalFunctionAndModuleName}::{funcName}"))
                             {
@@ -615,10 +615,10 @@ namespace eilang.Interpreter
                             _scopes.Push(new Scope(currentScope));
                             break;
                         case OpCode.REF:
-                            var refVal = _scopes.Peek().GetVariable(GetString(bc.Arg0));
+                            var refVal = _scopes.Peek().GetVariable(bc.Arg0.As<StringValue>().Item);
                             if (refVal == null)
                                 throw new InvalidOperationException(
-                                    $"Variable '{GetString(bc.Arg0)}' could not be found.");
+                                    $"Variable '{bc.Arg0.As<StringValue>().Item}' could not be found.");
                             _stack.Push(refVal);
                             break;
                         case OpCode.POP:
@@ -638,8 +638,8 @@ namespace eilang.Interpreter
                             break;
                         case OpCode.INIT:
                             var argCount = _stack.Pop().Get<int>();
-                            if (!_env.Classes.TryGetValue(GetString(bc.Arg0), out var clas))
-                                throw new InvalidOperationException($"Class not found {GetString(bc.Arg0)}");
+                            if (!_env.Classes.TryGetValue(bc.Arg0.As<StringValue>().Item, out var clas))
+                                throw new InvalidOperationException($"Class not found {bc.Arg0.As<StringValue>().Item}");
                             var instScope = new Scope();
                             var newInstance = new Instance(instScope, clas);
                             // figure out which constructor to call (should probably do that in the parser though)
@@ -686,7 +686,7 @@ namespace eilang.Interpreter
                             if (argLength == 1)
                             {
                                 var val = _stack.Pop();
-                                _env.ExportedFuncs[GetString(bc.Arg0)](_valueFactory, val);
+                                _env.ExportedFuncs[bc.Arg0.As<StringValue>().Item](_valueFactory, val);
                             }
                             else
                             {
@@ -697,7 +697,7 @@ namespace eilang.Interpreter
                                 }
 
                                 var list = _valueFactory.List(values);
-                                _env.ExportedFuncs[GetString(bc.Arg0)](_valueFactory, list);
+                                _env.ExportedFuncs[bc.Arg0.As<StringValue>().Item](_valueFactory, list);
                             }
                             break;
                         case OpCode.TYPEGET:
@@ -718,24 +718,24 @@ namespace eilang.Interpreter
                             {
                                 _stack.Push(tmpValues.Pop());
                             }
-                            if (!callingClass.TryGetFunction(GetString(bc.Arg0), out var membFunc))
+                            if (!callingClass.TryGetFunction(bc.Arg0.As<StringValue>().Item, out var membFunc))
                                 throw new InvalidOperationException(
-                                    $"Member function '{GetString(bc.Arg0)}' not found in class '{callingClass.FullName}'");
+                                    $"Member function '{bc.Arg0.As<StringValue>().Item}' not found in class '{callingClass.FullName}'");
                             _stack.Push(_valueFactory.Integer(mCallArgCount));
                             _frames.Push(new CallFrame(membFunc));
                             _scopes.Push(new Scope(callingInstance.Scope));
                             break;
                         case OpCode.MREF:
                             var inst = _stack.Pop().Get<Instance>();
-                            var mRefVar = inst.GetVariable(GetString(bc.Arg0));
+                            var mRefVar = inst.GetVariable(bc.Arg0.As<StringValue>().Item);
                             if (mRefVar == null)
-                                ThrowVariableNotFound(GetString(bc.Arg0));
+                                ThrowVariableNotFound(bc.Arg0.As<StringValue>().Item);
                             _stack.Push(mRefVar);
                             break;
                         case OpCode.MSET:
                             var mSetVal = _stack.Pop();
                             var mSetInst = _stack.Pop().Get<Instance>();
-                            mSetInst.Scope.SetVariable(GetString(bc.Arg0), mSetVal);
+                            mSetInst.Scope.SetVariable(bc.Arg0.As<StringValue>().Item, mSetVal);
                             break;
                         case OpCode.AND:
                         {
@@ -765,7 +765,7 @@ namespace eilang.Interpreter
                             else
                             {
                                 var list = _valueFactory.List();
-                                var actList = list.Get<Instance>().GetVariable(SpecialVariables.List).Get<List<IValue>>();
+                                var actList = list.As<ListValue>().Item;
                                 for (int i = 0; i < initCount.Get<int>(); i++)
                                 {
                                     actList.Add(_stack.Pop());
@@ -842,12 +842,12 @@ namespace eilang.Interpreter
                         case OpCode.TMPV:
                         {
                             var val = _stack.Pop();
-                            _tmpVars.Peek().SetVariable(GetString(bc.Arg0), val);
+                            _tmpVars.Peek().SetVariable(bc.Arg0.As<StringValue>().Item, val);
                             break;
                         }
                         case OpCode.TMPR:
                         {
-                            _stack.Push(_tmpVars.Peek().GetVariable(GetString(bc.Arg0)));
+                            _stack.Push(_tmpVars.Peek().GetVariable(bc.Arg0.As<StringValue>().Item));
                             break;
                         }
                         case OpCode.NSCP:
@@ -939,7 +939,7 @@ namespace eilang.Interpreter
                         case OpCode.SIDXS:
                         {
                             var str = new StringBuilder(_scopes.Peek().GetVariable(SpecialVariables.String).Get<string>());
-                            var val = GetString(_stack.Pop());
+                            var val = _stack.Pop().As<StringValue>().Item;
                             var index = _stack.Pop().Get<int>();
                             str[index] = val[0];
                             _scopes.Peek().SetVariable(SpecialVariables.String, _valueFactory.InternalString(str.ToString()));
@@ -957,14 +957,14 @@ namespace eilang.Interpreter
                         {
                             var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
                             var startIndex = _stack.Pop().Get<int>();
-                            var find = GetString(_stack.Pop());
+                            var find = _stack.Pop().As<StringValue>().Item;
                             _stack.Push(_valueFactory.Integer(str.IndexOf(find, startIndex, StringComparison.InvariantCulture)));
                             break;
                         }
                         case OpCode.SINS:
                         {
                             var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
-                            var insert = GetString(_stack.Pop());
+                            var insert = _stack.Pop().As<StringValue>().Item;
                             var index = _stack.Pop().Get<int>();
                             _stack.Push(_valueFactory.String(str.Insert(index, insert)));
                             break;
@@ -972,8 +972,8 @@ namespace eilang.Interpreter
                         case OpCode.SRPLA:
                         {
                             var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
-                            var newStr = GetString(_stack.Pop());
-                            var oldStr = GetString(_stack.Pop());
+                            var newStr = _stack.Pop().As<StringValue>().Item;
+                            var oldStr = _stack.Pop().As<StringValue>().Item;
                             _stack.Push(_valueFactory.String(str.Replace(oldStr, newStr)));
                             break;
                         }
@@ -992,7 +992,7 @@ namespace eilang.Interpreter
                         case OpCode.SPLIT:
                         {
                             var str = _scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
-                            var splitStr = GetString(_stack.Pop());
+                            var splitStr = _stack.Pop().As<StringValue>().Item;
                             var items = str.Split(splitStr, StringSplitOptions.RemoveEmptyEntries)
                                 .Select(s => _valueFactory.String(s)).ToList();
                             _stack.Push(_valueFactory.List(items));
@@ -1021,11 +1021,6 @@ namespace eilang.Interpreter
                 }
                 throw new InterpreterException($"Failure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.", e);
             }
-        }
-
-        private string GetString(IValue val)
-        {
-            return val.Get<Instance>().GetVariable(SpecialVariables.String).Get<string>();
         }
 
         private void ThrowVariableNotFound(string variable)

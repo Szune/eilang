@@ -5,7 +5,7 @@ namespace eilang.Classes
 {
     public class ListClass : Class
     {
-        public ListClass() : base(SpecialVariables.List, ".internal")
+        public ListClass() : base(SpecialVariables.List, SpecialVariables.Internal)
         {
             Functions.Add("len", new MemberFunction("len", Module, new List<string>(), this)
             {

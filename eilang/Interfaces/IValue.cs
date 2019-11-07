@@ -6,6 +6,7 @@ namespace eilang.Interfaces
     {
         TypeOfValue Type { get; }
         T Get<T>();
-        object Debug { get; }
+        object Value { get; }
+        T As<T>() where T : class;
     }
 }

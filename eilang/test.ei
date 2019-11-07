@@ -41,10 +41,13 @@ modu cmd {
                         }
                         arg_val.add(arg_list[cursor]);
                     }
-
-                    all.add(*cmd::arg(arg_name, str::join(" ", arg_val)));
+                    var add_val = "";
+                    if(arg_val.len() > 0) {
+                        add_val = str::join(" ", arg_val);
+                    }
+                    all.add(*cmd::arg(arg_name, add_val));
                 } else {
-                    break;
+                    all.add(*cmd::arg(arg_list[cursor], ""));
                 }
                 cursor++;
                 if(cursor > arg_list.len() - 1) {

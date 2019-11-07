@@ -14,8 +14,8 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-            // TODO: 1. implement maps (dictionaries)
-            // TODO: 2. implement file i/o
+            // TODO: 1. implement maps (dictionaries) - MapClass
+            // TODO: 2. implement file i/o - IOClass
             // TODO: 3. implement networking
             // TODO: 4. implement reflection-like functionality
             // TODO: 5. implement switch statements

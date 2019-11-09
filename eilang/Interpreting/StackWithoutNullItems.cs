@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace eilang.Interpreter
+namespace eilang.Interpreting
 {
     public class StackWithoutNullItems<T>
     {

@@ -1,22 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using eilang.Ast;
 using eilang.Interfaces;
+using eilang.Lexing;
 
-namespace eilang
+namespace eilang.Parsing
 {
     public class Parser
     {
-        private readonly Lexer _lexer;
+        private readonly ScriptLexer _scriptLexer;
         private readonly Token[] _buffer = {new Token(), new Token()};
         private bool InLoop => _forDepth > 0;
         private int _forDepth;
         private bool _inClass;
 
-        public Parser(Lexer lexer)
+        public Parser(ScriptLexer scriptLexer)
         {
-            _lexer = lexer;
+            _scriptLexer = scriptLexer;
             Consume();
             Consume();
         }
@@ -938,7 +938,7 @@ namespace eilang
         {
             var consumed = _buffer[0];
             _buffer[0] = _buffer[1];
-            _buffer[1] = _lexer.NextToken();
+            _buffer[1] = _scriptLexer.NextToken();
             return consumed;
         }
 

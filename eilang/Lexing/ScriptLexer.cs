@@ -2,24 +2,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace eilang
+namespace eilang.Lexing
 {
-    public class Lexer
+    public class ScriptLexer
     {
-        private readonly string _code;
-        private readonly char[] _buffer = {' ', ' '};
-        private int _pos;
-        private int _col;
-        private int _line;
-        private static readonly Dictionary<string, TokenType> _keywords;
-        public bool IsEOF { get; private set; }
-        
-        private Queue<Token> _interpolatedTokens = new Queue<Token>();
+        private readonly ScriptReader _reader;
+        private readonly CommonLexer _commonLexer;
+        private static readonly Dictionary<string, TokenType> Keywords;
+        private readonly Queue<Token> _interpolatedTokens = new Queue<Token>();
 
-        static Lexer()
+        static ScriptLexer()
         {
             //char x = (char) 65255;
-            _keywords = new Dictionary<string, TokenType>
+            Keywords = new Dictionary<string, TokenType>
             {
                 {"if", TokenType.If},
                 {"else", TokenType.Else},
@@ -37,20 +32,18 @@ namespace eilang
                 {"me", TokenType.Me},
                 {"continue", TokenType.Continue},
                 {"break", TokenType.Break},
-//                {"import", TokenType.Import}
             };
         }
 
-        public Lexer(string code)
+        public ScriptLexer(ScriptReader reader, CommonLexer commonLexer)
         {
-            _code = code;
-            Consume();
-            Consume();
+            _reader = reader;
+            _commonLexer = commonLexer;
         }
 
         private Token GetToken(TokenType type)
         {
-            return new Token(type, _line, _col);
+            return new Token(type, _reader.Line, _reader.Col);
         }
 
         public Token NextToken()
@@ -65,46 +58,41 @@ namespace eilang
             Token token = new Token();
             while (token.Type == TokenType.None)
             {
-                switch (_buffer[0])
+                switch (_reader.Current)
                 {
                     case ' ':
-                        while (_buffer[0] == ' ' && !IsEOF)
+                        while (_reader.Current == ' ' && !_reader.IsEOF)
                         {
-                            Consume();
+                            _reader.ConsumeChar();
                         }
 
                         continue;
                     case '\t':
                         break;
                     case '#': // comments
-                        if (_buffer[1] == '+')
+                        if (_reader.Next == '+')
                         {
-                            while (_buffer[0] != '-' || _buffer[1] != '#' && !IsEOF)
+                            while (_reader.Current != '-' || _reader.Next != '#' && !_reader.IsEOF)
                             {
-                                Consume();
+                                _reader.ConsumeChar();
                             }
 
-                            Consume(); // consume last #
+                            _reader.ConsumeChar(); // consume last #
                         }
                         else
                         {
-                            while (_buffer[0] != '\n' && !IsEOF)
-                            {
-                                Consume();
-                            }
+                            _reader.ConsumeLine();
                         }
 
                         break;
                     case '\r':
                         break;
                     case '\n':
-                        if (IsEOF)
+                        if (_reader.IsEOF)
                             return GetToken(TokenType.EOF);
-                        _line++;
-                        _col = 0;
                         break;
                     case '$':
-                        switch (_buffer[1])
+                        switch (_reader.Next)
                         {
                             case '\'':
                                 //return new Token(TokenType.String, _line, _col, text: GetInterpolatedString('\''));
@@ -114,17 +102,17 @@ namespace eilang
                                 GetInterpolatedString('"');
                                 return _interpolatedTokens.Dequeue();
                             default:
-                                throw new LexerException($"Unexpected token {_buffer[0]} ({(int) _buffer[0]})");
+                                throw new LexerException($"Unexpected token {_reader.Current} ({(int) _reader.Current})");
                         }
                     case '\'':
-                        return new Token(TokenType.String, _line, _col, text: GetString('\''));
+                        return new Token(TokenType.String, _reader.Line, _reader.Col, text: _commonLexer.GetString('\''));
                     case '"':
-                        return new Token(TokenType.String, _line, _col, text: GetString('"'));
+                        return new Token(TokenType.String, _reader.Line, _reader.Col, text: _commonLexer.GetString('"'));
                     case ':':
-                        if (_buffer[1] == ':')
+                        if (_reader.Next == ':')
                         {
                             token = GetToken(TokenType.DoubleColon);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -154,10 +142,10 @@ namespace eilang
                         token = GetToken(TokenType.RightBracket);
                         break;
                     case '!':
-                        if (_buffer[1] == '=')
+                        if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.NotEquals);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -166,10 +154,10 @@ namespace eilang
 
                         break;
                     case '=':
-                        if (_buffer[1] == '=')
+                        if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.EqualsEquals);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -187,15 +175,15 @@ namespace eilang
                         token = GetToken(TokenType.Comma);
                         break;
                     case '+':
-                        if (_buffer[1] == '=')
+                        if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.PlusEquals);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
-                        else if (_buffer[1] == '+')
+                        else if (_reader.Next == '+')
                         {
                             token = GetToken(TokenType.PlusPlus);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -204,15 +192,15 @@ namespace eilang
 
                         break;
                     case '-':
-                        if (_buffer[1] == '=')
+                        if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.MinusEquals);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
-                        else if (_buffer[1] == '-')
+                        else if (_reader.Next == '-')
                         {
                             token = GetToken(TokenType.MinusMinus);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -221,10 +209,10 @@ namespace eilang
 
                         break;
                     case '/':
-                        if (_buffer[1] == '=')
+                        if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.DivideEquals);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -233,10 +221,10 @@ namespace eilang
 
                         break;
                     case '.':
-                        if (_buffer[1] == '.')
+                        if (_reader.Next == '.')
                         {
                             token = GetToken(TokenType.DoubleDot);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -245,10 +233,10 @@ namespace eilang
 
                         break;
                     case '*':
-                        if (_buffer[1] == '=')
+                        if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.TimesEquals);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -257,10 +245,10 @@ namespace eilang
 
                         break;
                     case '%':
-                        if (_buffer[1] == '=')
+                        if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.ModuloEquals);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -269,26 +257,26 @@ namespace eilang
 
                         break;
                     case '&':
-                        if (_buffer[1] == '&')
+                        if (_reader.Next == '&')
                         {
                             token = GetToken(TokenType.And);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
 
                         break;
                     case '|':
-                        if (_buffer[1] == '|')
+                        if (_reader.Next == '|')
                         {
                             token = GetToken(TokenType.Or);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
 
                         break;
                     case '<':
-                        if (_buffer[1] == '=')
+                        if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.LessThanEquals);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -297,10 +285,10 @@ namespace eilang
 
                         break;
                     case '>':
-                        if (_buffer[1] == '=')
+                        if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.GreaterThanEquals);
-                            Consume();
+                            _reader.ConsumeChar();
                         }
                         else
                         {
@@ -309,28 +297,28 @@ namespace eilang
 
                         break;
                     default:
-                        if (IsIdentifierStart(_buffer[0]))
+                        if (IsIdentifierStart(_reader.Current))
                         {
-                            var identifier = GetIdentifier();
-                            if (_keywords.TryGetValue(identifier, out var kw))
+                            var identifier = _commonLexer.GetIdentifier();
+                            if (Keywords.TryGetValue(identifier, out var kw))
                             {
-                                return new Token(kw, _line, _col);
+                                return new Token(kw, _reader.Line, _reader.Col);
                             }
                             else
                             {
-                                return new Token(TokenType.Identifier, _line, _col, text: identifier);
+                                return new Token(TokenType.Identifier, _reader.Line, _reader.Col, text: identifier);
                             }
                         }
-                        else if (IsNumberStart(_buffer[0]))
+                        else if (IsNumberStart(_reader.Current))
                         {
                             return GetNumberToken();
                             // parse number
                         }
 
-                        throw new LexerException($"Unexpected token {_buffer[0]} ({(int) _buffer[0]})");
+                        throw new LexerException($"Unexpected token {_reader.Current} ({(int) _reader.Current})");
                 }
 
-                Consume();
+                _reader.ConsumeChar();
             }
 
             return token;
@@ -341,12 +329,12 @@ namespace eilang
         {
             const char deci = '.';
             var sb = new StringBuilder();
-            sb.Append(_buffer[0]); // append first digit/minus
+            sb.Append(_reader.Current); // append first digit/minus
             var decimalPoint = false;
-            Consume();
-            while (IsNumber(_buffer[0]) || (!decimalPoint && _buffer[0] == deci) && !IsEOF)
+            _reader.ConsumeChar();
+            while (IsNumber(_reader.Current) || (!decimalPoint && _reader.Current == deci) && !_reader.IsEOF)
             {
-                if (_buffer[0] == deci && _buffer[1] != deci)
+                if (_reader.Current == deci && _reader.Next != deci)
                 {
                     if (!decimalPoint)
                     {
@@ -357,19 +345,19 @@ namespace eilang
                         throw new LexerException($"More than one decimal point '{deci}' in number.");
                     }
                 }
-                else if (_buffer[0] == deci && _buffer[1] == deci)
+                else if (_reader.Current == deci && _reader.Next == deci)
                 {
-                    return new Token(TokenType.Integer, _line, _col, integer: int.Parse(sb.ToString()));
+                    return new Token(TokenType.Integer, _reader.Line, _reader.Col, integer: int.Parse(sb.ToString()));
                 }
 
-                sb.Append(_buffer[0]);
-                Consume();
+                sb.Append(_reader.Current);
+                _reader.ConsumeChar();
             }
 
             if (decimalPoint)
-                return new Token(TokenType.Double, _line, _col, doubl: double.Parse(sb.ToString()));
+                return new Token(TokenType.Double, _reader.Line, _reader.Col, doubl: double.Parse(sb.ToString()));
             else
-                return new Token(TokenType.Integer, _line, _col, integer: int.Parse(sb.ToString()));
+                return new Token(TokenType.Integer, _reader.Line, _reader.Col, integer: int.Parse(sb.ToString()));
         }
 
         private bool IsNumber(char chr)
@@ -382,173 +370,94 @@ namespace eilang
             return char.IsDigit(chr) || chr == '-';
         }
 
-        private string GetIdentifier()
-        {
-            var sb = new StringBuilder();
-            sb.Append(_buffer[0]);
-            Consume();
-            while (IsIdentifierChar(_buffer[0]))
-            {
-                sb.Append(_buffer[0]);
-                Consume();
-            }
-
-            return sb.ToString();
-        }
-
         private bool IsIdentifierStart(char chr)
         {
             return char.IsLetter(chr) || chr == '_';
         }
-
-        private bool IsIdentifierChar(char chr)
-        {
-            return char.IsLetterOrDigit(chr) || chr == '_';
-        }
         
         private void GetInterpolatedString(char stringChar)
         {
-            Consume(); // consume $
-            Consume(); // consume start char
+            _reader.ConsumeChar(); // consume $
+            _reader.ConsumeChar(); // consume start char
             var sb = new StringBuilder();
             
-            while (_buffer[0] != stringChar && !IsEOF)
+            while (_reader.Current != stringChar && !_reader.IsEOF)
             {
-                if (_buffer[0] == '\\' && _buffer[1] == stringChar)
+                if (_reader.Current == '\\' && _reader.Next == stringChar)
                 {
                     // escaped string char
                     sb.Append(stringChar);
-                    Consume(); // consume escape char
+                    _reader.ConsumeChar(); // consume escape char
                 }
-                else if (_buffer[0] == '\\' && _buffer[1] == '\\')
+                else if (_reader.Current == '\\' && _reader.Next == '\\')
                 {
                     sb.Append('\\');
-                    Consume();
+                    _reader.ConsumeChar();
                 }
-                else if (_buffer[0] == '\\' && _buffer[1] == 'n')
+                else if (_reader.Current == '\\' && _reader.Next == 'n')
                 {
                     sb.Append('\n');
-                    Consume(); // consume slash
+                    _reader.ConsumeChar(); // consume slash
                 }
-                else if (_buffer[0] == '\\' && _buffer[1] == 't')
+                else if (_reader.Current == '\\' && _reader.Next == 't')
                 {
                     sb.Append('\t');
-                    Consume(); // consume slash
+                    _reader.ConsumeChar(); // consume slash
                 }
-                else if (_buffer[0] == '\'' && _buffer[1] == '{')
+                else if (_reader.Current == '\'' && _reader.Next == '{')
                 {
                     sb.Append('{');
-                    Consume(); // consume slash
+                    _reader.ConsumeChar(); // consume slash
                 }
-                else if (_buffer[0] == '\'' && _buffer[1] == '}')
+                else if (_reader.Current == '\'' && _reader.Next == '}')
                 {
                     sb.Append('}');
-                    Consume(); // consume slash
+                    _reader.ConsumeChar(); // consume slash
                 }
-                else if (_buffer[0] == '{')
+                else if (_reader.Current == '{')
                 {
                     if (sb.ToString() != "")
                     {
                         if (_interpolatedTokens.Any())
                         {
-                            _interpolatedTokens.Enqueue(new Token(TokenType.Plus, _line, _col));
+                            _interpolatedTokens.Enqueue(new Token(TokenType.Plus, _reader.Line, _reader.Col));
                         }
-                        _interpolatedTokens.Enqueue(new Token(TokenType.String, _line, _col, text: sb.ToString()));
-                        _interpolatedTokens.Enqueue(new Token(TokenType.Plus, _line, _col));
+                        _interpolatedTokens.Enqueue(new Token(TokenType.String, _reader.Line, _reader.Col, text: sb.ToString()));
+                        _interpolatedTokens.Enqueue(new Token(TokenType.Plus, _reader.Line, _reader.Col));
                         sb.Clear();
                     }
-                    Consume();
+                    _reader.ConsumeChar();
                     QueueTokensUntil('}');
                 }
                 else
                 {
-                    sb.Append(_buffer[0]);
+                    sb.Append(_reader.Current);
                 }
 
-                Consume(); // consume appended char
+                _reader.ConsumeChar(); // consume appended char
             }
 
             if (!_interpolatedTokens.Any())
             {
-                _interpolatedTokens.Enqueue(new Token(TokenType.String, _line, _col, text: sb.ToString()));
-                Consume(); // consume terminating char
+                _interpolatedTokens.Enqueue(new Token(TokenType.String, _reader.Line, _reader.Col, text: sb.ToString()));
+                _reader.ConsumeChar(); // consume terminating char
                 return;
             }
 
             if(_interpolatedTokens.Peek().Type != TokenType.Plus)
             {
-                _interpolatedTokens.Enqueue(new Token(TokenType.Plus, _line, _col));
+                _interpolatedTokens.Enqueue(new Token(TokenType.Plus, _reader.Line, _reader.Col));
             }
-            _interpolatedTokens.Enqueue(new Token(TokenType.String, _line, _col, text: sb.ToString()));
+            _interpolatedTokens.Enqueue(new Token(TokenType.String, _reader.Line, _reader.Col, text: sb.ToString()));
 
-            Consume(); // consume terminating char
+            _reader.ConsumeChar(); // consume terminating char
         }
 
         private void QueueTokensUntil(char token)
         {
-            while (_buffer[0] != token && !IsEOF)
+            while (_reader.Current != token && !_reader.IsEOF)
             {
                 _interpolatedTokens.Enqueue(GetToken());
-            }
-        }
-
-        private IEnumerable<Token> GetTokensUntil(TokenType rightBrace)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        private string GetString(char stringChar)
-        {
-            Consume(); // consume start char
-            var sb = new StringBuilder();
-            while (_buffer[0] != stringChar && !IsEOF)
-            {
-                if (_buffer[0] == '\\' && _buffer[1] == stringChar)
-                {
-                    // escaped string char
-                    sb.Append(stringChar);
-                    Consume(); // consume escape char
-                }
-                else if (_buffer[0] == '\\' && _buffer[1] == '\\')
-                {
-                    sb.Append('\\');
-                    Consume();
-                }
-                else if (_buffer[0] == '\\' && _buffer[1] == 'n')
-                {
-                    sb.Append('\n');
-                    Consume(); // consume slash
-                }
-                else if (_buffer[0] == '\\' && _buffer[1] == 't')
-                {
-                    sb.Append('\t');
-                    Consume(); // consume slash
-                }
-                else
-                {
-                    sb.Append(_buffer[0]);
-                }
-
-                Consume(); // consume appended char
-            }
-
-            Consume(); // consume terminating char
-            return sb.ToString();
-        }
-
-        private void Consume()
-        {
-            _buffer[0] = _buffer[1];
-            if (_pos >= _code.Length)
-            {
-                _buffer[1] = '\n';
-                IsEOF = true;
-            }
-            else
-            {
-                _buffer[1] = _code[_pos];
-                _pos++;
-                _col++;
             }
         }
     }

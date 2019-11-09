@@ -1,6 +1,6 @@
-using eilang.Compiler;
+using eilang.Compiling;
 
-namespace eilang.Interpreter
+namespace eilang.Interpreting
 {
     public class CallFrame
     {

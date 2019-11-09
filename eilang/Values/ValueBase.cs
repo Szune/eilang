@@ -44,7 +44,7 @@ namespace eilang.Values
 
         public override string ToString()
         {
-                    return Value?.ToString() ?? "{null}";
+            return Value?.ToString() ?? "{null}";
         }
     }
 }

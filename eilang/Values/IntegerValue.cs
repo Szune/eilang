@@ -1,6 +1,4 @@
-﻿using eilang.Interfaces;
-
-namespace eilang.Values
+﻿namespace eilang.Values
 {
     public class IntegerValue : ValueBase<int>
     {

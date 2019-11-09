@@ -1,6 +1,6 @@
 using eilang.Classes;
 using eilang.Interfaces;
-using eilang.Interpreter;
+using eilang.Interpreting;
 
 namespace eilang.Values
 {

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using eilang.Compiler;
+using eilang.Compiling;
 using eilang.Interfaces;
 
 namespace eilang.Classes
@@ -9,7 +9,7 @@ namespace eilang.Classes
     {
         private readonly string[] _args;
 
-        public EnvClass(IValueFactory factory) : base("env", Compiler.Compiler.GlobalFunctionAndModuleName)
+        public EnvClass(IValueFactory factory) : base("env", Compiler.GlobalFunctionAndModuleName)
         {
             CtorForMembersWithValues.Write(OpCode.RET);
             _args = Environment.GetCommandLineArgs();

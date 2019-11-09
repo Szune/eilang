@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace eilang
+namespace eilang.Parsing
 {
     [Serializable]
     internal class ParserException : Exception

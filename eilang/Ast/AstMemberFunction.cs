@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using eilang.Classes;
-using eilang.Compiler;
+using eilang.Compiling;
 using eilang.Interfaces;
 
 namespace eilang.Ast

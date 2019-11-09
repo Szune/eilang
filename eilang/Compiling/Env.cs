@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using eilang.Classes;
 using eilang.Interfaces;
 
-namespace eilang.Compiler
+namespace eilang.Compiling
 {
     public delegate IValue ExportedFunction(IValueFactory valueFactory, IValue args);
 

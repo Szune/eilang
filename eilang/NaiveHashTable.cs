@@ -6,7 +6,7 @@ namespace eilang
     /// <summary>
     /// Naive dictionary/map
     /// </summary>
-    public class NaiveHashTable<TKey, TValue>
+    public class NaiveHashTable<TKey, TValue>  // actual hash table should implement IEnumerable
         where TKey : IHaveHash
     {
         private class Entry
@@ -17,7 +17,7 @@ namespace eilang
             public int Hash;
         }
         
-        private Entry[] _entries = new Entry[8];
+        private Entry[] _entries = new Entry[7];
         
         public void Insert(TKey key, TValue value)
         {
@@ -100,6 +100,11 @@ namespace eilang
             }
             
             throw new KeyNotFoundException($"Key '{key}' was not found.");
+        }
+
+        public void Clear()
+        {
+            _entries = new Entry[7];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

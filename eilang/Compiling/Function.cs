@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using eilang.Interfaces;
 
-namespace eilang.Compiler
+namespace eilang.Compiling
 {
     public class Function
     {

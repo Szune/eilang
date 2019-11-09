@@ -1,7 +1,7 @@
 using System.Linq;
 using eilang.Interfaces;
 
-namespace eilang.Compiler
+namespace eilang.Compiling
 {
     public class Bytecode
     {

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using eilang.Lexing;
 
 namespace eilang.Imports
 {
@@ -27,7 +28,8 @@ namespace eilang.Imports
                     return;
                 check.Add(path);
                 var code = GetCode(path);
-                var lexer = new ImportLexer(code); // maybe inject ImportResolver with a LexerFactory,
+                var reader = new ScriptReader(code);
+                var lexer = new ImportLexer(reader, new CommonLexer(reader)); // maybe inject ImportResolver with a LexerFactory,
                 // not really necessary at this point I feel
                 var imports = lexer.GetImports();
                 foreach (var import in imports)

@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using eilang.Classes;
-using eilang.Compiler;
+using eilang.Compiling;
 using eilang.Interfaces;
 using eilang.Values;
 
-namespace eilang.Interpreter
+namespace eilang.Interpreting
 {
     public class Interpreter
     {
@@ -597,10 +597,10 @@ namespace eilang.Interpreter
                         case OpCode.CALL:
                             var funcName = bc.Arg0 != null ? bc.Arg0.As<StringValue>().Item : _stack.Pop().As<InternalStringValue>().Item;
                             var callArgCount = _stack.Pop().Get<int>();
-                            if (_env.Functions.ContainsKey($"{Compiler.Compiler.GlobalFunctionAndModuleName}::{funcName}"))
+                            if (_env.Functions.ContainsKey($"{Compiler.GlobalFunctionAndModuleName}::{funcName}"))
                             {
                                 _frames.Push(new CallFrame(
-                                    _env.Functions[$"{Compiler.Compiler.GlobalFunctionAndModuleName}::{funcName}"]));
+                                    _env.Functions[$"{Compiler.GlobalFunctionAndModuleName}::{funcName}"]));
                             }
                             else if (_env.Functions.ContainsKey(funcName))
                             {
@@ -627,7 +627,7 @@ namespace eilang.Interpreter
                         case OpCode.RET:
                             _frames.Pop();
                             _scopes.Pop();
-                            if (bc.Arg0?.Get<int>() == Compiler.Compiler.InLoopReturn)
+                            if (bc.Arg0?.Get<int>() == Compiler.InLoopReturn)
                             {
                                 for (int i = 0; i < bc.Arg1.Get<int>(); i++)
                                 {
@@ -1080,12 +1080,12 @@ namespace eilang.Interpreter
             {
                 ret = m;
             }
-            else if (_env.Classes.TryGetValue($"{Compiler.Compiler.GlobalFunctionAndModuleName}::app", out var globApp) &&
+            else if (_env.Classes.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::app", out var globApp) &&
                      globApp.Functions.TryGetValue(main, out var ma))
             {
                 ret = ma;
             }
-            else if (_env.Functions.TryGetValue($"{Compiler.Compiler.GlobalFunctionAndModuleName}::{main}", out var globMain))
+            else if (_env.Functions.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::{main}", out var globMain))
             {
                 ret = globMain;
             }
@@ -1097,7 +1097,7 @@ namespace eilang.Interpreter
             else
             {
                 var func = _env.Functions[
-                    $"{Compiler.Compiler.GlobalFunctionAndModuleName}::{Compiler.Compiler.GlobalFunctionAndModuleName}"];
+                    $"{Compiler.GlobalFunctionAndModuleName}::{Compiler.GlobalFunctionAndModuleName}"];
                 func.Write(OpCode.RET);
                 return func;
             }

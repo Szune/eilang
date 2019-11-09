@@ -1,11 +1,13 @@
 ﻿//#define LOGGING
 using System;
 using System.Collections.Generic;
-using System.IO;
 using eilang.Classes;
-using eilang.Compiler;
+using eilang.Compiling;
 using eilang.Imports;
 using eilang.Interfaces;
+using eilang.Interpreting;
+using eilang.Lexing;
+using eilang.Parsing;
 using eilang.Values;
 
 namespace eilang
@@ -14,6 +16,12 @@ namespace eilang
     {
         static void Main(string[] args)
         {
+            // TODO: 0. refactor opcodes into structs/classes, get rid of the giant switch statement
+            // TODO: -1 figure out how you can use registers to reduce repeat opcodes,
+            // possible uses: loading a class member several times in a row, e.g.
+            // var x = *p(); x.s = 1; x.t = 2; x.u = 3; // load x into a register and read from that register,
+            // instead of re-referencing x (gets more useful the more deeply nested stuff is)
+            // look for more optimizations
             // TODO: 1. implement maps (dictionaries) - MapClass
             // TODO: 2. implement file i/o - IOClass
             // TODO: 3. implement networking
@@ -23,67 +31,15 @@ namespace eilang
             // TODO: 7. perform analysis to remove unhandled return values from the stack,
             // currently the stack gets filled with unhandled return values if calling a function that returns a value inside a loop
             // TODO: 8. static analysis of types (i.e. type checking)
+            // TODO: 9. rework stack/value/memory implementation to be more efficient
 
             //var cod5 = File.ReadAllText("assignment_tests.ei");
             //var imports = new ImportResolver().ResolveImports(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");
             var imports = new ImportResolver().ResolveImports("test.ei");
             var code = new ImportMerger().Merge(imports);
-            var oldcode = @"fun main() {
-    #+
-    var n = *net();
-    n.get();
-    n.post();
-    n.head();
-    var f = *file('x.txt');
-    var d = *dir('/home/erik/Desktop');
-    -#
-    
-    #+
-        block comment
-    -#
-    # for loopers
-    for(0..-1)
-    {
-        println('test');
-    }
-    for (1..6) 
-    {   
-        println(it);
-    }
-    var b = 1;
-    var e = 3;
-    for (b..e)
-    {
-        println(it);
-    }
-    #+
-    for (1..6) {
-        println(f'[{it_idx}] has value {it}');
-        println('[' + it_idx + '] has value ' + it); # auto loop index variable?
-        pointless(it); # auto variable
-    }
-    for (i : 1..6) {
-        pointless(i); # named variable
-    }
-    for (val, idx : 1..6) {
-        println(idx + ' has value ' + val);
-        pointless(val);
-    }
-    var n = 10;
-    for (1..n) {
 
-    }
-    for(array) {
-        println(it);
-    }
-    for(i: array) {
-        println(it);
-    }
-    -#
-}
-";
-
-            var lexer = new Lexer(code);
+            var reader = new ScriptReader(code);
+            var lexer = new ScriptLexer(reader, new CommonLexer(reader));
             var parser = new Parser(lexer);
             //var newParser = new NewParser(lexer);
             var ast = parser.Parse();
@@ -99,13 +55,13 @@ namespace eilang
             var envClass = new EnvClass(new ValueFactory());
             env.Classes.Add(envClass.FullName, envClass);
 
-            Compiler.Compiler.Compile(env, ast
+            Compiler.Compile(env, ast
 #if LOGGING
                 ,logger: Console.Out
 #endif
             );
 
-            var interpreter = new Interpreter.Interpreter(env
+            var interpreter = new Interpreter(env
 #if LOGGING
                 ,logger: Console.Out
 #endif

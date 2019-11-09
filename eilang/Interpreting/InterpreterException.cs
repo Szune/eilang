@@ -1,6 +1,6 @@
 using System;
 
-namespace eilang.Interpreter
+namespace eilang.Interpreting
 {
     public class InterpreterException : Exception
     {

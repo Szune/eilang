@@ -7,7 +7,7 @@ using eilang.Classes;
 using eilang.Interfaces;
 using eilang.Values;
 
-namespace eilang.Compiler
+namespace eilang.Compiling
 {
     public class Compiler : IVisitor
     {

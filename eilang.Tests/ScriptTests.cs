@@ -1,8 +1,11 @@
 using System;
 using System.IO;
 using eilang.Classes;
-using eilang.Compiler;
+using eilang.Compiling;
 using eilang.Imports;
+using eilang.Interpreting;
+using eilang.Lexing;
+using eilang.Parsing;
 using eilang.Values;
 using Xunit;
 using Xunit.Abstractions;
@@ -87,7 +90,8 @@ namespace eilang.Tests
         {
             var imports = new ImportResolver().ResolveImports(path);
             var code = new ImportMerger().Merge(imports);
-            var lexer = new Lexer(code);
+            var reader = new ScriptReader(code);
+            var lexer = new ScriptLexer(reader, new CommonLexer(reader));
             var parser = new Parser(lexer);
             var ast = parser.Parse();
 
@@ -98,8 +102,8 @@ namespace eilang.Tests
             var envClass = new EnvClass(new ValueFactory());
             env.Classes.Add(envClass.FullName, envClass);
 
-            Compiler.Compiler.Compile(env, ast);
-            var interpreter = new Interpreter.Interpreter(env);
+            Compiler.Compile(env, ast);
+            var interpreter = new Interpreter(env);
             interpreter.Interpret();
         }
     }

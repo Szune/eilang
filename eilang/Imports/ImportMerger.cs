@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using eilang.Lexing;
 
 namespace eilang.Imports
 {
@@ -16,9 +17,10 @@ namespace eilang.Imports
             foreach(var import in importPaths)
             {
                 var source = File.ReadAllText(import);
-                var importLexer = new ImportLexer(source);
-                importLexer.SkipImports();
-                var withoutImports = source.Substring(importLexer.AbsolutePosition);
+                var reader = new ScriptReader(source);
+                var importLexer = new ImportLexer(reader, new CommonLexer(reader));
+                var afterImportsPosition = importLexer.GetIndexAfterImports();
+                var withoutImports = source.Substring(afterImportsPosition);
                 sb.AppendLine(withoutImports);
             }
             

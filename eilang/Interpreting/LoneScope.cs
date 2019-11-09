@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using eilang.Interfaces;
 
-namespace eilang.Interpreter
+namespace eilang.Interpreting
 {
     public class LoneScope : IScope
     {

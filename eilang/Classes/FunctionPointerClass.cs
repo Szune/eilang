@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using eilang.Compiler;
+using eilang.Compiling;
 using eilang.Interfaces;
 
 namespace eilang.Classes
@@ -7,7 +7,7 @@ namespace eilang.Classes
     public class FunctionPointerClass : Class
     {
         
-        public FunctionPointerClass(IValueFactory factory) : base(SpecialVariables.Function, Compiler.Compiler.GlobalFunctionAndModuleName)
+        public FunctionPointerClass(IValueFactory factory) : base(SpecialVariables.Function, Compiler.GlobalFunctionAndModuleName)
         {
             Functions.Add("call", new MemberFunction("call", Module, new List<string>(), this)
             {

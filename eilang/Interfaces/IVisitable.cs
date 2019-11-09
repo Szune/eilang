@@ -1,5 +1,5 @@
 using eilang.Classes;
-using eilang.Compiler;
+using eilang.Compiling;
 
 namespace eilang.Interfaces
 {

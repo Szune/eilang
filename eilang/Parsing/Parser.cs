@@ -13,12 +13,14 @@ namespace eilang.Parsing
         private bool InLoop => _forDepth > 0;
         private int _forDepth;
         private bool _inClass;
+        private Stack<VariableScope> _scopes = new Stack<VariableScope>();
 
         public Parser(ScriptLexer scriptLexer)
         {
             _scriptLexer = scriptLexer;
             Consume();
             Consume();
+            _scopes.Push(new VariableScope());
         }
 
         public AstRoot Parse()
@@ -229,10 +231,13 @@ namespace eilang.Parsing
         private void ParseBlock(IHaveExpression fun)
         {
             Require(TokenType.LeftBrace);
+            var currentScope = _scopes.Peek();
+            _scopes.Push(new VariableScope(currentScope));
             while (!Match(TokenType.RightBrace) && !Match(TokenType.EOF))
             {
                 ParseLeftExpression(fun);
             }
+            _scopes.Pop();
 
             // parse expressions
             Require(TokenType.RightBrace);
@@ -398,6 +403,14 @@ namespace eilang.Parsing
                 _forDepth--;
                 return;
             }
+
+            var reversed = false;
+
+            if (Match(TokenType.Tilde))
+            {
+                reversed = true;
+                Consume();
+            }
             Require(TokenType.LeftParenthesis);
             var expression = ParsePlusAndMinus();
             if (Match(TokenType.DoubleDot))
@@ -409,7 +422,7 @@ namespace eilang.Parsing
                 var forBlock = new AstBlock();
                 _forDepth++;
                 ParseBlock(forBlock);
-                ast.Expressions.Add(new AstForRange(new AstRange(expression, end), forBlock));
+                ast.Expressions.Add(new AstForRange(new AstRange(expression, end), forBlock, reversed));
             }
             else
             {
@@ -418,7 +431,7 @@ namespace eilang.Parsing
                 var forBlock = new AstBlock();
                 _forDepth++;
                 ParseBlock(forBlock);
-                ast.Expressions.Add(new AstForArray(expression, forBlock));
+                ast.Expressions.Add(new AstForArray(expression, forBlock, reversed));
             }
             _forDepth--;
         }
@@ -483,6 +496,7 @@ namespace eilang.Parsing
         {
             Require(TokenType.Var);
             var ident = Require(TokenType.Identifier).Text;
+            _scopes.Peek().DefineVariable(ident, _buffer[0].Line, _buffer[0].Col);
             Require(TokenType.Equals);
             // ⚠Important⚠ initial expression, cannot allow +=, -= etc
             var value = ParseTernaryOperator();

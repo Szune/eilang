@@ -126,6 +126,9 @@ namespace eilang.Lexing
                     case '@':
                         token = GetToken(TokenType.At);
                         break;
+                    case '~':
+                        token = GetToken(TokenType.Tilde);
+                        break;
                     case ';':
                         token = GetToken(TokenType.Semicolon);
                         break;

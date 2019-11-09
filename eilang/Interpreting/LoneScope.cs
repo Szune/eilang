@@ -5,7 +5,7 @@ namespace eilang.Interpreting
 {
     public class LoneScope : IScope
     {
-        private Dictionary<string, IValue> _variables = new Dictionary<string,IValue>();
+        private readonly Dictionary<string, IValue> _variables = new Dictionary<string,IValue>();
 
         public IValue GetVariable(string name)
         {

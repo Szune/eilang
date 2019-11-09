@@ -7,11 +7,13 @@ namespace eilang.Ast
     {
         public AstExpression Array { get; }
         public AstBlock Body { get; }
+        public bool Reversed { get; }
 
-        public AstForArray(AstExpression array, AstBlock body)
+        public AstForArray(AstExpression array, AstBlock body, bool reversed)
         {
             Array = array;
             Body = body;
+            Reversed = reversed;
         }
 
         public override void Accept(IVisitor visitor, Function function, Module mod)

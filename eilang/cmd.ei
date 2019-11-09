@@ -1,0 +1,95 @@
+﻿modu cmd {
+    typ parsed_args {
+        ctor(args);
+        
+        fun print() {
+            println(args);
+        }
+        
+        fun is_defined(name) {
+            for (args) {
+                if(it.name == name) {
+                    ret true;
+                }
+            }
+            ret false;
+        }
+        
+        fun get(name) {
+            for (args) {
+                if(it.name == name) {
+                    ret it.value;
+                }
+            }
+            ret *cmd::arg("","");
+        }
+    }
+
+    typ arg {
+        ctor(name,value);
+    }
+
+    typ args {
+        ctor(arg_list);
+
+        fun parse() {
+            var len = arg_list.len();
+            var all = [];
+            if(len < 1) {
+                ret *cmd::parsed_args([]);
+            }
+            if(len == 1) {
+                if(arg_list[0][0] == '-') {
+                    all.add(*cmd::arg(arg_list[0], ""));
+                } else {
+                    all.add(*cmd::arg("", arg_list[0]));
+                }
+                ret *cmd::parsed_args(all);
+            }
+            var cursor = 0;
+            for {
+                if (arg_list[cursor][0] == '-') {
+                    var arg_name = arg_list[cursor];
+                    var arg_val = [];
+                    for {
+                        cursor++;
+                        if (cursor > len - 1) {
+                            break;
+                        } else if (arg_list[cursor][0] == '-') {
+                            cursor--;
+                            break;
+                        }
+                        arg_val.add(arg_list[cursor]);
+                    }
+                    var add_val = "";
+                    if(arg_val.len() > 0) {
+                        add_val = str::join(" ", arg_val);
+                    }
+                    all.add(*cmd::arg(arg_name, add_val));
+                } else {
+                    var arg_val = [];
+                    for {
+                        if (cursor > len - 1) {
+                            break;
+                        } else if (arg_list[cursor][0] == '-') {
+                            cursor--;
+                            break;
+                        }
+                        arg_val.add(arg_list[cursor]);
+                        cursor++;
+                    }
+                    var add_val = "";
+                    if(arg_val.len() > 0) {
+                        add_val = str::join(" ", arg_val);
+                    }
+                    all.add(*cmd::arg("", add_val));
+                }
+                cursor++;
+                if(cursor > len - 1) {
+                    break;
+                }
+            }
+            ret *cmd::parsed_args(all);
+        }
+    }
+}

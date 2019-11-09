@@ -11,9 +11,13 @@
     <Content Include="test.ei">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="std.ei" />
     <None Remove="str.ei" />
     <Content Include="str.ei">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="std.ei" />
+    <None Remove="cmd.ei" />
+    <Content Include="cmd.ei">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

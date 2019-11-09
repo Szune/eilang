@@ -1,60 +1,32 @@
 ﻿import 'str';
+import 'cmd';
 
 fun main() {
     var env = *env();
-    var args = *cmd::args(env.get_args().skip(1)); # skip file name (may be some OS where that won't work, fix later if necessary)
+    #var args = *cmd::args(env.get_args().skip(1)); # skip file name (may be some OS where that won't work, fix later if necessary)
+    #var args = *cmd::args(["-hello"]);
     #var args = *cmd::args(["-greeting", "hello world", "-bye", "ciao world and so forth"]);
-    for(args.parse()) {
-        println($'"{it.name}" with value "{it.value}"');
+    var args = *cmd::args(["greetings", "hello", "-bye", "ciao", "world", "and", "so", "forth"]);
+    var parsed = args.parse();
+    println(parsed.is_defined("-bye"));
+    println(parsed.get("-bye"));
+    println(parsed.is_defined("-by"));
+    
+    if(parsed.is_defined("-bye")) {
+        println("-bye was defined, exiting script");
+        ret;
     }
-    println(args.parse());
-}
-
-
-modu cmd {
-    typ arg {
-        ctor(name,value);
+    
+    #println("!" + str::trim(" hello world ") + "!");
+    
+    var array = ["greetings", "hello", "-bye", "ciao", "world", "and", "so", "forth"];
+    
+    for ~(array) {
+        println(it);
     }
-
-    typ args {
-        ctor(arg_list);
-
-        fun parse() {
-            if(arg_list.len() < 1) {
-                ret [];
-            }
-            var cursor = 0;
-            var all = [];
-            var arg_name = "";
-            var arg_val = [];
-            for {
-                if (arg_list[cursor][0] == '-') {
-                    arg_name = arg_list[cursor];
-                    arg_val = [];
-                    for {
-                        cursor++;
-                        if (cursor > arg_list.len() - 1) {
-                            break;
-                        } else if (arg_list[cursor][0] == '-') {
-                            cursor--;
-                            break;
-                        }
-                        arg_val.add(arg_list[cursor]);
-                    }
-                    var add_val = "";
-                    if(arg_val.len() > 0) {
-                        add_val = str::join(" ", arg_val);
-                    }
-                    all.add(*cmd::arg(arg_name, add_val));
-                } else {
-                    all.add(*cmd::arg(arg_list[cursor], ""));
-                }
-                cursor++;
-                if(cursor > arg_list.len() - 1) {
-                    break;
-                }
-            }
-            ret all;
-        }
-    }
+    
+#    for(args.parse()) {
+#        println($'"{it.name}" with value "{it.value}"');
+#    }
+#    println(args.parse());
 }

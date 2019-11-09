@@ -17,7 +17,7 @@ namespace eilang
         static void Main(string[] args)
         {
             // TODO: 0. refactor opcodes into structs/classes, get rid of the giant switch statement
-            // TODO: -1 figure out how you can use registers to reduce repeat opcodes,
+            // TODO: -1. figure out how you can use registers to reduce repeat opcodes,
             // possible uses: loading a class member several times in a row, e.g.
             // var x = *p(); x.s = 1; x.t = 2; x.u = 3; // load x into a register and read from that register,
             // instead of re-referencing x (gets more useful the more deeply nested stuff is)

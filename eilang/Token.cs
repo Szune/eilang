@@ -63,7 +63,8 @@ namespace eilang
         At,
         Percent,
         ModuloEquals,
-        Import
+        Import,
+        Tilde
     }
     
     

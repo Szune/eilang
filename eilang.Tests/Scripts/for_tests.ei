@@ -100,6 +100,16 @@ fun main() {
     println("-----");
     println(str::join("hello me!".split(' '), '-'));
     
+    var are = [1,2,3];
+    for ~(are) {
+        assert(it == 3, $'"it" should be 3 but was {it}');
+        break;
+    }
+    for (are) {
+        assert(it == 1, $'"it" should be 1 but was {it}');
+        break;
+    }
+    
     test_loops_in_different_funcs();
 }
 

@@ -40,4 +40,39 @@
         }
         ret true;
     }
+    
+    fun trim_start(str) {
+        var new = "";
+        var foundStart = false;
+        for (str) {
+            if(!foundStart) {
+                if(it == ' ') {
+                    continue;
+                } else if (it != ' ') {
+                    foundStart = true;
+                }
+            }
+            new += it;
+        }
+        ret new;
+    }
+    
+    fun trim_end(str) {
+        var new = "";
+        var lastIndex = -1;
+        var len = str.len();
+        for ~(len-1..0) {
+            if(str[ix] == ' ') {
+                continue;
+            } else if (str[ix] != ' ') {
+                lastIndex = ix + 1;
+                break;
+            }
+        }
+        ret str.view(0, lastIndex);
+    }
+    
+    fun trim(str) {
+        ret str::trim_end(str::trim_start(str));
+    }
 }

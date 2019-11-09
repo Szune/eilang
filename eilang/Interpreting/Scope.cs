@@ -6,8 +6,8 @@ namespace eilang.Interpreting
 {
     public class Scope : IScope
     {
-        private Scope _parent;
-        private Dictionary<string, IValue> _variables = new Dictionary<string,IValue>();
+        private readonly Scope _parent;
+        private readonly Dictionary<string, IValue> _variables = new Dictionary<string,IValue>();
 
         public Scope()
         {
@@ -51,8 +51,6 @@ namespace eilang.Interpreting
 
         public void DefineVariable(string name, IValue value)
         {
-            if(_variables.ContainsKey(name))
-                throw new InvalidOperationException($"Variable '{name}' already defined in scope.");
             _variables[name] = value;
         }
 

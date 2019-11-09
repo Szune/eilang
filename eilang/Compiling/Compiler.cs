@@ -416,6 +416,7 @@ namespace eilang.Compiling
             _forDepth++;
             function.Write(OpCode.NSCP);
             forArray.Array.Accept(this, function, mod);
+            // save array to a temporary faster lookup location
             function.Write(OpCode.TMPV, _valueFactory.String($".aval{_forDepth}"));
             function.Write(OpCode.TMPR, _valueFactory.String($".aval{_forDepth}"));
             function.Write(OpCode.TYPEGET);
@@ -425,8 +426,18 @@ namespace eilang.Compiling
             function.Write(OpCode.TMPR, _valueFactory.String($".alen{_forDepth}"));
             function.Write(OpCode.JMPZ, _valueFactory.Integer(0));
             var addressOfFirstJmpZ = function.Code.Count - 1;
-            // start loop with index set to 0
-            function.Write(OpCode.PUSH, _valueFactory.Integer(0));
+            if (!forArray.Reversed)
+            {
+                // start loop with index set to 0
+                function.Write(OpCode.PUSH, _valueFactory.Integer(0));
+            }
+            else
+            {
+                // or index set to last item if reversed
+                function.Write(OpCode.TMPR, _valueFactory.String($".alen{_forDepth}"));
+                function.Write(OpCode.PUSH, _valueFactory.Integer(1));
+                function.Write(OpCode.SUB);
+            }
             function.Write(OpCode.DEF, _valueFactory.String($".ix{_forDepth}"));
             // define 'it' variable
             function.Write(OpCode.PUSH, _valueFactory.Void());
@@ -434,8 +445,17 @@ namespace eilang.Compiling
             function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
             var addressOfCmp = function.Code.Count - 1;
             // loop for the length of the array
-            function.Write(OpCode.TMPR, _valueFactory.String($".alen{_forDepth}"));
-            function.Write(OpCode.GTE);
+            if (!forArray.Reversed)
+            {
+                function.Write(OpCode.TMPR, _valueFactory.String($".alen{_forDepth}"));
+                function.Write(OpCode.GTE);
+            }
+            else
+            {
+                function.Write(OpCode.PUSH, _valueFactory.Integer(0));
+                function.Write(OpCode.LT);
+            }
+
             function.Write(OpCode.JMPT, _valueFactory.Integer(0));
             var addressOfJmpT = function.Code.Count - 1;
             // set 'it' to the value of array at current index 
@@ -449,7 +469,11 @@ namespace eilang.Compiling
             var addressOfLoopStep = function.Length;
             function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
             function.Write(OpCode.PUSH, _valueFactory.Integer(1));
-            function.Write(OpCode.ADD);
+            // increment or decrement index variable
+            if(forArray.Reversed)
+                function.Write(OpCode.SUB);
+            else
+                function.Write(OpCode.ADD);
             function.Write(OpCode.SET, _valueFactory.String($".ix{_forDepth}"));
             function.Write(OpCode.JMP, _valueFactory.Integer(addressOfCmp));
             var endOfLoop = function.Code.Count;
@@ -467,7 +491,10 @@ namespace eilang.Compiling
             function.Write(OpCode.NSCP);
             forRange.Range.Begin.Accept(this, function, mod);
             forRange.Range.End.Accept(this, function, mod);
-            function.Write(OpCode.GT);
+            if(forRange.Reversed)
+                function.Write(OpCode.LT);
+            else
+                function.Write(OpCode.GT);
             function.Write(OpCode.JMPT, _valueFactory.Integer(0));
             var addressOfFirstJmpT = function.Code.Count - 1;
             forRange.Range.Begin.Accept(this, function, mod);
@@ -475,14 +502,20 @@ namespace eilang.Compiling
             function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
             var addressOfCmp = function.Code.Count - 1;
             forRange.Range.End.Accept(this, function, mod);
-            function.Write(OpCode.GT);
+            if(forRange.Reversed)
+                function.Write(OpCode.LT);
+            else
+                function.Write(OpCode.GT);
             function.Write(OpCode.JMPT, _valueFactory.Integer(0));
             var addressOfJmpT = function.Code.Count - 1;
             forRange.Body.Accept(this, function, mod);
             var addressOfLoopStep = function.Length;
             function.Write(OpCode.REF, _valueFactory.String($".ix{_forDepth}"));
             function.Write(OpCode.PUSH, _valueFactory.Integer(1));
-            function.Write(OpCode.ADD);
+            if(forRange.Reversed)
+                function.Write(OpCode.SUB);
+            else
+                function.Write(OpCode.ADD);
             function.Write(OpCode.SET, _valueFactory.String($".ix{_forDepth}"));
             function.Write(OpCode.JMP, _valueFactory.Integer(addressOfCmp));
             var endOfLoop = function.Length;

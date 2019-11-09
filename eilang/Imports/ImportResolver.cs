@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using eilang.Lexing;
 
@@ -46,6 +47,8 @@ namespace eilang.Imports
 
         private string GetCode(string path)
         {
+            if(!File.Exists(path))
+                throw new InvalidOperationException($"Could not find file to import: '{path}'");
             return File.ReadAllText(path); // TODO: could optimize this to only read until there are no more imports
         }
 

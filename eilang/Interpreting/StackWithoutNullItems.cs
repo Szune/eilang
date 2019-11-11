@@ -9,6 +9,7 @@ namespace eilang.Interpreting
 
         public T Peek() => _internalStack.Peek();
         public bool TryPeek(out T result) => _internalStack.TryPeek(out result);
+        public bool TryPop(out T result) => _internalStack.TryPop(out result);
         public T Pop() => _internalStack.Pop();
 
         public void Push(T item)

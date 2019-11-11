@@ -49,7 +49,7 @@ namespace eilang.Interpreting
             Log($"Op: {bc.Op}, args: {string.Join(", ", args)}, top of stack: {stack}");
         }
 
-        public void Interpret()
+        public IValue Interpret()
         {
             Log("Interpreting...");
             var startFunc = GetStartFunction();
@@ -1021,6 +1021,10 @@ namespace eilang.Interpreting
                 }
                 throw new InterpreterException($"Failure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.", e);
             }
+            
+            return _stack.TryPop(out var result) 
+                ? result 
+                : _valueFactory.Void();
         }
 
         private void ThrowVariableNotFound(string variable)

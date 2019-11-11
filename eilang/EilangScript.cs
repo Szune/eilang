@@ -1,6 +1,7 @@
 ﻿using eilang.Classes;
 using eilang.Compiling;
 using eilang.Imports;
+using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Lexing;
 using eilang.Parsing;
@@ -10,7 +11,7 @@ namespace eilang
 {
     public static class EilangScript
     {
-        public static void RunFile(string path, Env environment = null)
+        public static IValue RunFile(string path, Env environment = null)
         {
             
             var imports = new ImportResolver().ResolveImportsFromFile(path);
@@ -39,10 +40,10 @@ namespace eilang
                 ,logger: Console.Out
 #endif
             );
-            interpreter.Interpret();
+            return interpreter.Interpret();
         }
         
-        public static void Run(string code, Env environment = null)
+        public static IValue Run(string code, Env environment = null)
         {
             var reader = new ScriptReader(code);
             var lexer = new ScriptLexer(reader, new CommonLexer(reader));
@@ -66,7 +67,7 @@ namespace eilang
                 ,logger: Console.Out
 #endif
             );
-            interpreter.Interpret();
+            return interpreter.Interpret();
         }
     }
 }

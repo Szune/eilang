@@ -1,5 +1,8 @@
 ﻿//#define LOGGING
 
+using System.Diagnostics;
+using eilang.Values;
+
 namespace eilang
 {
     public static class Program
@@ -26,7 +29,8 @@ namespace eilang
 
             //EilangScript.RunFile(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");
             EilangScript.RunFile("test.ei");
-            EilangScript.Run("println('hello world');");
+            var returnValue = EilangScript.Run("println('hello world'); ret 100;");
+            Debug.Assert(returnValue.As<IntegerValue>().Item == 100);
         }
     }
 }

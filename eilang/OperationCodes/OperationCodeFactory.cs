@@ -112,7 +112,7 @@ namespace eilang.OperationCodes
             return _modulo;
         }
 
-        public Division Division()
+        public Division Divide()
         {
             return _division;
         }

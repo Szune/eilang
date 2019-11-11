@@ -22,21 +22,21 @@ namespace eilang.OperationCodes
         {
             state.Frames.Pop();
             state.Scopes.Pop();
-            if (!_inLoopReturn)
+            
+            if (state.Frames.Count < 1)
             {
-                return;
+                state.FinishedExecution.Value = true;
             }
 
+            if (!_inLoopReturn)
+                return;
+            
             for (int i = 0; i < _loopDepth; i++)
             {
                 state.Scopes.Pop();
                 state.TemporaryVariables.Pop().Clear();
             }
 
-            if (state.Frames.Count < 1)
-            {
-                state.FinishedExecution = true;
-            }
         }
     }
 }

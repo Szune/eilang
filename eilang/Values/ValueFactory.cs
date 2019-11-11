@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using eilang.Classes;
 using eilang.Interfaces;
 using eilang.Interpreting;
+using eilang.OperationCodes;
 
 namespace eilang.Values
 {
@@ -10,6 +11,7 @@ namespace eilang.Values
         private static readonly IValue _empty = new VoidValue();
         private static readonly IValue _true = new BoolValue(true);
         private static readonly IValue _false = new BoolValue(false);
+        private static readonly IOperationCodeFactory _operationCodeFactory = new OperationCodeFactory();
         public IValue Double(double doub)
         {
             return new DoubleValue(doub);
@@ -39,14 +41,14 @@ namespace eilang.Values
         {
             var scope = new Scope();
             scope.DefineVariable(SpecialVariables.String, new InternalStringValue(str));
-            return new StringValue(new Instance(scope, new StringClass()));
+            return new StringValue(new Instance(scope, new StringClass(_operationCodeFactory)));
         }
         
         public IValue FunctionPointer(string ident)
         {
             var scope = new Scope();
             scope.DefineVariable(SpecialVariables.Function, new InternalStringValue(ident));
-            return new FunctionPointerValue(new Instance(scope, new FunctionPointerClass(this)));
+            return new FunctionPointerValue(new Instance(scope, new FunctionPointerClass(_operationCodeFactory, this)));
         }
 
         public IValue Class(Class clas)
@@ -68,7 +70,7 @@ namespace eilang.Values
         {
             var scope = new Scope();
             scope.DefineVariable(SpecialVariables.List, new InternalListValue(items ?? new List<IValue>()));
-            return new ListValue(new Instance(scope, new ListClass()));
+            return new ListValue(new Instance(scope, new ListClass(_operationCodeFactory)));
         }
     }
 }

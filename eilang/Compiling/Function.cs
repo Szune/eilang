@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using eilang.Interfaces;
+using eilang.OperationCodes;
 
 namespace eilang.Compiling
 {
     public class Function
     {
-        public string Name {get;}
+        public string Name { get; }
         public string Module { get; }
         public virtual string FullName => $"{Module}::{Name}";
         public List<string> Arguments { get; }
@@ -16,14 +17,16 @@ namespace eilang.Compiling
             Module = module;
             Arguments = arguments;
         }
-        public List<Bytecode> Code {get;} = new List<Bytecode>();
 
-        public void Write(OpCode op, IValue arg0 = null, IValue arg1 = null, IValue arg2 = null, Metadata metadata = null)
+        public List<Bytecode> Code { get; } = new List<Bytecode>();
+
+        public void Write(IOperationCode op, Metadata metadata = null)
         {
-            Code.Add(new Bytecode(op, arg0, arg1, arg2, metadata));
+            Code.Add(new Bytecode(op, metadata));
         }
 
-        public Bytecode this[int index] {
+        public Bytecode this[int index]
+        {
             get => Code[index];
             set => Code[index] = value;
         }

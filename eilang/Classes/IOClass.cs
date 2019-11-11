@@ -1,4 +1,5 @@
 ﻿using eilang.Compiling;
+using eilang.OperationCodes;
 
 namespace eilang.Classes
 {
@@ -7,7 +8,7 @@ namespace eilang.Classes
     /// </summary>
     public class IOClass : Class
     {
-        public IOClass() : base("io", Compiler.GlobalFunctionAndModuleName)
+        public IOClass(IOperationCodeFactory factory) : base("io", Compiler.GlobalFunctionAndModuleName)
         {
             // TODO: implement
         }

@@ -17,7 +17,7 @@ namespace eilang.OperationCodes
         Subtract Subtract();
         Multiply Multiply();
         Modulo Modulo();
-        Division Division();
+        Division Divide();
         JumpIfFalse JumpIfFalse(IValue address);
         JumpIfTrue JumpIfTrue(IValue address);
         JumpIfZero JumpIfZero(IValue address);

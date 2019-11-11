@@ -4,6 +4,7 @@ using eilang.Imports;
 using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Lexing;
+using eilang.OperationCodes;
 using eilang.Parsing;
 using eilang.Values;
 
@@ -24,7 +25,7 @@ namespace eilang
 
             if (environment == null)
             {
-                environment = new Env(new ValueFactory());
+                environment = new Env(new OperationCodeFactory(), new ValueFactory());
                 environment.AddClassesDerivedFromClassInAssembly<Class>();
                 environment.AddExportedFunctionsFrom(typeof(ExportedFunctions));
             }
@@ -52,7 +53,7 @@ namespace eilang
 
             if (environment == null)
             {
-                environment = new Env(new ValueFactory());
+                environment = new Env(new OperationCodeFactory(), new ValueFactory());
                 environment.AddClassesDerivedFromClassInAssembly<Class>();
                 environment.AddExportedFunctionsFrom(typeof(ExportedFunctions));
             }

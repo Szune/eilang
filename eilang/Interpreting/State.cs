@@ -12,7 +12,7 @@ namespace eilang.Interpreting
         public Stack<LoneScope> TemporaryVariables { get; }
         public Stack<CallFrame> Frames { get; }
         public IValueFactory ValueFactory { get; }
-        public bool FinishedExecution { get; set; }
+        public BoolWrapper FinishedExecution { get; } // BoolWrapper is used to make it mutable
 
         public State(Env environment, Stack<CallFrame> frames, StackWithoutNullItems<IValue> stack, Stack<Scope> scopes,
             Stack<LoneScope> temporaryVariables, IValueFactory valueFactory)

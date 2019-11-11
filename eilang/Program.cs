@@ -13,7 +13,6 @@ namespace eilang
             // StringToInt StringToInt(); // "10".int();
             // StringToDouble StringToDouble(); // "10.5".double();
             // StringToBool StringToBool(); // "false".bool();
-            // TODO: 0. refactor opcodes into structs/classes, get rid of the giant switch statement
             // TODO: 1. implement maps (dictionaries) - MapClass
             // TODO: 2. implement file i/o - IOClass
             // TODO: 3. implement working with processes (starting processes, killing processes)

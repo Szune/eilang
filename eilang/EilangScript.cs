@@ -21,22 +21,20 @@ namespace eilang
             var parser = new Parser(lexer);
             var ast = parser.Parse();
 
-#if LOGGING
-            var walker = new AstWalker(ast);
-            walker.PrintAst();
-#endif
+            if (environment == null)
+            {
+                environment = new Env(new ValueFactory());
+                environment.AddClassesDerivedFromClassInAssembly<Class>();
+                environment.AddExportedFunctionsFrom(typeof(ExportedFunctions));
+            }
 
-            var env = new Env(new ValueFactory());
-            env.AddClassesDerivedFromClassInAssembly<Class>();
-            env.AddExportedFunctionsFrom(typeof(ExportedFunctions));
-
-            Compiler.Compile(env, ast
+            Compiler.Compile(environment , ast
 #if LOGGING
                 ,logger: Console.Out
 #endif
             );
 
-            var interpreter = new Interpreter(env
+            var interpreter = new Interpreter(environment 
 #if LOGGING
                 ,logger: Console.Out
 #endif
@@ -50,11 +48,6 @@ namespace eilang
             var lexer = new ScriptLexer(reader, new CommonLexer(reader));
             var parser = new Parser(lexer);
             var ast = parser.Parse();
-
-#if LOGGING
-            var walker = new AstWalker(ast);
-            walker.PrintAst();
-#endif
 
             if (environment == null)
             {

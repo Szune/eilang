@@ -24,7 +24,7 @@ namespace eilang
             // TODO: 10. static analysis of types (i.e. type checking)
             // TODO: 11. rework stack/value/memory implementation to be more efficient
 
-            EilangScript.RunFile(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");
+            //EilangScript.RunFile(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");
             EilangScript.RunFile("test.ei");
             EilangScript.Run("println('hello world');");
         }

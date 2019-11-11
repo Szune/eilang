@@ -234,6 +234,26 @@ namespace eilang.Compiling
         /// <summary>
         /// Modulo
         /// </summary>
-        MOD
+        MOD,
+        /// <summary>
+        /// Start process
+        /// </summary>
+        SPROC,
+        /// <summary>
+        /// Kill process by process id
+        /// </summary>
+        KPPROC,
+        /// <summary>
+        /// Kill process by name
+        /// </summary>
+        KPROC,
+        /// <summary>
+        /// Get process by name
+        /// </summary>
+        GPROC,
+        /// <summary>
+        /// Get process by process id
+        /// </summary>
+        GPPROC
     }
 }

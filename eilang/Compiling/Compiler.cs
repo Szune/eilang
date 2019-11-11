@@ -679,7 +679,7 @@ namespace eilang.Compiling
             Log($"Compiling function call '{funcCall.Name}'");
             funcCall.Arguments.Accept(this, function, mod);
             function.Write(OpCode.PUSH, _valueFactory.Integer(funcCall.Arguments.Count));
-            if (_env.ExportedFuncs.ContainsKey(funcCall.Name))
+            if (_env.ExportedFunctions.ContainsKey(funcCall.Name))
             {
                 function.Write(OpCode.ECALL, _valueFactory.String(funcCall.Name));
             }

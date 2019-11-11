@@ -84,27 +84,8 @@ namespace eilang.Tests
             RunScript("Scripts/testold.ei");
             Console.WriteLine("Old regression tests completed");
         }
-        
-        
-        private static void RunScript(string path)
-        {
-            var imports = new ImportResolver().ResolveImports(path);
-            var code = new ImportMerger().Merge(imports);
-            var reader = new ScriptReader(code);
-            var lexer = new ScriptLexer(reader, new CommonLexer(reader));
-            var parser = new Parser(lexer);
-            var ast = parser.Parse();
 
 
-            var env = new Env();
-            env.ExportedFuncs.Add("println", Program.PrintLine);
-            env.ExportedFuncs.Add("assert", Program.Assert);
-            var envClass = new EnvClass(new ValueFactory());
-            env.Classes.Add(envClass.FullName, envClass);
-
-            Compiler.Compile(env, ast);
-            var interpreter = new Interpreter(env);
-            interpreter.Interpret();
-        }
+        private static void RunScript(string path) => EilangScript.RunFile(path);
     }
 }

@@ -10,7 +10,7 @@ namespace eilang.Classes
             Name = name;
             Module = module;
             CtorForMembersWithValues = new MemberFunction(".ctorForInit", "na", new List<string>(), this);
-        }
+            }
 
         public string Name { get; }
         public string Module { get; }

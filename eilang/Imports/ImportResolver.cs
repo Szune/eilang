@@ -7,7 +7,7 @@ namespace eilang.Imports
 {
     public class ImportResolver
     {
-        public IEnumerable<string> ResolveImports(string pathToMain)
+        public IEnumerable<string> ResolveImportsFromFile(string pathToMain)
         {
             // step 1
             // read unique imports in code, add to list of new imports

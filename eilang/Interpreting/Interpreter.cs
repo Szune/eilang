@@ -686,7 +686,7 @@ namespace eilang.Interpreting
                             if (argLength == 1)
                             {
                                 var val = _stack.Pop();
-                                _env.ExportedFuncs[bc.Arg0.As<StringValue>().Item](_valueFactory, val);
+                                _env.ExportedFunctions[bc.Arg0.As<StringValue>().Item](_valueFactory, val);
                             }
                             else
                             {
@@ -697,7 +697,7 @@ namespace eilang.Interpreting
                                 }
 
                                 var list = _valueFactory.List(values);
-                                _env.ExportedFuncs[bc.Arg0.As<StringValue>().Item](_valueFactory, list);
+                                _env.ExportedFunctions[bc.Arg0.As<StringValue>().Item](_valueFactory, list);
                             }
                             break;
                         case OpCode.TYPEGET:

@@ -51,6 +51,7 @@ namespace eilang.Interpreting
 
         public IValue Interpret()
         {
+            var state = new State(_env, _frames, _stack, _scopes, _tmpVars, _valueFactory);
             Log("Interpreting...");
             var startFunc = GetStartFunction();
             _frames.Push(new CallFrame(startFunc));
@@ -64,7 +65,11 @@ namespace eilang.Interpreting
                 {
                     frame = _frames.Peek();
                     bc = frame.Function[frame.Address];
-
+//                    bc.Execute(state);
+//
+//                    if (state.FinishedExecution)
+//                        return;
+                    
                     PrintBc(bc);
                     switch (bc.Op)
                     {

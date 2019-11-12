@@ -1,6 +1,8 @@
 # eilang
 eilang is a scripting language. That's about it.
 
+There's a basic Telegram bot implementation under Scripts/telegram.ei though.
+
 Hello world:
 ```eilang
 println('hello world');

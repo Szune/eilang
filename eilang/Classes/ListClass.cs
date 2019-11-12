@@ -26,7 +26,7 @@ namespace eilang.Classes
                     new Bytecode(factory.Return())
                 }
             });
-            Functions.Add("rem", new MemberFunction("rem", Module, new List<string>{"item"}, this)
+            Functions.Add("remove", new MemberFunction("remove", Module, new List<string>{"item"}, this)
             {
                 Code =
                 {
@@ -35,7 +35,7 @@ namespace eilang.Classes
                     new Bytecode(factory.Return())
                 }
             });
-            Functions.Add("rem_at", new MemberFunction("rem_at", Module, new List<string>{"index"}, this)
+            Functions.Add("remove_at", new MemberFunction("remove_at", Module, new List<string>{"index"}, this)
             {
                 Code = 
                 {
@@ -62,7 +62,7 @@ namespace eilang.Classes
                     new Bytecode(factory.Return())
                 }
             });
-            Functions.Add("clr", new MemberFunction("clr", Module, new List<string>(), this)
+            Functions.Add("clear", new MemberFunction("clear", Module, new List<string>(), this)
             {
                 Code = 
                 {
@@ -71,7 +71,7 @@ namespace eilang.Classes
                     new Bytecode(factory.Return())
                 }
             });
-            Functions.Add("ins", new MemberFunction("ins", Module, new List<string>{"index", "item"}, this)
+            Functions.Add("insert", new MemberFunction("insert", Module, new List<string>{"index", "item"}, this)
             {
                 Code = 
                 {

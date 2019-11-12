@@ -11,7 +11,7 @@ namespace eilang.OperationCodes
             var content = state.Stack.Pop().To<string>();
             var headers = state.Stack.Pop().To<string>();
             var url = state.Stack.Pop().To<string>();
-            state.Stack.Push(HttpHelper.Post(url, headers, content));
+            state.Stack.Push(HttpHelper.Post(state, url, headers, content));
         }
     }
 }

@@ -65,5 +65,6 @@ namespace eilang.OperationCodes
         StringSplit StringSplit();
         HttpPost HttpPost();
         HttpGet HttpGet();
+        StringToInt StringToInt();
     }
 }

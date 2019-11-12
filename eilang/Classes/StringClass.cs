@@ -98,12 +98,21 @@ namespace eilang.Classes
                     new Bytecode(factory.Return())
                 }
             });
-            Functions.Add("ins", new MemberFunction("ins", Module, new List<string>{"index", "item"}, this)
+            Functions.Add("insert", new MemberFunction("insert", Module, new List<string>{"index", "item"}, this)
             {
                 Code = 
                 {
                     new Bytecode(factory.Pop()),
                     new Bytecode(factory.StringInsert()),
+                    new Bytecode(factory.Return())
+                }
+            });
+            Functions.Add("int", new MemberFunction("int", Module, new List<string>{}, this)
+            {
+                Code = 
+                {
+                    new Bytecode(factory.Pop()),
+                    new Bytecode(factory.StringToInt()),
                     new Bytecode(factory.Return())
                 }
             });

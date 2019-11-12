@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
-using eilang.Classes;
 using eilang.Interfaces;
 using eilang.Interpreting;
-using eilang.OperationCodes;
-using eilang.Values;
 
 namespace eilang.Helpers
 {
@@ -14,27 +11,23 @@ namespace eilang.Helpers
     {
         private static readonly HttpClient HttpClient = new HttpClient();
 
-        public static IValue Get(string url, string headers)
+        public static IValue Get(State state, string url, string headers)
         {
             var parsedHeaders = ParseHeaders(headers);
             SetHeaders(parsedHeaders);
             var result = HttpClient.GetAsync(url).Result;
             var content = result.Content.ReadAsStringAsync().Result;
-            var scope = new Scope();
-            scope.DefineVariable(SpecialVariables.String, new InternalStringValue(content));
-            return new StringValue(new Instance(scope, new StringClass(new OperationCodeFactory())));
+            return state.ValueFactory.String(content);
         }
 
-        public static IValue Post(string url, string headers, string postContent)
+        public static IValue Post(State state, string url, string headers, string postContent)
         {
             var parsedHeaders = ParseHeaders(headers);
             SetHeaders(parsedHeaders);
             var result = HttpClient.PostAsync(url, new StringContent(postContent, Encoding.UTF8, "application/json"))
                 .Result;
             var content = result.Content.ReadAsStringAsync().Result;
-            var scope = new Scope();
-            scope.DefineVariable(SpecialVariables.String, new InternalStringValue(content));
-            return new StringValue(new Instance(scope, new StringClass(new OperationCodeFactory())));
+            return state.ValueFactory.String(content);
         }
         
         private static void SetHeaders(IEnumerable<Header> parsedHeaders)

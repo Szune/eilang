@@ -407,12 +407,12 @@ namespace eilang.Lexing
                     sb.Append('\t');
                     _reader.ConsumeChar(); // consume slash
                 }
-                else if (_reader.Current == '\'' && _reader.Next == '{')
+                else if (_reader.Current == '\\' && _reader.Next == '{')
                 {
                     sb.Append('{');
                     _reader.ConsumeChar(); // consume slash
                 }
-                else if (_reader.Current == '\'' && _reader.Next == '}')
+                else if (_reader.Current == '\\' && _reader.Next == '}')
                 {
                     sb.Append('}');
                     _reader.ConsumeChar(); // consume slash

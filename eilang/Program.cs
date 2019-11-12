@@ -1,8 +1,9 @@
 ﻿//#define LOGGING
 
+using System;
 using System.Diagnostics;
+using System.Linq;
 using eilang.Extensions;
-using eilang.Values;
 
 namespace eilang
 {
@@ -10,6 +11,19 @@ namespace eilang
     {
         static void Main(string[] args)
         {
+            #if !DEBUG
+            if (args.FirstOrDefault()?.EndsWith(".ei") == true)
+            {
+               Eilang.RunFile(args.First());
+               return;
+            }
+            Console.WriteLine("Enter the path to the script to run:");
+            var path = Console.ReadLine();
+            Eilang.RunFile(path);
+            return;
+#endif
+
+#if DEBUG
             // TODO: implement the following operation codes for better string handling:
             // StringToInt StringToInt(); // "10".int();
             // StringToDouble StringToDouble(); // "10.5".double();
@@ -40,7 +54,7 @@ namespace eilang
             Debug.Assert(returnValue.To<string>() == "eilang");
             returnValue = Eilang.Run("ret 12 * 14;");
             Debug.Assert(returnValue.To<int>() == 168);
-            // TODO tuesday: 2. implement *http() class for networking
+#endif
         }
     }
 }

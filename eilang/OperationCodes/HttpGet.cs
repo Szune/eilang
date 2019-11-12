@@ -10,7 +10,7 @@ namespace eilang.OperationCodes
         {
             var headers = state.Stack.Pop().To<string>();
             var url = state.Stack.Pop().To<string>();
-            state.Stack.Push(HttpHelper.Get(url, headers));
+            state.Stack.Push(HttpHelper.Get(state, url, headers));
         }
     }
 }

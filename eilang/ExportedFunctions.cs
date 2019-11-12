@@ -12,6 +12,13 @@ namespace eilang
         {
             return Eilang.Run(code.To<string>());
         }
+
+        [ExportFunction("sleep")]
+        public static IValue Sleep(IValueFactory fac, IValue milliseconds)
+        {
+            System.Threading.Thread.Sleep(milliseconds.To<int>());
+            return fac.Void();
+        }
         
         [ExportFunction("assert")]
         public static IValue Assert(IValueFactory fac, IValue args)

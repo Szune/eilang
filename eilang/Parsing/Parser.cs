@@ -870,11 +870,11 @@ namespace eilang.Parsing
                     return new AstFalse();
                 case TokenType.Minus:
                     Consume();
-                    var minusExpr = ParseReferences();
+                    var minusExpr = ParseDots();
                     return new AstUnaryMathOperation(UnaryMath.Minus, minusExpr);
                 case TokenType.Not:
                     Consume();
-                    var notExpr = ParseReferences();
+                    var notExpr = ParseDots();
                     return new AstUnaryMathOperation(UnaryMath.Not, notExpr);
                 case TokenType.Asterisk:
                     Consume();

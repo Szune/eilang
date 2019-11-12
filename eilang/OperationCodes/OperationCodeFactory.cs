@@ -46,6 +46,8 @@ namespace eilang.OperationCodes
         private readonly StringReplace _stringReplace = new StringReplace();
         private readonly StringToUpper _stringToUpper = new StringToUpper();
         private readonly StringToLower _stringToLower = new StringToLower();
+        private readonly HttpPost _httpPost = new HttpPost();
+        private readonly HttpGet _httpGet = new HttpGet();
 
         public Push Push(IValue value)
         {
@@ -340,6 +342,16 @@ namespace eilang.OperationCodes
         public StringSplit StringSplit()
         {
             return _stringSplit;
+        }
+
+        public HttpPost HttpPost()
+        {
+            return _httpPost;
+        }
+
+        public HttpGet HttpGet()
+        {
+            return _httpGet;
         }
     }
 }

@@ -63,5 +63,7 @@ namespace eilang.OperationCodes
         StringToUpper StringToUpper();
         StringToLower StringToLower();
         StringSplit StringSplit();
+        HttpPost HttpPost();
+        HttpGet HttpGet();
     }
 }

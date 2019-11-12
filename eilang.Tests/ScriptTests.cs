@@ -86,6 +86,6 @@ namespace eilang.Tests
         }
 
 
-        private static void RunScript(string path) => EilangScript.RunFile(path);
+        private static void RunScript(string path) => Eilang.RunFile(path);
     }
 }

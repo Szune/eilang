@@ -1,6 +1,6 @@
 using eilang.Parsing;
 
-namespace eilang
+namespace eilang.Extensions
 {
     public static class TokenExtensions
     {

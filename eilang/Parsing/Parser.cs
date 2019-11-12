@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using eilang.Ast;
+using eilang.Extensions;
 using eilang.Interfaces;
 using eilang.Lexing;
 

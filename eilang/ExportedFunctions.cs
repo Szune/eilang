@@ -1,4 +1,5 @@
 ﻿using System;
+using eilang.Extensions;
 using eilang.Interfaces;
 using eilang.Values;
 
@@ -6,6 +7,12 @@ namespace eilang
 {
     public static class ExportedFunctions
     {
+        [ExportFunction("eval")]
+        public static IValue Eval(IValueFactory fac, IValue code)
+        {
+            return Eilang.Run(code.To<string>());
+        }
+        
         [ExportFunction("assert")]
         public static IValue Assert(IValueFactory fac, IValue args)
         {
@@ -78,7 +85,7 @@ namespace eilang
                 throw new InvalidOperationException("Message can only be of type string");
             if (assert.Get<bool>())
                 return fac.Void();
-            throw new AssertionException("Assertion was false" + (message != null ? ": " + message.As<StringValue>().Item : "."));
+            throw new AssertionException("Assertion was false" + (message != null ? ": " + message.To<string>() : "."));
         }
     }
 }

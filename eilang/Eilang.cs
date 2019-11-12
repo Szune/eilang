@@ -10,7 +10,7 @@ using eilang.Values;
 
 namespace eilang
 {
-    public static class EilangScript
+    public static class Eilang
     {
         public static IValue RunFile(string path, Env environment = null)
         {

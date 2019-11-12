@@ -3,7 +3,7 @@ using eilang.Classes;
 using eilang.Compiling;
 using eilang.Interfaces;
 
-namespace eilang
+namespace eilang.Extensions
 {
     public static class VisitorExtensions
     {

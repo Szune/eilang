@@ -66,5 +66,6 @@ namespace eilang.OperationCodes
         HttpPost HttpPost();
         HttpGet HttpGet();
         StringToInt StringToInt();
+        StringToDouble StringToDouble();
     }
 }

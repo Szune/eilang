@@ -25,7 +25,6 @@ namespace eilang
 
 #if DEBUG
             // TODO: implement the following operation codes for better string handling:
-            // StringToInt StringToInt(); // "10".int();
             // StringToDouble StringToDouble(); // "10.5".double();
             // StringToBool StringToBool(); // "false".bool();
             // TODO: 1. implement maps (dictionaries) - MapClass

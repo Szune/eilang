@@ -1,7 +1,28 @@
 # eilang
 eilang is a scripting language. That's about it.
 
-There's a basic Telegram bot implementation under Scripts/telegram.ei though.
+There's a basic **Telegram bot** implementation under `Scripts/telegram.ei` and `Scripts/bot.ei` though.
+
+`eilang/ExportedFunctions.cs` and `eilang/Eilang.cs` show how to export functions and classes:
+```csharp
+env.AddClassesDerivedFromClassInAssembly<Class>(); // adds classes to eilang,
+// classes can use any OpCode that implements IOperationCode
+env.AddExportedFunctionsFrom(typeof(ExportedFunctions)); // adds functions to eilang,
+// from a static class
+env.AddExportedFunctionsFrom<ExportedFunctions>(); // adds functions to eilang,
+// from a non-static class
+```
+Look at `eilang/Classes/EnvClass.cs` for a simple class
+
+Example exported function from `eilang/ExportedFunctions.cs`:
+```csharp
+[ExportFunction("sleep")]
+public static IValue Sleep(IValueFactory fac, IValue milliseconds)
+{
+    System.Threading.Thread.Sleep(milliseconds.To<int>());
+    return fac.Void();
+}
+```
 
 Hello world:
 ```eilang

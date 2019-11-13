@@ -66,5 +66,21 @@ namespace eilang.Compiling
                 }
             }
         }
+        
+        public void AddExportedFunctionsFrom<T>()
+        {
+            var functions = typeof(T).GetMethods()
+                .Where(m => m.CustomAttributes.Any(a =>
+                    ReferenceEquals(a.AttributeType, typeof(ExportFunctionAttribute))));
+            foreach (var func in functions)
+            {
+                var names = func.GetCustomAttributes<ExportFunctionAttribute>();
+                foreach (var name in names)
+                {
+                    ExportedFunctions.Add(name.FunctionName,
+                        (ExportedFunction) func.CreateDelegate(typeof(ExportedFunction)));
+                }
+            }
+        }
     }
 }

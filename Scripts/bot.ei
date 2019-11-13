@@ -1,0 +1,71 @@
+typ wrapper { ctor(has_value, value); }
+
+typ bot {
+    ctor(token, callback)
+    {
+        me.http = *http();
+    }
+    
+    fun get_part(str, start_part, end_part) {
+        if(str.index_of(start_part, 0) < 0) {
+            ret *wrapper(false, "");
+        }
+        var start = str.index_of(start_part, 0) + start_part.len();
+        var part = str.view(
+            start,
+            str.index_of(end_part, start));
+        ret *wrapper(true, part);
+    }
+    
+    fun reply(msg, chatId) {
+        http.get($'https://api.telegram.org/bot{token}/sendMessage?chat_id={chatId}&text={msg}', '');
+    }
+
+    fun start() {
+        var sleepMs = 2000;
+        var lastId = -1;
+        var first = true;
+        for { # bot loop
+            var url = $'https://api.telegram.org/bot{token}/getUpdates?allowed_updates=["message", "channel_post"]&offset=-1';
+            var update = http.get(url, '');
+            var msg_id = me.get_part(update, '"message":{"message_id":', ',');
+            if(msg_id.has_value) {
+                var id = msg_id.value.int();
+                if(id != lastId) {
+                    lastId = id;
+                    println($"new message, id: {id}");
+                } else {
+                    # no new messages
+                    sleep(sleepMs);
+                    continue;
+                }
+            } else {
+                println("no message id found");
+                sleep(sleepMs);
+                continue;
+            }
+            
+            var msg = me.get_part(update, '"text":"', '"');
+            if(msg.has_value) {
+                println($"msg had value {msg.value}");
+            } else {
+                println("no msg in update");
+            }
+            
+            var chatId = me.get_part(update, '"chat":{"id":', ',');
+            if(chatId.has_value) {
+                println($"msg came from chat with id {chatId.value}");
+            } else {
+                println("no chat id in update");
+            }
+            
+            if(first) {
+                first = false;
+            } else {
+                callback.call(me, msg, chatId);
+            }
+            
+            sleep(sleepMs);
+        }
+    }
+}

@@ -12,26 +12,38 @@ namespace eilang
         static void Main(string[] args)
         {
             #if !DEBUG
-            if (args.FirstOrDefault()?.EndsWith(".ei") == true)
+            if (args.Any())
             {
                Eilang.RunFile(args.First());
                return;
             }
-            Console.WriteLine("Enter the path to the script to run:");
-            var path = Console.ReadLine();
-            Eilang.RunFile(path);
-            return;
+
+            while (true)
+            {
+                Console.WriteLine("Enter the path to the script to run, 'eval' or 'exit':");
+                var path = Console.ReadLine();
+                if (path?.ToUpperInvariant().Trim() == "EXIT" || path?.ToUpperInvariant().Trim() == "'EXIT'")
+                    return;
+                if (path?.ToUpperInvariant().Trim() == "EVAL" || path?.ToUpperInvariant().Trim() == "'EVAL'")
+                {
+                    Console.WriteLine("Enter the code to run:");
+                    var code = Console.ReadLine();
+                    Eilang.Run(code);
+                }
+                else
+                {
+                    Eilang.RunFile(path);
+                }
+                Console.WriteLine();
+            }
 #endif
 
 #if DEBUG
-            // TODO: implement the following operation codes for better string handling:
-            // StringToBool StringToBool(); // "false".bool();
             // TODO: 1. implement maps (dictionaries) - MapClass
             // TODO: 2. implement file i/o - IOClass
             // TODO: 3. implement working with processes (starting processes, killing processes)
             // TODO: 4. implement networking
             // TODO: 5. implement reflection-like functionality
-            // TODO: 6. implement instance.+member = "test"; # adds member to instance
             // TODO: 7. implement switch statements
             // TODO: 8. implement bytes
             // TODO: 9. implement regex?

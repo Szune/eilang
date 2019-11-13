@@ -109,6 +109,11 @@ namespace eilang.Compiling
                 newCtor.Write(_opFactory.Define(_valueFactory.String(arg)));
             }
 
+            if (ctor.Expressions.Any())
+            {
+                ctor.Expressions.Accept(this, newCtor, mod);
+            }
+
             newCtor.Write(_opFactory.Return());
             clas.Constructors.Add(newCtor);
         }
@@ -302,7 +307,14 @@ namespace eilang.Compiling
                             function.Write(_opFactory.MemberCall(_valueFactory.String("idx_set")));
                             break;
                         case AssignmentSet.Variable:
-                            function.Write(_opFactory.Set(_valueFactory.String(assignment.Set.OptionalIdentifier)));
+                            if (assignment.Define)
+                            {
+                                function.Write(_opFactory.Define(_valueFactory.String(assignment.Set.OptionalIdentifier)));
+                            }
+                            else
+                            {
+                                function.Write(_opFactory.Set(_valueFactory.String(assignment.Set.OptionalIdentifier)));
+                            }
                             break;
                         case AssignmentSet.MemberVariable:
                             function.Write(

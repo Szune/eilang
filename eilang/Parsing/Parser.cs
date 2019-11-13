@@ -123,8 +123,15 @@ namespace eilang.Parsing
             }
 
             Require(TokenType.RightParenthesis);
-            Require(TokenType.Semicolon);
-            clas.Constructors.Add(new AstConstructor($".ctor::{clas.Name}", args));
+            if (Match(TokenType.Semicolon)) // constructor without code block
+            {
+                Consume();
+                clas.Constructors.Add(new AstConstructor($".ctor::{clas.Name}", args));
+                return;
+            }
+            var ctor = new AstConstructor($".ctor::{clas.Name}", args);
+            ParseBlock(ctor); // constructor with code block
+            clas.Constructors.Add(ctor);
         }
 
         private void ParseMemberVariable(AstClass clas)
@@ -257,6 +264,9 @@ namespace eilang.Parsing
                 case TokenType.Return:
                     ParseReturn(ast);
                     return;
+                case TokenType.Me:
+                    ParseSelfAssignment(ast);
+                    return;
                 case TokenType.Var:
                     ParseDeclarationAssignment(ast);
                     return;
@@ -271,6 +281,38 @@ namespace eilang.Parsing
                     Require(TokenType.Semicolon);
                     return;
             }
+        }
+
+        private void ParseSelfAssignment(IHaveExpression ast)
+        {
+            if (!(ParseDots() is AstMultiReference multi))
+            {
+                ThrowParserException("Lone 'me' statement is not allowed.");
+                return;
+            }
+
+            var lastExpr = multi.GetLastExpression();
+            if (lastExpr is AstMemberFunctionCall)
+            {
+                Require(TokenType.Semicolon);
+                ast.Expressions.Add(multi);
+                return;
+            }
+
+            // expecting an assignment if it's not a function call
+            if (!IsNextAssignment())
+                ThrowParserException("Expecting an assignment or function call for left 'me' expression.");
+            var value = ParseAssignmentValue();
+            var set = GetAssignmentSet(multi);
+
+            var define = false;
+            if (multi.First is AstMe && multi.Second is AstMemberReference)
+            {
+                set.ChangeType(AssignmentSet.Variable);
+                define = true;
+            }
+
+            ast.Expressions.Add(new AstAssignment(new AstAssignmentReference(multi), value, set, define));
         }
 
         private void ParseLeftIdentifierExpression(IHaveExpression ast)

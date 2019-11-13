@@ -51,6 +51,11 @@ namespace eilang.Values
             return new FunctionPointerValue(new Instance(scope, new FunctionPointerClass(_operationCodeFactory, this)));
         }
 
+        public IValue Bool(bool value)
+        {
+            return value ? _true : _false;
+        }
+
         public IValue Class(Class clas)
         {
             return new ClassValue(clas);

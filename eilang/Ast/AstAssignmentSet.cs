@@ -12,7 +12,7 @@ namespace eilang.Ast
     public class AstAssignmentSet
     {
         public string OptionalIdentifier { get; }
-        public AssignmentSet Type { get; }
+        public AssignmentSet Type { get; private set; }
         public AstExpression RequiredReferences { get; }
         public List<AstExpression> IndexExprs { get; }
 
@@ -22,6 +22,11 @@ namespace eilang.Ast
             Type = type;
             RequiredReferences = requiredReferences;
             IndexExprs = indexExprs;
+        }
+
+        public void ChangeType(AssignmentSet type)
+        {
+            Type = type;
         }
     }
 }

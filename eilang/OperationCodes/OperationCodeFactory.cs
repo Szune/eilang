@@ -50,6 +50,7 @@ namespace eilang.OperationCodes
         private readonly HttpGet _httpGet = new HttpGet();
         private readonly StringToInt _stringToInt = new StringToInt();
         private readonly StringToDouble _stringToDouble = new StringToDouble();
+        private readonly StringToBool _stringToBool = new StringToBool();
 
         public Push Push(IValue value)
         {
@@ -364,6 +365,11 @@ namespace eilang.OperationCodes
         public StringToDouble StringToDouble()
         {
             return _stringToDouble;
+        }
+
+        public StringToBool StringToBool()
+        {
+            return _stringToBool;
         }
     }
 }

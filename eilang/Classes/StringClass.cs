@@ -8,6 +8,8 @@ namespace eilang.Classes
     {
         public StringClass(IOperationCodeFactory factory) : base(SpecialVariables.String, SpecialVariables.Internal)
         {
+            CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
+            CtorForMembersWithValues.Write(factory.Return());
             Functions.Add("len", new MemberFunction("len", Module, new List<string>(), this)
             {
                 Code =
@@ -122,6 +124,15 @@ namespace eilang.Classes
                 {
                     new Bytecode(factory.Pop()),
                     new Bytecode(factory.StringToDouble()),
+                    new Bytecode(factory.Return())
+                }
+            });
+            Functions.Add("bool", new MemberFunction("bool", Module, new List<string>{}, this)
+            {
+                Code = 
+                {
+                    new Bytecode(factory.Pop()),
+                    new Bytecode(factory.StringToBool()),
                     new Bytecode(factory.Return())
                 }
             });

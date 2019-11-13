@@ -8,6 +8,8 @@ namespace eilang.Classes
     {
         public ProcClass(IOperationCodeFactory factory) : base("proc", Compiler.GlobalFunctionAndModuleName)
         {
+            CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
+            CtorForMembersWithValues.Write(factory.Return());
 //            Functions.Add("start", new MemberFunction("start", Module, new List<string>{"name", "args"}, this)
 //            {
 //                Code =

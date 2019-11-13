@@ -11,6 +11,8 @@ namespace eilang.Classes
         
         public FunctionPointerClass(IOperationCodeFactory opFactory, IValueFactory factory) : base(SpecialVariables.Function, Compiler.GlobalFunctionAndModuleName)
         {
+            CtorForMembersWithValues.Write(opFactory.Pop()); // pop self instance used for 'me' variable
+            CtorForMembersWithValues.Write(opFactory.Return());
             Functions.Add("call", new MemberFunction("call", Module, new List<string>(), this)
             {
                 Code =

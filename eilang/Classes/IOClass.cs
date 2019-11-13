@@ -10,6 +10,8 @@ namespace eilang.Classes
     {
         public IoClass(IOperationCodeFactory factory) : base("io", Compiler.GlobalFunctionAndModuleName)
         {
+            CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
+            CtorForMembersWithValues.Write(factory.Return());
             // TODO: implement
         }
     }

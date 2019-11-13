@@ -13,6 +13,7 @@ namespace eilang.Classes
 
         public EnvClass(IOperationCodeFactory opFactory, IValueFactory factory) : base("env", Compiler.GlobalFunctionAndModuleName)
         {
+            CtorForMembersWithValues.Write(opFactory.Pop()); // pop self instance used for 'me' variable
             CtorForMembersWithValues.Write(opFactory.Return());
             _args = Environment.GetCommandLineArgs();
             var get_args = new MemberFunction("get_args", Module, new List<string>(), this);

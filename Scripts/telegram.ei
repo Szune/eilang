@@ -1,84 +1,19 @@
 import 'str'; 
+import 'bot';
 
-var base_url = 'https://api.telegram.org/bot<TOKEN>';
-
-typ wrapper { ctor(has_value, value); }
-
-fun get_part(str, start_part, end_part) {
-    if(str.index_of(start_part, 0) < 0) {
-        ret *wrapper(false, "");
-    }
-    var start = str.index_of(start_part, 0) + start_part.len();
-    var part = str.view(
-        start,
-        str.index_of(end_part, start));
-    ret *wrapper(true, part);
-}
-
-fun handle_msg(msg, chatId) {
+fun handle_msg(bot, msg, chatId) {
     if(!msg.has_value) {
         ret;
     }
     if(str::trim(msg.value).lower() == "/test") {
-        test_command(chatId);
+        test_command(bot, chatId);
     }
     ret;
 }
 
-fun test_command(chatId) {
-    var sendMsg = "received the magic test command!";
-    println(sendMsg);
-    http.get($'{base_url}/sendMessage?chat_id={chatId.value}&text={sendMsg}', '');
+fun test_command(bot, chatId) {
+    bot.reply("received the magic test command!", chatId.value);
 }
 
-
-fun start_bot() {
-    var http = *http();
-    var sleepMs = 2000;
-    var lastId = -1;
-    var first = true;
-    for { # bot loop
-        var url = $'{base_url}/getUpdates?allowed_updates=["message", "channel_post"]&offset=-1';
-        var update = http.get(url, '');
-        var msg_id = get_part(update, '"message":{"message_id":', ',');
-        if(msg_id.has_value) {
-            var id = msg_id.value.int();
-            if(id != lastId) {
-                lastId = id;
-                println($"new message, id: {id}");
-            } else {
-                # no new messages
-                sleep(sleepMs);
-                continue;
-            }
-        } else {
-            println("no message id found");
-            sleep(sleepMs);
-            continue;
-        }
-        
-        var msg = get_part(update, '"text":"', '"');
-        if(msg.has_value) {
-            println($"msg had value {msg.value}");
-        } else {
-            println("no msg in update");
-        }
-        
-        var chatId = get_part(update, '"chat":{"id":', ',');
-        if(chatId.has_value) {
-            println($"msg came from chat with id {chatId.value}");
-        } else {
-            println("no chat id in update");
-        }
-        
-        if(first) {
-            first = false;
-        } else {
-            handle_msg(msg, chatId);
-        }
-        
-        sleep(sleepMs);
-    }
-}
-
-start_bot();
+var bot = *bot("<TELEGRAM_API_TOKEN>", @handle_msg);
+bot.start();

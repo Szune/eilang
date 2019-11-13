@@ -8,6 +8,7 @@ namespace eilang.Classes
     {
         public HttpClass(IOperationCodeFactory factory) : base("http", Compiler.GlobalFunctionAndModuleName)
         {
+            CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
             CtorForMembersWithValues.Write(factory.Return());
             Functions.Add("post",
                 new MemberFunction("post", Module, new List<string> {"url", "headers", "content"}, this)

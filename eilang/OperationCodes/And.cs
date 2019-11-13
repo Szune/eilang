@@ -8,9 +8,7 @@ namespace eilang.OperationCodes
         {
             var right = state.Stack.Pop();
             var left = state.Stack.Pop();
-            state.Stack.Push((left.Get<bool>() && right.Get<bool>())
-                ? state.ValueFactory.True()
-                : state.ValueFactory.False());
+            state.Stack.Push(state.ValueFactory.Bool(left.Get<bool>() && right.Get<bool>()));
         }
     }
 }

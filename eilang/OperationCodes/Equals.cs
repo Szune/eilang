@@ -17,9 +17,7 @@ namespace eilang.OperationCodes
                     switch (right.Type)
                     {
                         case TypeOfValue.Bool:
-                            state.Stack.Push(left.Get<bool>() == right.Get<bool>()
-                                ? state.ValueFactory.True()
-                                : state.ValueFactory.False());
+                            state.Stack.Push(state.ValueFactory.Bool(left.Get<bool>() == right.Get<bool>()));
                             break;
                         default:
                             state.Stack.Push(state.ValueFactory.False());

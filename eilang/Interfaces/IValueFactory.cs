@@ -17,5 +17,6 @@ namespace eilang.Interfaces
         IValue Void();
         IValue List(List<IValue> items = default);
         IValue FunctionPointer(string ident);
+        IValue Bool(bool parse);
     }
 }

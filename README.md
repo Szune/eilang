@@ -1,8 +1,13 @@
 # eilang
 eilang is a scripting language. That's about it.
 
-There's a basic **Telegram bot** implementation under `Scripts/telegram.ei` and `Scripts/bot.ei` though.
+There's a basic **Telegram bot** implementation under [Scripts/telegram.ei](Scripts/telegram.ei) and [Scripts/bot.ei](Scripts/bot.ei) though.
 
+**Table of contents**
+1. [Exporting classes/functions from C# to eilang](#exporting-classes-and-functions)
+2. [eilang example code](#eilang-example-code)
+
+### Exporting classes and functions
 `eilang/ExportedFunctions.cs` and `eilang/Eilang.cs` show how to export functions and classes:
 ```csharp
 env.AddClassesDerivedFromClassInAssembly<Class>(); // adds classes to eilang,
@@ -24,6 +29,7 @@ public static IValue Sleep(IValueFactory fac, IValue milliseconds)
 }
 ```
 
+### eilang example code
 Hello world:
 ```eilang
 println('hello world');

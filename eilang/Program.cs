@@ -12,7 +12,8 @@ namespace eilang
         static void Main(string[] args)
         {
             #if !DEBUG
-            if (args.Any())
+            var first = args.FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(first))
             {
                Eilang.RunFile(args.First());
                return;
@@ -22,23 +23,42 @@ namespace eilang
             {
                 Console.WriteLine("Enter the path to the script to run, 'eval' or 'exit':");
                 var path = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(path))
+                    continue;
                 if (path?.ToUpperInvariant().Trim() == "EXIT" || path?.ToUpperInvariant().Trim() == "'EXIT'")
                     return;
                 if (path?.ToUpperInvariant().Trim() == "EVAL" || path?.ToUpperInvariant().Trim() == "'EVAL'")
                 {
                     Console.WriteLine("Enter the code to run:");
                     var code = Console.ReadLine();
-                    Eilang.Run(code);
+                    try
+                    {
+                        Eilang.Run(code);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
                 }
                 else
                 {
-                    Eilang.RunFile(path);
+                    try
+                    {
+                        Eilang.RunFile(path);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
                 }
                 Console.WriteLine();
             }
 #endif
 
 #if DEBUG
+            // TODO: 0. parser bug: fix variable scope bug (variables inside class functions collide with global variables,
+            // scope should simply take the nearest one in this case), allow global variables to have the same names as 
+            // class function variables or class variables
             // TODO: 1. implement maps (dictionaries) - MapClass
             // TODO: 2. implement file i/o - IOClass
             // TODO: 3. implement working with processes (starting processes, killing processes)

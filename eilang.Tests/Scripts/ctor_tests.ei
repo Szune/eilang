@@ -1,0 +1,43 @@
+﻿typ test {
+    x: string = "init1";
+    ctor(y);
+}
+
+typ test_with_block {
+    x: string = "init5";
+    ctor(y) {
+        me.z = "init7";
+    }
+}
+
+typ test_with_block_and_init_val {
+    x: string = "init7";
+    ctor(y) {
+        me.x = "init9";
+    }
+}
+
+typ test_without_init_value {
+    x: string;
+    ctor(y);
+}
+
+fun main() {
+    var t = *test("init2");
+    assert(t.x == "init1", $"t.x should be 'init1', but was '{t.x}' - constructor should initialize member variables that are not specified in ctor, but have initial values");
+    assert(t.y == "init2", $"t.y should be 'init2', but was '{t.y}' - constructor should initialize member variables that are specified in ctor argument list");
+    
+    var t2 = *test_with_block("init6");
+    assert(t2.x == "init5", $"t2.x should be 'init5', but was '{t2.x}' - constructor with block should initialize member variables that are not specified in ctor, but have initial values");
+    assert(t2.y == "init6", $"t2.y should be 'init6', but was '{t2.y}' - constructor with block should initialize member variables that are specified in ctor argument list");
+    assert(t2.z == "init7", $"t2.z should be 'init7', but was '{t2.z}' - constructor with block should initialize member variables that are specified in ctor block");
+    
+    var t3 = *test_with_block_and_init_val("init8");
+    assert(t3.x == "init9", $"t3.x should be 'init9', but was '{t3.x}' - constructor with block should initialize member variables that are specified in ctor, but have initial values, and overwrite the initial value");
+    assert(t3.y == "init8", $"t3.y should be 'init8', but was '{t3.y}' - constructor with block should initialize member variables that are specified in ctor argument list");
+    
+    var t4 = *test_without_init_value("init10");
+    println(t4.x);
+    assert(t4.x == (), $"t4.x should be uninitialized, but was '{t4.x}' - constructor should define variables that are uninitialized, but not give them a value");
+    assert(t4.y == "init10", $"t4.y should be 'init10', but was '{t4.y}' - constructor should initialize member variables that are specified in ctor argument list");
+}

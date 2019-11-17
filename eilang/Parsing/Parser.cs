@@ -898,6 +898,11 @@ namespace eilang.Parsing
                     return ParseListInit();
                 case TokenType.LeftParenthesis:
                     Consume();
+                    if (Match(TokenType.RightParenthesis))
+                    {
+                        Consume();
+                        return new AstUninitialized(pos);
+                    }
                     var expr = ParseTernaryOperator();
                     Require(TokenType.RightParenthesis);
                     return new AstParenthesized(expr, pos);

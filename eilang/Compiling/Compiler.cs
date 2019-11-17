@@ -603,6 +603,11 @@ namespace eilang.Compiling
             parenthesized.Expr.Accept(this, function, mod);
         }
 
+        public void Visit(AstUninitialized uninit, Function function, Module mod)
+        {
+            function.Write(_opFactory.Push(_valueFactory.Uninitialized()), new Metadata{Ast = uninit});
+        }
+
         private void AssignLoopControlFlowJumps(IAst ast, Function function, int forDepth, int loopStep, int loopEnd)
         {
             if (!_loopControlFlowOps.TryGetValue(forDepth, out var stack) || stack.Count <= 0)
@@ -710,11 +715,50 @@ namespace eilang.Compiling
                 }
                 // figure out which member variables still need to be initialized and find the code that initializes them
                 // and inject it into the start of the current constructor
-                for (int i = 0; i < clas.CtorForMembersWithValues.Length; i++)
+                var notYetInitialized = GetMembersNotInConstructor(ctor.Arguments, ast.Variables);
+                foreach(var uninitialized in notYetInitialized)
                 {
-                    ctor.Code.Insert(i, clas.CtorForMembersWithValues[i]);
+                    var initializationStartIndex = GetIndexOfInitializationStart(uninitialized, clas.CtorForMembersWithValues);
+                    if(initializationStartIndex == -1)
+                        throw new CompilerException($"Could not find start of initialization of '{uninitialized}' in main initialization constructor of class {clas.FullName}");
+                    for (int i = initializationStartIndex; i < clas.CtorForMembersWithValues.Length; i++)
+                    {
+                        ctor.Code.Insert(i - initializationStartIndex, clas.CtorForMembersWithValues[i]);
+                        if (clas.CtorForMembersWithValues[i].Op is Define)
+                            break;
+                    }
                 }
             }
+        }
+
+        private int GetIndexOfInitializationStart(string uninitialized, MemberFunction ctorForMembersWithValues)
+        {
+            var start = 0;
+            for (int i = 0; i < ctorForMembersWithValues.Length; i++)
+            {
+                if (ctorForMembersWithValues[i].Op is Define def)
+                {
+                    if (def.Name.To<string>() == uninitialized)
+                    {
+                        return start;
+                    }
+                    else
+                    {
+                        start = i + 1;
+                        if (start > ctorForMembersWithValues.Length - 1)
+                        {
+                            throw new CompilerException($"Could not find start of initialization of '{uninitialized}' in main initialization constructor of class {ctorForMembersWithValues.Owner.FullName}");
+                        }
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        private List<string> GetMembersNotInConstructor(List<string> constructorArguments, List<AstMemberVariableDeclaration> memberVariables)
+        {
+            return memberVariables.Where(v => !constructorArguments.Contains(v.Ident)).Select(s => s.Ident).ToList();
         }
 
         private bool ConstructorInitializesAllMembers(List<string> constructorArguments, List<AstMemberVariableDeclaration> memberVariables)

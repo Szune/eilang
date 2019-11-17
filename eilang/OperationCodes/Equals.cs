@@ -13,6 +13,18 @@ namespace eilang.OperationCodes
             var left = state.Stack.Pop();
             switch (left.Type)
             {
+                case TypeOfValue.Uninitialized:
+                    switch (right.Type)
+                    {
+                        case TypeOfValue.Uninitialized:
+                            state.Stack.Push(state.ValueFactory.True());
+                            break;
+                        default:
+                            state.Stack.Push(state.ValueFactory.False());
+                            break;
+                    }
+
+                    break;
                 case TypeOfValue.Bool:
                     switch (right.Type)
                     {

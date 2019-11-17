@@ -63,6 +63,9 @@ namespace eilang
                     case TypeOfValue.Double:
                         Console.WriteLine(val.Get<double>());
                         break;
+                    case TypeOfValue.Uninitialized:
+                        Console.WriteLine(val.Get<string>());
+                        break;
                     case TypeOfValue.Integer:
                         Console.WriteLine(val.Get<int>());
                         break;

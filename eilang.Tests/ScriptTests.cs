@@ -27,6 +27,12 @@ namespace eilang.Tests
             Console.WriteLine("Assignment tests completed");
         }
 
+        [Fact]
+        public void RunCtorTests()
+        {
+            RunScript("Scripts/ctor_tests.ei");
+            Console.WriteLine("Ctor tests completed");
+        }
 
         [Fact]
         public void RunForTests()

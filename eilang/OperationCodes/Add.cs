@@ -69,6 +69,9 @@ namespace eilang.OperationCodes
                             state.Stack.Push(
                                 state.ValueFactory.String(left.As<StringValue>().Item + right.As<StringValue>().Item));
                             break;
+                        case TypeOfValue.Uninitialized:
+                            state.Stack.Push(left);
+                            break;
                         case TypeOfValue.Integer:
                             state.Stack.Push(state.ValueFactory.String(left.As<StringValue>().Item + right.Get<int>()));
                             break;
@@ -85,6 +88,15 @@ namespace eilang.OperationCodes
                             break;
                         default:
                             ThrowHelper.TypeMismatch("+");
+                            break;
+                    }
+
+                    break;
+                case TypeOfValue.Uninitialized:
+                    switch (right.Type)
+                    {
+                        case TypeOfValue.String:
+                            state.Stack.Push(right);
                             break;
                     }
 

@@ -7,7 +7,7 @@ namespace eilang.Ast
     public class AstEmpty : AstExpression
     {
         public static readonly AstEmpty Value = new AstEmpty();
-        private AstEmpty()
+        private AstEmpty() : base(null)
         {
             
         }

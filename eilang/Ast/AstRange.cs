@@ -9,7 +9,7 @@ namespace eilang.Ast
         public AstExpression Begin { get; }
         public AstExpression End { get; }
 
-        public AstRange(AstExpression begin, AstExpression end)
+        public AstRange(AstExpression begin, AstExpression end, Position position) : base(position)
         {
             Begin = begin;
             End = end;

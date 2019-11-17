@@ -17,7 +17,7 @@ namespace eilang.Ast
         public UnaryMath Op { get; }
         public AstExpression Expr { get; }
 
-        public AstUnaryMathOperation(UnaryMath op, AstExpression expr)
+        public AstUnaryMathOperation(UnaryMath op, AstExpression expr, Position position) : base(position)
         {
             Op = op;
             Expr = expr;

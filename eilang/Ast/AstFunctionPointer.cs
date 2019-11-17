@@ -8,7 +8,7 @@ namespace eilang.Ast
     {
         public string Ident { get; }
 
-        public AstFunctionPointer(string ident)
+        public AstFunctionPointer(string ident, Position position) : base(position)
         {
             Ident = ident;
         }

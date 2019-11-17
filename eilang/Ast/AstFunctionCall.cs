@@ -8,7 +8,8 @@ namespace eilang.Ast
 {
     public class AstFunctionCall : AstExpression
     {
-        public AstFunctionCall(string name, List<AstExpression> arguments){
+        public AstFunctionCall(string name, List<AstExpression> arguments, Position position) : base(position)
+        {
             Name = name;
             Arguments = arguments;
         }

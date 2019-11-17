@@ -11,7 +11,7 @@ namespace eilang.Ast
         public List<AstExpression> Arguments { get; }
         public string Ident { get; }
 
-        public AstMemberFunctionCall(string ident, List<AstExpression> arguments)
+        public AstMemberFunctionCall(string ident, List<AstExpression> arguments, Position position) : base(position)
         {
             Ident = ident;
             Arguments = arguments;

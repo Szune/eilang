@@ -8,13 +8,16 @@ namespace eilang.Ast
 {
     public class AstClass : IVisitableInModule, IAst
     {
-        public AstClass(string name) {
+        public AstClass(string name, Position position)
+        {
             Name = name;
+            Position = position;
         }
         public List<AstMemberFunction> Functions { get; } = new List<AstMemberFunction>();
         public List<AstConstructor> Constructors { get; } = new List<AstConstructor>();
         public List<AstMemberVariableDeclaration> Variables { get; } = new List<AstMemberVariableDeclaration>();
         public string Name { get; }
+        public Position Position { get; }
 
         public void Accept(IVisitor visitor, Module mod)
         {

@@ -9,7 +9,7 @@ namespace eilang.Ast
     {
         public AstExpression InitExpr { get; }
 
-        public AstMemberVariableDeclarationWithInit(string ident, string type, AstExpression initExpr) : base(ident, type)
+        public AstMemberVariableDeclarationWithInit(string ident, string type, AstExpression initExpr, Position position) : base(ident, type, position)
         {
             InitExpr = initExpr;
         }

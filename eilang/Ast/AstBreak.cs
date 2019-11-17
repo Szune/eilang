@@ -15,5 +15,9 @@ namespace eilang.Ast
         {
             return TokenValues.Break;
         }
+
+        public AstBreak(Position position) : base(position)
+        {
+        }
     }
 }

@@ -8,7 +8,7 @@ namespace eilang.Ast
     {
         public AstExpression Index { get; }
 
-        public AstIndex(AstExpression index)
+        public AstIndex(AstExpression index, Position position) : base(position)
         {
             Index = index;
         }

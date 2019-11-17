@@ -11,7 +11,7 @@ namespace eilang.Ast
         public string Identifiers { get; }
         public List<AstExpression> Arguments { get; }
 
-        public AstClassInitialization (string identifiers, List<AstExpression> arguments)
+        public AstClassInitialization (string identifiers, List<AstExpression> arguments, Position position) : base(position)
         {
             Identifiers = identifiers;
             Arguments = arguments;
@@ -25,7 +25,7 @@ namespace eilang.Ast
         {
             var arguments = string.Join(", ", Arguments.Select(a => a.ToCode()));
             return
-                $"{TokenValues.Asterisk}{Identifiers}{TokenValues.LeftParenthesis}{arguments}{TokenValues.RightParenthesis}{TokenValues.Semicolon}";
+                $"{TokenValues.Asterisk}{Identifiers}{TokenValues.LeftParenthesis}{arguments}{TokenValues.RightParenthesis}";
         }
     }
 }

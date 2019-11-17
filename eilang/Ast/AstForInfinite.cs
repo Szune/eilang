@@ -8,7 +8,7 @@ namespace eilang.Ast
     {
         public AstBlock Body { get; }
 
-        public AstForInfinite(AstBlock body)
+        public AstForInfinite(AstBlock body, Position position) : base(position)
         {
             Body = body;
         }

@@ -1,11 +1,12 @@
 using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
     public class AstDoubleConstant : AstExpression
     {
-        public AstDoubleConstant(double doubl)
+        public AstDoubleConstant(double doubl, Position position) : base(position)
         {
             Double = doubl;
         }

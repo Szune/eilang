@@ -1,11 +1,12 @@
 ﻿using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
     public class AstAssignment : AstExpression
     {
-        public AstAssignment(AstAssignmentReference reference, AstAssignmentValue value, AstAssignmentSet set, bool define = false)
+        public AstAssignment(AstAssignmentReference reference, AstAssignmentValue value, AstAssignmentSet set, Position position, bool define = false) : base(position)
         {
             Reference = reference;
             Value = value;

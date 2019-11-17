@@ -10,7 +10,7 @@ namespace eilang.Ast
     {
         public List<AstExpression> InitialItems { get; }
 
-        public AstNewList(List<AstExpression> initialItems)
+        public AstNewList(List<AstExpression> initialItems, Position position) : base(position)
         {
             InitialItems = initialItems;
         }

@@ -10,7 +10,7 @@ namespace eilang.Ast
         public AstBlock Body { get; }
         public bool Reversed { get; }
 
-        public AstForArray(AstExpression array, AstBlock body, bool reversed)
+        public AstForArray(AstExpression array, AstBlock body, bool reversed, Position position) : base(position)
         {
             Array = array;
             Body = body;

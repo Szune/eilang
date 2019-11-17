@@ -23,7 +23,7 @@ namespace eilang.Ast
         public AstExpression Left { get; }
         public AstExpression Right { get; }
 
-        public AstCompare(Compare comparison, AstExpression left, AstExpression right)
+        public AstCompare(Compare comparison, AstExpression left, AstExpression right, Position position) : base(position)
         {
             Comparison = comparison;
             Left = left;

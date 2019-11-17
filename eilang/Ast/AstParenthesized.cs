@@ -8,7 +8,7 @@ namespace eilang.Ast
     {
         public AstExpression Expr { get; }
 
-        public AstParenthesized(AstExpression expr)
+        public AstParenthesized(AstExpression expr, Position position) : base(position)
         {
             Expr = expr;
         }

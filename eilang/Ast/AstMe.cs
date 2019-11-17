@@ -15,5 +15,9 @@ namespace eilang.Ast
         {
             return TokenValues.Me;
         }
+
+        public AstMe(Position position) : base(position)
+        {
+        }
     }
 }

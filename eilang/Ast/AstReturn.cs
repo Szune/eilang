@@ -8,7 +8,7 @@ namespace eilang.Ast
     {
         public AstExpression RetExpr { get; }
 
-        public AstReturn(AstExpression retExpr)
+        public AstReturn(AstExpression retExpr, Position position) : base(position)
         {
             RetExpr = retExpr;
         }

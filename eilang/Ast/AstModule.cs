@@ -8,12 +8,14 @@ namespace eilang.Ast
     public class AstModule : IVisitable, IHaveClass, IHaveFunction, IAst
     {
         public string Name { get; }
+        public Position Position { get; }
         public List<AstClass> Classes { get; } = new List<AstClass>();
         public List<AstFunction> Functions { get; } = new List<AstFunction>();
 
-        public AstModule(string name)
+        public AstModule(string name, Position position)
         {
             Name = name;
+            Position = position;
         }
 
         public void Accept(IVisitor visitor)

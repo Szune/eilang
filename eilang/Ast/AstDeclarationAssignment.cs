@@ -6,7 +6,7 @@ namespace eilang.Ast
 {
     public class AstDeclarationAssignment : AstExpression
     {
-        public AstDeclarationAssignment(string ident, AstExpression value)
+        public AstDeclarationAssignment(string ident, AstExpression value, Position position) : base(position)
         {
             Ident = ident;
             Value = value;

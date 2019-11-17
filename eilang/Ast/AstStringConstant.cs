@@ -1,5 +1,6 @@
 ﻿using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
@@ -7,7 +8,7 @@ namespace eilang.Ast
     {
         public string String {get;}
 
-        public AstStringConstant(string str)
+        public AstStringConstant(string str, Position position) : base(position)
         {
             String = str;
         }

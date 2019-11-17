@@ -2,6 +2,7 @@
 using System.Linq;
 using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
@@ -10,7 +11,7 @@ namespace eilang.Ast
         public string Ident { get; }
         public List<AstExpression> IndexExprs { get; }
 
-        public AstMemberIndexerRef(string ident, List<AstExpression> indexExprs)
+        public AstMemberIndexerRef(string ident, List<AstExpression> indexExprs, Position position) : base(position)
         {
             Ident = ident;
             IndexExprs = indexExprs;

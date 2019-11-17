@@ -10,7 +10,8 @@ namespace eilang.Ast
         public AstExpression TrueExpr { get; }
         public AstExpression FalseExpr { get; }
 
-        public AstTernary (AstExpression condition, AstExpression trueExpr, AstExpression falseExpr)
+        public AstTernary(AstExpression condition, AstExpression trueExpr, AstExpression falseExpr,
+            Position position) : base(position)
         {
             Condition = condition;
             TrueExpr = trueExpr;
@@ -24,7 +25,8 @@ namespace eilang.Ast
 
         public override string ToCode()
         {
-            return $"{Condition.ToCode()} {TokenValues.QuestionMark} {TrueExpr.ToCode()} {TokenValues.Colon} : {FalseExpr.ToCode()}";
+            return
+                $"{Condition.ToCode()} {TokenValues.QuestionMark} {TrueExpr.ToCode()} {TokenValues.Colon} : {FalseExpr.ToCode()}";
         }
     }
 }

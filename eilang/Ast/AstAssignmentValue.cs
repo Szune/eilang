@@ -23,7 +23,7 @@ namespace eilang.Ast
         public AstExpression Value { get; }
         public Assignment Type { get; }
 
-        public AstAssignmentValue(AstExpression value, Assignment type)
+        public AstAssignmentValue(AstExpression value, Assignment type, Position position) : base(position)
         {
             Value = value;
             Type = type;

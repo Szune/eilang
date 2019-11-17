@@ -9,8 +9,8 @@ namespace eilang.Ast
 {
     public class AstConstructor : AstFunction, IVisitableInClass
     {
-        public AstConstructor (string name, List<string> arguments) 
-            : base(name, arguments)
+        public AstConstructor (string name, List<string> arguments, Position position) 
+            : base(name, arguments, position)
         {
         }
 
@@ -24,10 +24,10 @@ namespace eilang.Ast
             var arguments = string.Join(", ", Arguments);
             if (!Expressions.Any())
             {
-                return $"{TokenValues.Constructor}{TokenValues.LeftParenthesis}{arguments}{TokenValues.RightParenthesis};";
+                return $" {TokenValues.Constructor}{TokenValues.LeftParenthesis}{arguments}{TokenValues.RightParenthesis};";
             }
             var body = string.Join("\n", Expressions.Select(e => e.ToCode()));
-            return $"{TokenValues.Constructor}{TokenValues.LeftParenthesis}{arguments}{TokenValues.RightParenthesis} {{\n{body}\n}}";
+            return $" {TokenValues.Constructor}{TokenValues.LeftParenthesis}{arguments}{TokenValues.RightParenthesis} {{\n{body}\n}}";
         }
     }
 }

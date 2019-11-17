@@ -9,11 +9,13 @@ namespace eilang.Ast
     {
         public string Ident { get; }
         public string Type { get; }
+        public Position Position { get; }
 
-        public AstMemberVariableDeclaration(string ident, string type)
+        public AstMemberVariableDeclaration(string ident, string type, Position position)
         {
             Ident = ident;
             Type = type;
+            Position = position;
         }
 
         public virtual void Accept(IVisitor visitor, Class clas, Module mod)

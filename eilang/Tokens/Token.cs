@@ -5,8 +5,7 @@ namespace eilang.Tokens
     public class Token
     {
         public TokenType Type { get; }
-        public int Line { get; }
-        public int Col { get; }
+        public Position Position { get; }
         public string Text { get; }
         public int Integer { get; }
         public double Double { get; }
@@ -14,12 +13,12 @@ namespace eilang.Tokens
         public Token()
         {
             Type = TokenType.None;
+            Position = new Position(-1, -1);
         }
         public Token(TokenType type, int line, int col, string text = default, int integer = default, double doubl = default)
         {
             Type = type;
-            Line = line;
-            Col = col;
+            Position = new Position(line, col);
             Text = text;
             Integer = integer;
             Double = doubl;
@@ -84,9 +83,9 @@ namespace eilang.Tokens
                 case TokenType.Double:
                     return Double.ToString();
                 case TokenType.If:
-                    return TokenValues.If;
+                    return " " + TokenValues.If + " ";
                 case TokenType.Else:
-                    return TokenValues.Else;
+                    return " " + TokenValues.Else + " ";
                 case TokenType.Or:
                     return TokenValues.Or;
                 case TokenType.And:
@@ -106,13 +105,13 @@ namespace eilang.Tokens
                 case TokenType.GreaterThanEquals:
                     return TokenValues.GreaterThanEquals;
                 case TokenType.Class:
-                    return TokenValues.Class + " ";
+                    return " " + TokenValues.Class + " ";
                 case TokenType.Module:
-                    return TokenValues.Module + " ";
+                    return " " + TokenValues.Module + " ";
                 case TokenType.Function:
-                    return TokenValues.Function + " ";
+                    return " " + TokenValues.Function + " ";
                 case TokenType.Var:
-                    return TokenValues.Var + " ";
+                    return " " + TokenValues.Var + " ";
                 case TokenType.Comma:
                     c = TokenValues.Comma;
                     break;
@@ -136,7 +135,7 @@ namespace eilang.Tokens
                     c = TokenValues.Asterisk;
                     break;
                 case TokenType.Constructor:
-                    return TokenValues.Constructor;
+                    return " " + TokenValues.Constructor;
                 case TokenType.Plus:
                     c = TokenValues.Plus;
                     break;
@@ -191,7 +190,7 @@ namespace eilang.Tokens
                 case TokenType.ModuloEquals:
                     return TokenValues.ModuloEquals;
                 case TokenType.Import:
-                    return TokenValues.Import + " ";
+                    return " " + TokenValues.Import + " ";
                 case TokenType.Tilde:
                     c = TokenValues.Tilde;
                     break;

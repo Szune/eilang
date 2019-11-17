@@ -9,7 +9,7 @@ namespace eilang.Ast
         public AstExpression First { get; }
         public AstExpression Second { get; }
 
-        public AstMultiReference(AstExpression first, AstExpression second)
+        public AstMultiReference(AstExpression first, AstExpression second, Position position) : base(position)
         {
             First = first;
             Second = second;

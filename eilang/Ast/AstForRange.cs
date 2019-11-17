@@ -10,7 +10,7 @@ namespace eilang.Ast
         public AstBlock Body { get; }
         public bool Reversed { get; }
 
-        public AstForRange(AstRange range, AstBlock body, bool reversed)
+        public AstForRange(AstRange range, AstBlock body, bool reversed, Position position) : base(position)
         {
             Range = range;
             Body = body;
@@ -24,9 +24,11 @@ namespace eilang.Ast
 
         public override string ToCode()
         {
-            if(!Reversed)
-                return $"{TokenValues.For} {TokenValues.LeftParenthesis}{Range.ToCode()}{TokenValues.RightParenthesis} {{\n{Body.ToCode()}\n}}";
-            return $"{TokenValues.Tilde}{TokenValues.For} {TokenValues.LeftParenthesis}{Range.ToCode()}{TokenValues.RightParenthesis} {{\n{Body.ToCode()}\n}}";
+            if (!Reversed)
+                return
+                    $"{TokenValues.For} {TokenValues.LeftParenthesis}{Range.ToCode()}{TokenValues.RightParenthesis} {{\n{Body.ToCode()}\n}}";
+            return
+                $"{TokenValues.Tilde}{TokenValues.For} {TokenValues.LeftParenthesis}{Range.ToCode()}{TokenValues.RightParenthesis} {{\n{Body.ToCode()}\n}}";
         }
     }
 }

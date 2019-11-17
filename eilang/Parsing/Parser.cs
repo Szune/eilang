@@ -29,7 +29,7 @@ namespace eilang.Parsing
 
         public AstRoot Parse()
         {
-            var root = new AstRoot();
+            var root = new AstRoot(new Position(0, 0));
             while (!Match(TokenType.EOF))
             {
                 switch (_buffer[0].Type)
@@ -55,8 +55,9 @@ namespace eilang.Parsing
         private void ParseModule(AstRoot root, string outerModule = "")
         {
             Require(TokenType.Module);
+            var pos = _lastConsumed.Position;
             var ident = outerModule + Require(TokenType.Identifier).Text;
-            var module = new AstModule(ident);
+            var module = new AstModule(ident, pos);
             root.Modules.Add(module);
             Require(TokenType.LeftBrace);
             while (!Match(TokenType.RightBrace) && !Match(TokenType.EOF))
@@ -85,7 +86,7 @@ namespace eilang.Parsing
         {
             Require(TokenType.Class);
             var ident = Require(TokenType.Identifier).Text;
-            var clas = new AstClass(ident);
+            var clas = new AstClass(ident, _lastConsumed.Position);
             Require(TokenType.LeftBrace);
             _inClass = true;
             while (!Match(TokenType.RightBrace) && !Match(TokenType.EOF))
@@ -116,6 +117,7 @@ namespace eilang.Parsing
         private void ParseConstructor(AstClass clas)
         {
             Require(TokenType.Constructor);
+            var pos = _lastConsumed.Position;
             Require(TokenType.LeftParenthesis);
             var args = new List<string>();
             while (!Match(TokenType.RightParenthesis) && !Match(TokenType.EOF))
@@ -130,10 +132,10 @@ namespace eilang.Parsing
             if (Match(TokenType.Semicolon)) // constructor without code block
             {
                 Consume();
-                clas.Constructors.Add(new AstConstructor($".ctor::{clas.Name}", args));
+                clas.Constructors.Add(new AstConstructor($".ctor::{clas.Name}", args, pos));
                 return;
             }
-            var ctor = new AstConstructor($".ctor::{clas.Name}", args);
+            var ctor = new AstConstructor($".ctor::{clas.Name}", args, pos);
             ParseBlock(ctor); // constructor with code block
             clas.Constructors.Add(ctor);
         }
@@ -141,12 +143,13 @@ namespace eilang.Parsing
         private void ParseMemberVariable(AstClass clas)
         {
             var ident = Require(TokenType.Identifier).Text;
+            var pos = _lastConsumed.Position;
             Require(TokenType.Colon);
             var type = GetModuledClassName();
             if (Match(TokenType.Semicolon)) // no initialization
             {
                 Consume();
-                clas.Variables.Add(new AstMemberVariableDeclaration(ident, type));
+                clas.Variables.Add(new AstMemberVariableDeclaration(ident, type, pos));
                 return;
             }
 
@@ -154,7 +157,7 @@ namespace eilang.Parsing
             // ⚠Important⚠ initial expression, cannot allow +=, -= etc
             var initExpr = ParseOr(); 
             Require(TokenType.Semicolon);
-            clas.Variables.Add(new AstMemberVariableDeclarationWithInit(ident, type, initExpr));
+            clas.Variables.Add(new AstMemberVariableDeclarationWithInit(ident, type, initExpr, pos));
         }
 
         private void ParseMemberVariableList(AstClass clas)
@@ -165,11 +168,11 @@ namespace eilang.Parsing
                 return;
             }
 
-            var idents = new List<string>();
+            var idents = new List<(string Name, Position Position)>();
             do
             {
                 var ident = Require(TokenType.Identifier).Text;
-                idents.Add(ident);
+                idents.Add((ident, _lastConsumed.Position));
                 if (Match(TokenType.Comma))
                     Consume();
             } while (Match(TokenType.Identifier));
@@ -181,7 +184,7 @@ namespace eilang.Parsing
             {
                 Consume();
                 foreach (var ide in idents)
-                    clas.Variables.Add(new AstMemberVariableDeclaration(ide, type));
+                    clas.Variables.Add(new AstMemberVariableDeclaration(ide.Name, type, ide.Position));
                 return;
             }
 
@@ -191,12 +194,13 @@ namespace eilang.Parsing
             var initExpr = ParseOr();
             Require(TokenType.Semicolon);
             foreach (var ide in idents)
-                clas.Variables.Add(new AstMemberVariableDeclarationWithInit(ide, type, initExpr));
+                clas.Variables.Add(new AstMemberVariableDeclarationWithInit(ide.Name, type, initExpr, ide.Position));
         }
 
         private void ParseMemberFunction(AstClass clas)
         {
             Require(TokenType.Function);
+            var pos = _lastConsumed.Position;
             var ident = Require(TokenType.Identifier).Text;
             Require(TokenType.LeftParenthesis);
             var args = new List<string>();
@@ -211,7 +215,7 @@ namespace eilang.Parsing
             }
 
             Require(TokenType.RightParenthesis);
-            var fun = new AstMemberFunction(ident, args);
+            var fun = new AstMemberFunction(ident, args, pos);
             // parse code block
             ParseBlock(fun);
             clas.Functions.Add(fun);
@@ -220,6 +224,7 @@ namespace eilang.Parsing
         private void ParseFunction(IHaveFunction ast)
         {
             Require(TokenType.Function);
+            var pos = _lastConsumed.Position;
             var ident = Require(TokenType.Identifier).Text;
             Require(TokenType.LeftParenthesis);
             var args = new List<string>();
@@ -234,7 +239,7 @@ namespace eilang.Parsing
             }
 
             Require(TokenType.RightParenthesis);
-            var fun = new AstFunction(ident, args);
+            var fun = new AstFunction(ident, args, pos);
             // parse code block
             ParseBlock(fun);
             ast.Functions.Add(fun);
@@ -316,7 +321,7 @@ namespace eilang.Parsing
                 define = true;
             }
 
-            ast.Expressions.Add(new AstAssignment(new AstAssignmentReference(multi), value, set, define));
+            ast.Expressions.Add(new AstAssignment(new AstAssignmentReference(multi, multi.Position), value, set, multi.Position, define));
         }
 
         private void ParseLeftIdentifierExpression(IHaveExpression ast)
@@ -359,7 +364,7 @@ namespace eilang.Parsing
             var set = GetAssignmentSet(references);
 
             return new AstAssignment(
-                new AstAssignmentReference(references), value, set);
+                new AstAssignmentReference(references, references.Position), value, set, references.Position);
         }
 
         /// <summary>
@@ -384,7 +389,7 @@ namespace eilang.Parsing
             var set = GetAssignmentSet(members);
 
             return new AstAssignment(
-                new AstAssignmentReference(members), value, set);
+                new AstAssignmentReference(members, members.Position), value, set, members.Position);
         }
 
         private void ThrowIfMultiReferenceContainsFunctionCallButDoesNotEndWithFunctionCall(AstMultiReference multi)
@@ -395,44 +400,50 @@ namespace eilang.Parsing
         private void ParseReturn(IHaveExpression ast)
         {
             Require(TokenType.Return);
+            var pos = _lastConsumed.Position;
             if (Match(TokenType.Semicolon))
             {
-                ast.Expressions.Add(new AstReturn(null));
+                ast.Expressions.Add(new AstReturn(null, pos));
                 return;
             }
             var retExpr = ParseTernaryOperator();
-            ast.Expressions.Add(new AstReturn(retExpr));
+            ast.Expressions.Add(new AstReturn(retExpr, pos));
         }
 
         private AstMemberIndexerRef ParseMemberIndexerExpression(string ident)
         {
             var idxExprs = new List<AstExpression>();
+            var outerPos = _lastConsumed.Position;
             while (Match(TokenType.LeftBracket))
             {
                 Consume();
+                var pos = _lastConsumed.Position;
                 var expr = ParseOr();
                 Require(TokenType.RightBracket);
-                idxExprs.Add(new AstIndex(expr));
+                idxExprs.Add(new AstIndex(expr, pos));
             }
-            return new AstMemberIndexerRef(ident, idxExprs);
+            return new AstMemberIndexerRef(ident, idxExprs, outerPos);
         }
 
         private AstExpression ParseIndexerExpression(string name)
         {
+            var outerPos = _lastConsumed.Position;
             var idxExprs = new List<AstExpression>();
             while (Match(TokenType.LeftBracket))
             {
                 Consume();
+                var pos = _lastConsumed.Position;
                 var expr = ParseOr();
                 Require(TokenType.RightBracket);
-                idxExprs.Add(new AstIndex(expr));
+                idxExprs.Add(new AstIndex(expr, pos));
             }
-            return new AstIndexerReference(name, idxExprs);
+            return new AstIndexerReference(name, idxExprs, outerPos);
         }
 
         private void ParseFor(IHaveExpression ast)
         {
             Require(TokenType.For);
+            var pos = _lastConsumed.Position;
             if (_buffer[0].Match(TokenType.LeftBrace) || 
                 (_buffer[0].Match(TokenType.LeftParenthesis) && 
                  _buffer[1].Match(TokenType.RightParenthesis)))
@@ -443,10 +454,10 @@ namespace eilang.Parsing
                     Consume();
                     Consume();
                 }
-                var forBlock = new AstBlock();
+                var forBlock = new AstBlock(_lastConsumed.Position);
                 _forDepth++;
                 ParseBlock(forBlock);
-                ast.Expressions.Add(new AstForInfinite(forBlock));
+                ast.Expressions.Add(new AstForInfinite(forBlock, pos));
                 _forDepth--;
                 return;
             }
@@ -459,6 +470,7 @@ namespace eilang.Parsing
                 Consume();
             }
             Require(TokenType.LeftParenthesis);
+            var rangePos = _lastConsumed.Position;
             var expression = ParsePlusAndMinus();
             if (Match(TokenType.DoubleDot))
             {
@@ -466,19 +478,19 @@ namespace eilang.Parsing
                 Require(TokenType.DoubleDot);
                 var end = ParsePlusAndMinus();
                 Require(TokenType.RightParenthesis);
-                var forBlock = new AstBlock();
+                var forBlock = new AstBlock(_lastConsumed.Position);
                 _forDepth++;
                 ParseBlock(forBlock);
-                ast.Expressions.Add(new AstForRange(new AstRange(expression, end), forBlock, reversed));
+                ast.Expressions.Add(new AstForRange(new AstRange(expression, end, rangePos), forBlock, reversed, pos));
             }
             else
             {
                 // for (array)
                 Require(TokenType.RightParenthesis);
-                var forBlock = new AstBlock();
+                var forBlock = new AstBlock(_lastConsumed.Position);
                 _forDepth++;
                 ParseBlock(forBlock);
-                ast.Expressions.Add(new AstForArray(expression, forBlock, reversed));
+                ast.Expressions.Add(new AstForArray(expression, forBlock, reversed, pos));
             }
             _forDepth--;
         }
@@ -486,19 +498,20 @@ namespace eilang.Parsing
         private void ParseIf(IHaveExpression ast)
         {
             Require(TokenType.If);
+            var pos = _lastConsumed.Position;
             Require(TokenType.LeftParenthesis);
             var condition = ParseOr();
             Require(TokenType.RightParenthesis);
-            var ifPart = new AstBlock();
+            var ifPart = new AstBlock(_lastConsumed.Position);
             ParseBlock(ifPart);
             
             if (!Match(TokenType.Else))
             {
-                ast.Expressions.Add(new AstIf(condition, ifPart, null));
+                ast.Expressions.Add(new AstIf(condition, ifPart, null, pos));
                 return;
             }
 
-            var firstIf = new AstIf(condition, ifPart, null);
+            var firstIf = new AstIf(condition, ifPart, null, pos);
             var currentIf = firstIf;
             while (Match(TokenType.Else))
             {
@@ -507,15 +520,15 @@ namespace eilang.Parsing
                 {
                     Consume();
                     var cond = ParseOr();
-                    var ifBlock = new AstBlock();
+                    var ifBlock = new AstBlock(_lastConsumed.Position);
                     ParseBlock(ifBlock);
-                    var newIf = new AstIf(cond, ifBlock, null);
+                    var newIf = new AstIf(cond, ifBlock, null, pos);
                     currentIf.SetElse(newIf);
                     currentIf = newIf;
                 }
                 else
                 {
-                    var elseBlock = new AstBlock();
+                    var elseBlock = new AstBlock(_lastConsumed.Position);
                     ParseBlock(elseBlock);
                     currentIf.SetElse(elseBlock);
                     ast.Expressions.Add(firstIf);
@@ -529,30 +542,34 @@ namespace eilang.Parsing
         private AstExpression ParseClassInitialization()
         {
             var identifiers = GetModuledClassName();
+            var pos = _lastConsumed.Position;
             var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
-            return new AstClassInitialization(identifiers, args);
+            return new AstClassInitialization(identifiers, args, pos);
         }
 
         private AstFunctionCall ParseFunctionCall(string name)
         {
+            var pos = _lastConsumed.Position;
             var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
-            return new AstFunctionCall(name, args);
+            return new AstFunctionCall(name, args, pos);
         }
 
         private void ParseDeclarationAssignment(IHaveExpression ast)
         {
             Require(TokenType.Var);
+            var pos = _lastConsumed.Position;
             var ident = Require(TokenType.Identifier).Text;
-            _scopes.Peek().DefineVariable(ident, _buffer[0].Line, _buffer[0].Col);
+            _scopes.Peek().DefineVariable(ident, _buffer[0].Position.Line, _buffer[0].Position.Col);
             Require(TokenType.Equals);
             // ⚠Important⚠ initial expression, cannot allow +=, -= etc
             var value = ParseTernaryOperator();
             Require(TokenType.Semicolon);
-            ast.Expressions.Add(new AstDeclarationAssignment(ident, value));
+            ast.Expressions.Add(new AstDeclarationAssignment(ident, value, pos));
         }
 
         private AstExpression ParseTernaryOperator()
         {
+            var pos = _lastConsumed.Position;
             var expression = ParseOr();
             if (!Match(TokenType.QuestionMark))
                 return expression;
@@ -560,17 +577,18 @@ namespace eilang.Parsing
             var trueExpr = ParseTernaryOperator();
             Require(TokenType.Colon);
             var falseExpr = ParseTernaryOperator();
-            return new AstTernary(expression, trueExpr, falseExpr);
+            return new AstTernary(expression, trueExpr, falseExpr, pos);
         }
 
         private AstExpression ParseOr()
         {
+            var pos = _lastConsumed.Position;
             var expr = ParseAnd();
             while (Match(TokenType.Or))
             {
                 Consume();
                 var right = ParseAnd();
-                expr = new AstCompare(Compare.Or, expr, right);
+                expr = new AstCompare(Compare.Or, expr, right, pos);
             }
 
             return expr;
@@ -578,12 +596,13 @@ namespace eilang.Parsing
 
         private AstExpression ParseAnd()
         {
+            var pos = _lastConsumed.Position;
             var expr = ParseEqualityChecks();
             while (Match(TokenType.And))
             {
                 Consume();
                 var right = ParseEqualityChecks();
-                expr = new AstCompare(Compare.And, expr, right);
+                expr = new AstCompare(Compare.And, expr, right, pos);
             }
 
             return expr;
@@ -591,6 +610,7 @@ namespace eilang.Parsing
 
         private AstExpression  ParseEqualityChecks()
         {
+            var pos = _lastConsumed.Position;
             var expr = ParseDifferenceChecks();
             while (Match(TokenType.EqualsEquals) || Match(TokenType.NotEquals))
             {
@@ -598,13 +618,13 @@ namespace eilang.Parsing
                 {
                     Consume();
                     var right = ParseDifferenceChecks();
-                    expr = new AstCompare(Compare.EqualsEquals, expr, right);
+                    expr = new AstCompare(Compare.EqualsEquals, expr, right, pos);
                 }
                 else if (Match(TokenType.NotEquals))
                 {
                     Consume();
                     var right = ParseDifferenceChecks();
-                    expr = new AstCompare(Compare.NotEquals, expr, right);
+                    expr = new AstCompare(Compare.NotEquals, expr, right, pos);
                 }
             }
 
@@ -614,6 +634,7 @@ namespace eilang.Parsing
         
         private AstExpression  ParseDifferenceChecks()
         {
+            var pos = _lastConsumed.Position;
             var expr = ParsePlusAndMinus();
             while (Match(TokenType.LessThan) || Match(TokenType.GreaterThan) || Match(TokenType.LessThanEquals) || Match(TokenType.GreaterThanEquals))
             {
@@ -621,25 +642,25 @@ namespace eilang.Parsing
                 {
                     Consume();
                     var right = ParsePlusAndMinus();
-                    expr = new AstCompare(Compare.LessThan, expr, right);
+                    expr = new AstCompare(Compare.LessThan, expr, right, pos);
                 }
                 else if (Match(TokenType.GreaterThan))
                 {
                     Consume();
                     var right = ParsePlusAndMinus();
-                    expr = new AstCompare(Compare.GreaterThan, expr, right);
+                    expr = new AstCompare(Compare.GreaterThan, expr, right, pos);
                 }
                 else if (Match(TokenType.LessThanEquals))
                 {
                     Consume();
                     var right = ParsePlusAndMinus();
-                    expr = new AstCompare(Compare.LessThanEquals, expr, right);
+                    expr = new AstCompare(Compare.LessThanEquals, expr, right, pos);
                 }
                 else if (Match(TokenType.GreaterThanEquals))
                 {
                     Consume();
                     var right = ParsePlusAndMinus();
-                    expr = new AstCompare(Compare.GreaterThanEquals, expr, right);
+                    expr = new AstCompare(Compare.GreaterThanEquals, expr, right, pos);
                 }
             }
 
@@ -649,6 +670,7 @@ namespace eilang.Parsing
 
         private AstExpression ParsePlusAndMinus()
         {
+            var pos = _lastConsumed.Position;
             var expression = ParseMultiplicationAndDivisionAndModulo();
             while (Match(TokenType.Plus) || Match(TokenType.Minus))
             {
@@ -656,13 +678,13 @@ namespace eilang.Parsing
                 {
                     Consume();
                     var right = ParseMultiplicationAndDivisionAndModulo();
-                    expression = new AstBinaryMathOperation(BinaryMath.Plus, expression, right);
+                    expression = new AstBinaryMathOperation(BinaryMath.Plus, expression, right, pos);
                 }
                 else if (Match(TokenType.Minus))
                 {
                     Consume();
                     var right = ParseMultiplicationAndDivisionAndModulo();
-                    expression = new AstBinaryMathOperation(BinaryMath.Minus, expression, right);
+                    expression = new AstBinaryMathOperation(BinaryMath.Minus, expression, right, pos);
                 }
                 else
                 {
@@ -675,6 +697,7 @@ namespace eilang.Parsing
 
         private AstExpression ParseMultiplicationAndDivisionAndModulo()
         {
+            var pos = _lastConsumed.Position;
             var expression = ParseIncrementDecrementUnaryOperators();
             while (Match(TokenType.Asterisk) || Match(TokenType.Slash) || Match(TokenType.Percent))
             {
@@ -682,19 +705,19 @@ namespace eilang.Parsing
                 {
                     Consume();
                     var right = ParseIncrementDecrementUnaryOperators();
-                    expression = new AstBinaryMathOperation(BinaryMath.Times, expression, right);
+                    expression = new AstBinaryMathOperation(BinaryMath.Times, expression, right, pos);
                 }
                 else if (Match(TokenType.Slash))
                 {
                     Consume();
                     var right = ParseIncrementDecrementUnaryOperators();
-                    expression = new AstBinaryMathOperation(BinaryMath.Division, expression, right);
+                    expression = new AstBinaryMathOperation(BinaryMath.Division, expression, right, pos);
                 }
                 else if (Match(TokenType.Percent))
                 {
                     Consume();
                     var right = ParseIncrementDecrementUnaryOperators();
-                    expression = new AstBinaryMathOperation(BinaryMath.Modulo, expression, right);
+                    expression = new AstBinaryMathOperation(BinaryMath.Modulo, expression, right, pos);
                 }
                 else
                 {
@@ -707,24 +730,25 @@ namespace eilang.Parsing
 
         private AstExpression ParseIncrementDecrementUnaryOperators()
         {
+            var pos = _lastConsumed.Position;
             var expression = ParseDots();
             if (Match(TokenType.PlusPlus))
             {
                 Consume();
                 var assignmentSet = GetAssignmentSet(expression);
                 expression = new AstAssignment(
-                    new AstAssignmentReference(expression),
-                    new AstAssignmentValue(AstEmpty.Value, Assignment.IncrementAndReference), 
-                    assignmentSet);
+                    new AstAssignmentReference(expression, pos),
+                    new AstAssignmentValue(AstEmpty.Value, Assignment.IncrementAndReference, pos), 
+                    assignmentSet, pos);
             }
             else if (Match(TokenType.MinusMinus))
             {
                 Consume();
                 var assignmentSet = GetAssignmentSet(expression);
                 expression = new AstAssignment(
-                    new AstAssignmentReference(expression),
-                    new AstAssignmentValue(AstEmpty.Value, Assignment.DecrementAndReference), 
-                    assignmentSet);
+                    new AstAssignmentReference(expression, pos),
+                    new AstAssignmentValue(AstEmpty.Value, Assignment.DecrementAndReference, pos), 
+                    assignmentSet, pos);
             }
 
             return expression;
@@ -737,7 +761,7 @@ namespace eilang.Parsing
                 case AstIdentifier id:
                     return new AstAssignmentSet(id.Ident, AssignmentSet.Variable, id);
                 case AstIndexerReference refer:
-                    return new AstAssignmentSet("", AssignmentSet.Array, new AstIdentifier(refer.Identifier),
+                    return new AstAssignmentSet("", AssignmentSet.Array, new AstIdentifier(refer.Identifier, refer.Position),
                         refer.IndexExprs);
                 case AstMultiReference members:
                 {
@@ -746,7 +770,7 @@ namespace eilang.Parsing
                         case AstMemberIndexerRef membIdx:
                             return new AstAssignmentSet("",
                                 AssignmentSet.Array,
-                                new AstMultiReference(members.First, new AstMemberReference(membIdx.Ident)),
+                                new AstMultiReference(members.First, new AstMemberReference(membIdx.Ident, membIdx.Position), members.Position),
                                 membIdx.IndexExprs);
                         case AstMemberReference membId:
                             return new AstAssignmentSet(membId.Ident, AssignmentSet.MemberVariable, members.First);
@@ -761,10 +785,11 @@ namespace eilang.Parsing
 
         private AstExpression ParseDots()
         {
+            var pos = _lastConsumed.Position;
             var expression = ParseReferences();
             while (Match(TokenType.Dot))
             {
-                expression = new AstMultiReference(expression, ParseMemberAccess());
+                expression = new AstMultiReference(expression, ParseMemberAccess(), pos);
             }
 
             return expression;
@@ -772,6 +797,7 @@ namespace eilang.Parsing
 
         private AstExpression ParseMemberAccess()
         {
+            var pos = _lastConsumed.Position;
             AstExpression expression;
             Require(TokenType.Dot);
             var ident = Require(TokenType.Identifier).Text;
@@ -779,7 +805,7 @@ namespace eilang.Parsing
             {
                 // member func call
                 var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
-                expression = new AstMemberFunctionCall(ident, args);
+                expression = new AstMemberFunctionCall(ident, args, pos);
             }
             else if (Match(TokenType.LeftBracket))
             {
@@ -788,7 +814,7 @@ namespace eilang.Parsing
             else
             {
                 // member variable ref + more
-                expression = new AstMemberReference(ident);
+                expression = new AstMemberReference(ident, pos);
             }
 
             return expression;
@@ -808,53 +834,54 @@ namespace eilang.Parsing
 
         private AstAssignmentValue ParseAssignmentValue()
         {
+            var pos = _lastConsumed.Position;
             switch (_buffer[0].Type)
             {
                 case TokenType.Equals:
                 {
                     Consume();
                     var value = ParseTernaryOperator();
-                    return new AstAssignmentValue(value, Assignment.Equals);
+                    return new AstAssignmentValue(value, Assignment.Equals, pos);
                 }
                 case TokenType.DivideEquals:
                 {
                     Consume();
                     var value = ParseTernaryOperator();
-                    return new AstAssignmentValue(value, Assignment.DivideEquals);
+                    return new AstAssignmentValue(value, Assignment.DivideEquals, pos);
                 }
                 case TokenType.TimesEquals:
                 {
                     Consume();
                     var value = ParseTernaryOperator();
-                    return new AstAssignmentValue(value, Assignment.TimesEquals);
+                    return new AstAssignmentValue(value, Assignment.TimesEquals, pos);
                 }
                 case TokenType.ModuloEquals:
                 {
                     Consume();
                     var value = ParseTernaryOperator();
-                    return new AstAssignmentValue(value, Assignment.ModuloEquals);
+                    return new AstAssignmentValue(value, Assignment.ModuloEquals, pos);
                 }
                 case TokenType.PlusEquals:
                 {
                     Consume();
                     var value = ParseTernaryOperator();
-                    return new AstAssignmentValue(value, Assignment.PlusEquals);
+                    return new AstAssignmentValue(value, Assignment.PlusEquals, pos);
                 }
                 case TokenType.MinusEquals:
                 {
                     Consume();
                     var value = ParseTernaryOperator();
-                    return new AstAssignmentValue(value, Assignment.MinusEquals);
+                    return new AstAssignmentValue(value, Assignment.MinusEquals, pos);
                 }
                 case TokenType.PlusPlus:
                 {
                     Consume();
-                    return new AstAssignmentValue(AstEmpty.Value, Assignment.Increment);
+                    return new AstAssignmentValue(AstEmpty.Value, Assignment.Increment, pos);
                 }
                 case TokenType.MinusMinus:
                 {
                     Consume();
-                    return new AstAssignmentValue(AstEmpty.Value, Assignment.Decrement);
+                    return new AstAssignmentValue(AstEmpty.Value, Assignment.Decrement, pos);
                 }
             }
 
@@ -864,6 +891,7 @@ namespace eilang.Parsing
 
         private AstExpression ParseReferences()
         {
+            var pos = _lastConsumed.Position;
             switch (_buffer[0].Type)
             {
                 case TokenType.LeftBracket:
@@ -872,65 +900,65 @@ namespace eilang.Parsing
                     Consume();
                     var expr = ParseTernaryOperator();
                     Require(TokenType.RightParenthesis);
-                    return new AstParenthesized(expr);
+                    return new AstParenthesized(expr, pos);
                 case TokenType.Continue:
                     if (!InLoop)
                     {
                         ThrowParserException("'continue' is only allowed in loops");
                     }
                     Consume();
-                    return new AstContinue();
+                    return new AstContinue(pos);
                 case TokenType.Break:
                     if (!InLoop)
                     {
                         ThrowParserException("'break' is only allowed in loops");
                     }
                     Consume();
-                    return new AstBreak();
+                    return new AstBreak(pos);
                 case TokenType.String:
                     var str = Require(TokenType.String).Text;
-                    return new AstStringConstant(str);
+                    return new AstStringConstant(str, pos);
                 case TokenType.Integer:
                     var inte = Require(TokenType.Integer).Integer;
-                    return new AstIntegerConstant(inte);
+                    return new AstIntegerConstant(inte, pos);
                 case TokenType.Double:
                     var doubl = Require(TokenType.Double).Double;
-                    return new AstDoubleConstant(doubl);
+                    return new AstDoubleConstant(doubl, pos);
                 case TokenType.Me:
                     if (!_inClass)
                     {
                         ThrowParserException($"Token '{nameof(TokenType.Me)}' may only live inside classes");
                     }
                     Consume();
-                    return new AstMe();
+                    return new AstMe(pos);
                 case TokenType.True:
                     Consume();
-                    return new AstTrue();
+                    return new AstTrue(pos);
                 case TokenType.False:
                     Consume();
-                    return new AstFalse();
+                    return new AstFalse(pos);
                 case TokenType.Minus:
                     Consume();
                     var minusExpr = ParseDots();
-                    return new AstUnaryMathOperation(UnaryMath.Minus, minusExpr);
+                    return new AstUnaryMathOperation(UnaryMath.Minus, minusExpr, pos);
                 case TokenType.Not:
                     Consume();
                     var notExpr = ParseDots();
-                    return new AstUnaryMathOperation(UnaryMath.Not, notExpr);
+                    return new AstUnaryMathOperation(UnaryMath.Not, notExpr, pos);
                 case TokenType.Asterisk:
                     Consume();
                     return ParseClassInitialization();
                 case TokenType.It:
                     Consume();
-                    return new AstIt();
+                    return new AstIt(pos);
                 case TokenType.Ix:
                     Consume();
-                    return new AstIx();
+                    return new AstIx(pos);
                 case TokenType.Identifier:
                     return ParseModuleAccess();
                 case TokenType.At:
                     Consume();
-                    return new AstFunctionPointer(GetModuledClassName());
+                    return new AstFunctionPointer(GetModuledClassName(), pos);
             }
 
             return ThrowParserException("not implemented");
@@ -938,6 +966,7 @@ namespace eilang.Parsing
         
         private AstExpression ParseModuleAccess()
         {
+            var pos = _lastConsumed.Position;
             var name = GetModuledClassName();
             switch (_buffer[0].Type)
             {
@@ -946,14 +975,15 @@ namespace eilang.Parsing
                 case TokenType.LeftParenthesis:
                     return ParseFunctionCall(name);
                 default:
-                    return new AstIdentifier(name);
+                    return new AstIdentifier(name, pos);
             }
         }
 
         private AstExpression ParseListInit()
         {
+            var pos = _lastConsumed.Position;
             var args = ParseArgumentList(TokenType.LeftBracket, TokenType.RightBracket);
-            return new AstNewList(args);
+            return new AstNewList(args, pos);
         }
 
 
@@ -1011,7 +1041,7 @@ namespace eilang.Parsing
             {
                 var fileName = Path.GetFileName(_lexer.CurrentScript);
                 throw new ParserException(
-                    $"Unexpected token {consumed.Type}, expected {type} at line {consumed.Line + 1}, col {consumed.Col}\nInside script '{fileName}': {_lexer.CurrentScript}");
+                    $"Unexpected token {consumed.Type}, expected {type} at line {consumed.Position.Line + 1}, col {consumed.Position.Col}\nInside script '{fileName}': {_lexer.CurrentScript}");
             }
 
             return consumed;
@@ -1024,7 +1054,7 @@ namespace eilang.Parsing
             value0 = string.IsNullOrWhiteSpace(value0) ? "" : ": " + value0;
             value1 = string.IsNullOrWhiteSpace(value1) ? "" : ": " + value1;
             var fileName = Path.GetFileName(_lexer.CurrentScript);
-            throw new ParserException($"{s} near line {_lastConsumed.Line}, pos {_lastConsumed.Col}.\nNear code: \"{_buffer[0].GetTextBack()}{_buffer[1].GetTextBack()}\"\nInside script '{fileName}': {_lexer.CurrentScript}\n_buffer[0] = {_buffer[0].Type}{value0}, _buffer[1] = {_buffer[1].Type}{value1}");
+            throw new ParserException($"{s} near line {_lastConsumed.Position.Line}, pos {_lastConsumed.Position.Col}.\nNear code: \"{_buffer[0].GetTextBack()}{_buffer[1].GetTextBack()}\"\nInside script '{fileName}': {_lexer.CurrentScript}\n_buffer[0] = {_buffer[0].Type}{value0}, _buffer[1] = {_buffer[1].Type}{value1}");
             return null;
         }
     }

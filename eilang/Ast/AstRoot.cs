@@ -1,11 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
     public class AstRoot : IHaveClass, IHaveFunction, IHaveExpression, IAst
     {
+        public Position Position { get; }
+
+        public AstRoot(Position position)
+        {
+            Position = position;
+        }
         public List<AstModule> Modules {get; } = new List<AstModule>();
 
         public List<AstFunction> Functions { get;} = new List<AstFunction>();

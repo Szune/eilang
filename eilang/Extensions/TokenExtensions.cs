@@ -14,7 +14,7 @@ namespace eilang.Extensions
         {
             if (token.Type != expected)
                 throw new ParserException(
-                    $"Unexpected token {token.Type}, expected {expected} at line {token.Line + 1}, col {token.Col}");
+                    $"Unexpected token {token.Type}, expected {expected} at line {token.Position.Line + 1}, col {token.Position.Col}");
             return token;
         }
     }

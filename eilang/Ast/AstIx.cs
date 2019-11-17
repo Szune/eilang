@@ -15,5 +15,9 @@ namespace eilang.Ast
         {
             return TokenValues.Ix;
         }
+
+        public AstIx(Position position) : base(position)
+        {
+        }
     }
 }

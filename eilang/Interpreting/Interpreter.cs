@@ -64,16 +64,40 @@ namespace eilang.Interpreting
             {
                 if (frame.Address > 0)
                 {
+                    var previous = GetCodeFromBytecode(frame.Function[frame.Address - 1]);
+                    var current = GetCodeFromBytecode(bc);
+                    var code = "";
+                    if (!string.IsNullOrWhiteSpace(current) || !string.IsNullOrWhiteSpace(previous))
+                    {
+                        code =
+                            $"\nNear code (line {bc.Metadata.Ast.Position.Line}, col {bc.Metadata.Ast.Position.Col}): {previous}\n{current}";
+                    }
+
                     throw new InterpreterException(
-                        $"Failure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.\nPrevious bytecode was '{frame.Function[frame.Address - 1]}'.",
+                        $"Failure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}\nPrevious bytecode was '{frame.Function[frame.Address - 1]}'",
                         e);
                 }
-
-                throw new InterpreterException(
-                    $"Failure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.", e);
+                else
+                {
+                    var current = GetCodeFromBytecode(bc);
+                    var code = "";
+                    if (!string.IsNullOrWhiteSpace(current))
+                    {
+                        code =
+                            $"\nNear code (line {bc.Metadata.Ast.Position.Line}, col {bc.Metadata.Ast.Position.Col}): {current}";
+                    }
+                    throw new InterpreterException(
+                        $"Failure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}",
+                        e);
+                }
             }
 
             return _valueFactory.Void();
+        }
+
+        private string GetCodeFromBytecode(Bytecode bytecode)
+        {
+            return bytecode?.Metadata?.Ast?.ToCode() ?? "";
         }
 
         private Function GetStartFunction()

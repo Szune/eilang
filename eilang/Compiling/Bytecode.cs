@@ -15,7 +15,7 @@ namespace eilang.Compiling
 
         public override string ToString()
         {
-            return Op.ToString();
+            return Op?.ToString() ?? "{null}";
         }
     }
 }

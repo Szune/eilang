@@ -1,5 +1,6 @@
 ﻿using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
@@ -7,7 +8,7 @@ namespace eilang.Ast
     {
         public AstExpression Reference { get; }
 
-        public AstAssignmentReference(AstExpression reference)
+        public AstAssignmentReference(AstExpression reference, Position position) : base(position)
         {
             Reference = reference;
         }

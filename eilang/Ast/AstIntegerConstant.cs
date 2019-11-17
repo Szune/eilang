@@ -1,11 +1,12 @@
 using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
     public class AstIntegerConstant : AstExpression
     {
-        public AstIntegerConstant(int inte)
+        public AstIntegerConstant(int inte, Position position) : base(position)
         {
             Integer = inte;
         }

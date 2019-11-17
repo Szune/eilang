@@ -1,5 +1,6 @@
 ﻿using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
@@ -7,7 +8,7 @@ namespace eilang.Ast
     {
         public string Ident { get; }
 
-        public AstMemberReference(string ident)
+        public AstMemberReference(string ident, Position position) : base(position)
         {
             Ident = ident;
         }

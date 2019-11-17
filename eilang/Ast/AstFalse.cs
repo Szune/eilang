@@ -6,6 +6,10 @@ namespace eilang.Ast
 {
     public class AstFalse : AstExpression
     {
+        public AstFalse(Position position) : base(position)
+        {
+        }
+
         public override void Accept(IVisitor visitor, Function function, Module mod)
         {
             visitor.Visit(this, function, mod);

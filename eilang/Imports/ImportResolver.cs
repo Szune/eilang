@@ -56,7 +56,7 @@ namespace eilang.Imports
         {
             var fixedImport = import.Replace("\\", "/");
             var fixedMainDirectory = mainDirectory.Replace("\\", "/");
-            return Path.Join(fixedMainDirectory, fixedImport);
+            return Path.Join(fixedMainDirectory, fixedImport).Replace("\\", "/");
             // TODO: if publishing eilang along with some standard library stuffs,
             // then check the executable folder if an identifier was supplied
             // i.e. "import std; # import standard library file" 

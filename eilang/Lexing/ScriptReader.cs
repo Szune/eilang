@@ -10,8 +10,9 @@
         public bool IsEOF { get; private set; }
         public int AbsolutePosition { get; private set; }
 
-        public ScriptReader(string code)
+        public ScriptReader(string code, int importedLineOffset = 0)
         {
+            Line = importedLineOffset;
             _code = code;
             ConsumeChar();
             ConsumeChar();

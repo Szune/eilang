@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Transactions;
 
 namespace eilang.Lexing
 {
-    public class ScriptLexer
+    public class ScriptLexer : ILexer
     {
         private readonly ScriptReader _reader;
         private readonly CommonLexer _commonLexer;
@@ -35,16 +36,19 @@ namespace eilang.Lexing
             };
         }
 
-        public ScriptLexer(ScriptReader reader, CommonLexer commonLexer)
+        public ScriptLexer(string scriptName, ScriptReader reader, CommonLexer commonLexer)
         {
             _reader = reader;
             _commonLexer = commonLexer;
+            CurrentScript = scriptName;
         }
 
         private Token GetToken(TokenType type)
         {
             return new Token(type, _reader.Line, _reader.Col);
         }
+
+        public string CurrentScript { get; }
 
         public Token NextToken()
         {

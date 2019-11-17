@@ -9,16 +9,17 @@ namespace eilang.Parsing
 {
     public class Parser
     {
-        private readonly ScriptLexer _scriptLexer;
+        private readonly ILexer _lexer;
         private readonly Token[] _buffer = {new Token(), new Token()};
         private bool InLoop => _forDepth > 0;
         private int _forDepth;
         private bool _inClass;
         private Stack<VariableScope> _scopes = new Stack<VariableScope>();
+        private Token _lastConsumed = new Token();
 
-        public Parser(ScriptLexer scriptLexer)
+        public Parser(ILexer lexer)
         {
-            _scriptLexer = scriptLexer;
+            _lexer = lexer;
             Consume();
             Consume();
             _scopes.Push(new VariableScope());
@@ -100,7 +101,8 @@ namespace eilang.Parsing
                         ParseMemberVariableList(clas);
                         break;
                     default:
-                        throw new ParserException($"Unknown token {_buffer[0].Type} in class {ident}'s scope");
+                        ThrowParserException($"Unknown token {_buffer[0].Type} in class {ident}'s scope");
+                        return;
                 }
             }
 
@@ -662,7 +664,7 @@ namespace eilang.Parsing
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    ThrowParserException("Not implemented");
                 }
             }
 
@@ -694,7 +696,7 @@ namespace eilang.Parsing
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    ThrowParserException("Not implemented");
                 }
             }
 
@@ -857,11 +859,6 @@ namespace eilang.Parsing
             return ThrowParserException("Assignment expression expected");
         }
 
-        private dynamic ThrowParserException(string s)
-        {
-            throw new ParserException($"{s} near line {_buffer[0].Line}, pos {_buffer[0].Col}.\n_buffer[0] = {_buffer[0].Type}, _buffer[1] = {_buffer[1].Type}");
-            return null;
-        }
 
         private AstExpression ParseReferences()
         {
@@ -994,8 +991,9 @@ namespace eilang.Parsing
         private Token Consume()
         {
             var consumed = _buffer[0];
+            _lastConsumed = consumed;
             _buffer[0] = _buffer[1];
-            _buffer[1] = _scriptLexer.NextToken();
+            _buffer[1] = _lexer.NextToken();
             return consumed;
         }
 
@@ -1009,8 +1007,18 @@ namespace eilang.Parsing
             var consumed = Consume();
             if (consumed.Type != type)
                 throw new ParserException(
-                    $"Unexpected token {consumed.Type}, expected {type} at line {consumed.Line + 1}, col {consumed.Col}");
+                    $"Unexpected token {consumed.Type}, expected {type} at line {consumed.Line + 1}, col {consumed.Col}\nInside script: {_lexer.CurrentScript}");
             return consumed;
+        }
+        
+        private dynamic ThrowParserException(string s)
+        {
+            var value0 = _buffer[0].GetValue();
+            var value1 = _buffer[1].GetValue();
+            value0 = string.IsNullOrWhiteSpace(value0) ? "" : ": " + value0;
+            value1 = string.IsNullOrWhiteSpace(value1) ? "" : ": " + value1;
+            throw new ParserException($"{s} near line {_lastConsumed.Line}, pos {_lastConsumed.Col}.\n_buffer[0] = {_buffer[0].Type}{value0}, _buffer[1] = {_buffer[1].Type}{value1}\nInside script: {_lexer.CurrentScript}");
+            return null;
         }
     }
 }

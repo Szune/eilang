@@ -1,4 +1,7 @@
-﻿using eilang.Classes;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using eilang.Classes;
 using eilang.Compiling;
 using eilang.Imports;
 using eilang.Interfaces;
@@ -18,9 +21,27 @@ namespace eilang
             var imports = new ImportResolver().ResolveImportsFromFile(path);
             var code = new ImportMerger().Merge(imports);
 
-            var reader = new ScriptReader(code);
-            var lexer = new ScriptLexer(reader, new CommonLexer(reader));
-            var parser = new Parser(lexer);
+            ILexer finalLexer;
+            if (code.Count > 1)
+            {
+                var lexers = new List<ILexer>();
+                foreach (var imported in code)
+                {
+                    var reader = new ScriptReader(imported.Code, imported.LineOffset);
+                    var lexer = new ScriptLexer(imported.Path, reader, new CommonLexer(reader));
+                    lexers.Add(lexer);
+                }
+
+                finalLexer = new MultifileLexer(lexers);
+            }
+            else
+            {
+                var imported = code.First();
+                var reader = new ScriptReader(imported.Code, imported.LineOffset);
+                finalLexer = new ScriptLexer(imported.Path, reader, new CommonLexer(reader));
+            }
+
+            var parser = new Parser(finalLexer);
             var ast = parser.Parse();
 
             if (environment == null)
@@ -30,7 +51,7 @@ namespace eilang
                 environment.AddExportedFunctionsFrom(typeof(ExportedFunctions));
             }
 
-            Compiler.Compile(environment , ast
+            Compiler.Compile(environment, ast
 #if LOGGING
                 ,logger: Console.Out
 #endif
@@ -47,7 +68,7 @@ namespace eilang
         public static IValue Run(string code, Env environment = null)
         {
             var reader = new ScriptReader(code);
-            var lexer = new ScriptLexer(reader, new CommonLexer(reader));
+            var lexer = new ScriptLexer("eval", reader, new CommonLexer(reader));
             var parser = new Parser(lexer);
             var ast = parser.Parse();
 

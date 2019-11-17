@@ -91,6 +91,24 @@ namespace eilang
             Double = doubl;
         }
 
+        public string GetValue()
+        {
+            if (Text != null)
+            {
+                return Text;
+            }
+            else if (Type == TokenType.Integer)
+            {
+                return Integer.ToString();
+            }
+            else if (Type == TokenType.Double)
+            {
+                return Double.ToString();
+            }
+
+            return "";
+        }
+
         public override string ToString()
         {
             return Type.ToString();

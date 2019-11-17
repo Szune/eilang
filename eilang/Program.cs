@@ -77,7 +77,6 @@ namespace eilang
             // scope should simply take the nearest one in this case), allow global variables to have the same names as 
             // class function variables or class variables
             // TODO: 0.9 implement date/time class(es)
-            // TODO: 0.99 implement input() function to retrieve input from console
             // TODO: 1. implement maps (dictionaries) - MapClass
             // TODO: 2. implement file i/o - IOClass
             // TODO: 3. implement working with processes (starting processes, killing processes)

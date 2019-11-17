@@ -10,13 +10,15 @@ namespace eilang.Classes
         {
             CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
             CtorForMembersWithValues.Write(factory.Return());
-//            Functions.Add("start", new MemberFunction("start", Module, new List<string>{"name", "args"}, this)
-//            {
-//                Code =
-//                {
-//                    new Bytecode(factory.SPROC)
-//                }
-//            });
+            Functions.Add("start", new MemberFunction("start", Module, new List<string> {"name", "args"}, this)
+            {
+                Code =
+                {
+                    new Bytecode(factory.Pop()), // pops unused argument count
+                    new Bytecode(factory.ProcessStart()),
+                    new Bytecode(factory.Return())
+                }
+            });
 //            Functions.Add("kill_pid", new MemberFunction("kill_pid", Module, new List<string>{"pid"}, this)
 //            {
 //                Code =

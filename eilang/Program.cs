@@ -84,17 +84,18 @@ namespace eilang
             // TODO: 5. implement reflection-like functionality
             // TODO: 7. implement switch statements
             // TODO: 8. implement bytes
-            // TODO: 9. implement regex?
-            // TODO: 10. figure out how you can use registers to reduce repeat opcodes,
+            // TODO: 9. implement enums
+            // TODO: 10. implement regex?
+            // TODO: 11. figure out how you can use registers to reduce repeat opcodes,
             // possible uses: loading a class member several times in a row, e.g.
             // var x = *p(); x.s = 1; x.t = 2; x.u = 3; // load x into a register and read from that register,
             // instead of re-referencing x (gets more useful the more deeply nested stuff is)
             // look for more optimizations
-            // TODO: 11. implement calling external libraries, dlls and such
-            // TODO: 12. perform analysis to remove unhandled return values from the stack,
+            // TODO: 12. implement calling external libraries, dlls and such
+            // TODO: 13. perform analysis to remove unhandled return values from the stack,
             // currently the stack gets filled with unhandled return values if calling a function that returns a value inside a loop
-            // TODO: 13. static analysis of types (i.e. type checking)
-            // TODO: 14. rework stack/value/memory implementation to be more efficient
+            // TODO: 14. static analysis of types (i.e. type checking)
+            // TODO: 15. rework stack/value/memory implementation to be more efficient
 
             //EilangScript.RunFile(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");
             Eilang.RunFile("test.ei");

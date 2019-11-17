@@ -51,6 +51,7 @@ namespace eilang.OperationCodes
         private readonly StringToInt _stringToInt = new StringToInt();
         private readonly StringToDouble _stringToDouble = new StringToDouble();
         private readonly StringToBool _stringToBool = new StringToBool();
+        private readonly ProcessStart _processStart = new ProcessStart();
 
         public Push Push(IValue value)
         {
@@ -370,6 +371,11 @@ namespace eilang.OperationCodes
         public StringToBool StringToBool()
         {
             return _stringToBool;
+        }
+
+        public ProcessStart ProcessStart()
+        {
+            return _processStart;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace eilang.Imports
             foreach(var importPath in importPaths)
             {
                 var source = File.ReadAllText(importPath);
-                var reader = new ScriptReader(source);
+                var reader = new ScriptReader(source, importPath);
                 var importLexer = new ImportLexer(reader, new CommonLexer(reader));
                 var afterImportsPosition = importLexer.GetIndexAfterImports();
                 var codeWithoutImports = source.Substring(afterImportsPosition);

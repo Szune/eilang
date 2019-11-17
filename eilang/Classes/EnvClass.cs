@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection.Emit;
 using eilang.Compiling;
 using eilang.Interfaces;
@@ -26,6 +28,28 @@ namespace eilang.Classes
             get_args.Write(opFactory.ListNew());
             get_args.Write(opFactory.Return());
             Functions.Add("get_args", get_args);
+            
+            var exeDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            Functions.Add("get_bin_dir", new MemberFunction("get_bin_dir", Module, new List<string>(), this)
+            {
+                Code =
+                {
+                    new Bytecode(opFactory.Pop()),
+                    new Bytecode(opFactory.Push(factory.String(exeDirectory))),
+                    new Bytecode(opFactory.Return())
+                }
+            });
+
+            var currentDirectory = Directory.GetCurrentDirectory();
+            Functions.Add("get_current_dir", new MemberFunction("get_current_dir", Module, new List<string>(), this)
+            {
+                Code =
+                {
+                    new Bytecode(opFactory.Pop()),
+                    new Bytecode(opFactory.Push(factory.String(currentDirectory))),
+                    new Bytecode(opFactory.Return())
+                }
+            });
         }
     }
 }

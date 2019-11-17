@@ -68,5 +68,6 @@ namespace eilang.OperationCodes
         StringToInt StringToInt();
         StringToDouble StringToDouble();
         StringToBool StringToBool();
+        ProcessStart ProcessStart();
     }
 }

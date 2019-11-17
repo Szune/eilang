@@ -14,9 +14,13 @@ namespace eilang.Lexing
         public string GetString(char stringChar)
         {
             _reader.ConsumeChar(); // consume start char
+            var line = _reader.Line;
+            var col = _reader.Col;
             var sb = new StringBuilder();
-            while (_reader.Current != stringChar && !_reader.IsEOF)
+            while (_reader.Current != stringChar)
             {
+                if(_reader.IsEOF)
+                    throw new LexerException($"Unterminated string on line {line}, col {col} in script '{_reader.ScriptName}'");
                 if (_reader.Current == '\\' && _reader.Next == stringChar)
                 {
                     // escaped string char

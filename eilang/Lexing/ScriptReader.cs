@@ -6,12 +6,14 @@
         private readonly char[] _buffer = {' ', ' '};
         private int _pos;
         public int Col { get; private set; }
+        public string ScriptName { get; }
         public int Line { get; private set; }
         public bool IsEOF { get; private set; }
         public int AbsolutePosition { get; private set; }
 
-        public ScriptReader(string code, int importedLineOffset = 0)
+        public ScriptReader(string code, string scriptName, int importedLineOffset = 0)
         {
+            ScriptName = scriptName;
             Line = importedLineOffset;
             _code = code;
             ConsumeChar();

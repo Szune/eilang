@@ -26,8 +26,8 @@ namespace eilang
                 var lexers = new List<ILexer>();
                 foreach (var imported in code)
                 {
-                    var reader = new ScriptReader(imported.Code, imported.LineOffset);
-                    var lexer = new ScriptLexer(imported.Path, reader, new CommonLexer(reader));
+                    var reader = new ScriptReader(imported.Code, imported.Path, imported.LineOffset);
+                    var lexer = new ScriptLexer(reader, new CommonLexer(reader));
                     lexers.Add(lexer);
                 }
 
@@ -36,8 +36,8 @@ namespace eilang
             else
             {
                 var imported = code.First();
-                var reader = new ScriptReader(imported.Code, imported.LineOffset);
-                finalLexer = new ScriptLexer(imported.Path, reader, new CommonLexer(reader));
+                var reader = new ScriptReader(imported.Code, imported.Path, imported.LineOffset);
+                finalLexer = new ScriptLexer(reader, new CommonLexer(reader));
             }
 
             var parser = new Parser(finalLexer);
@@ -66,8 +66,8 @@ namespace eilang
         
         public static IValue Run(string code, Env environment = null)
         {
-            var reader = new ScriptReader(code);
-            var lexer = new ScriptLexer("eval", reader, new CommonLexer(reader));
+            var reader = new ScriptReader(code, "eval");
+            var lexer = new ScriptLexer(reader, new CommonLexer(reader));
             var parser = new Parser(lexer);
             var ast = parser.Parse();
 

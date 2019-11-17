@@ -29,7 +29,7 @@ namespace eilang.Imports
                     return;
                 check.Add(path);
                 var code = GetCode(path);
-                var reader = new ScriptReader(code);
+                var reader = new ScriptReader(code, path);
                 var lexer = new ImportLexer(reader, new CommonLexer(reader)); // maybe inject ImportResolver with a LexerFactory,
                 // not really necessary at this point I feel
                 var imports = lexer.GetImports();

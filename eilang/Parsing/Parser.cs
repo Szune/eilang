@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using eilang.Ast;
 using eilang.Extensions;
 using eilang.Interfaces;
@@ -1006,8 +1007,12 @@ namespace eilang.Parsing
         {
             var consumed = Consume();
             if (consumed.Type != type)
+            {
+                var fileName = Path.GetFileName(_lexer.CurrentScript);
                 throw new ParserException(
-                    $"Unexpected token {consumed.Type}, expected {type} at line {consumed.Line + 1}, col {consumed.Col}\nInside script: {_lexer.CurrentScript}");
+                    $"Unexpected token {consumed.Type}, expected {type} at line {consumed.Line + 1}, col {consumed.Col}\nInside script '{fileName}': {_lexer.CurrentScript}");
+            }
+
             return consumed;
         }
         
@@ -1017,7 +1022,8 @@ namespace eilang.Parsing
             var value1 = _buffer[1].GetValue();
             value0 = string.IsNullOrWhiteSpace(value0) ? "" : ": " + value0;
             value1 = string.IsNullOrWhiteSpace(value1) ? "" : ": " + value1;
-            throw new ParserException($"{s} near line {_lastConsumed.Line}, pos {_lastConsumed.Col}.\n_buffer[0] = {_buffer[0].Type}{value0}, _buffer[1] = {_buffer[1].Type}{value1}\nInside script: {_lexer.CurrentScript}");
+            var fileName = Path.GetFileName(_lexer.CurrentScript);
+            throw new ParserException($"{s} near line {_lastConsumed.Line}, pos {_lastConsumed.Col}.\nNear code: \"{_buffer[0].GetTextBack()}{_buffer[1].GetTextBack()}\"\nInside script '{fileName}': {_lexer.CurrentScript}\n_buffer[0] = {_buffer[0].Type}{value0}, _buffer[1] = {_buffer[1].Type}{value1}");
             return null;
         }
     }

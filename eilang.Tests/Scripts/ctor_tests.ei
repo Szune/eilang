@@ -37,7 +37,6 @@ fun main() {
     assert(t3.y == "init8", $"t3.y should be 'init8', but was '{t3.y}' - constructor with block should initialize member variables that are specified in ctor argument list");
     
     var t4 = *test_without_init_value("init10");
-    println(t4.x);
     assert(t4.x == (), $"t4.x should be uninitialized, but was '{t4.x}' - constructor should define variables that are uninitialized, but not give them a value");
     assert(t4.y == "init10", $"t4.y should be 'init10', but was '{t4.y}' - constructor should initialize member variables that are specified in ctor argument list");
 }

@@ -36,6 +36,39 @@ println('hello world');
 # global expressions are run if there is no main function ("fun main()")
 ```
 
+##### File I/O:
+###### Reading
+```eilang
+var io = *io();
+
+# 'use' statements close the file handle at the end of the block
+use (var f = io.open_file('file_test.txt')) {
+    for { 
+        if(f.is_eof()) {
+            break;
+        }
+        var read = f.readln();
+        println(read);
+    }
+} # file is closed here
+```
+###### Writing
+```eilang
+var io = *io();
+
+# 'use' statements close the file handle at the end of the block
+use (var f = io.open_file('file_test.txt', false)) {
+    f.clear(); # removes all content from the file
+    f.writeln("this is writing a line to a file without appending");
+    f.write("this is writing without appending a line at the end");
+} # file is closed here
+
+use (var f = io.open_file('file_test.txt', true)) { 
+    f.writeln("this is appending a line at the end of the file");
+    f.write("this is appending at the end of the file without writing a newline");
+}
+```
+
 Arrays:
 ```eilang
 fun main() {

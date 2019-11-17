@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
 using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
@@ -18,6 +20,12 @@ namespace eilang.Ast
         {
             visitor.Visit(this, function, mod);
         }
-        
+
+        public override string ToCode()
+        {
+            var arguments = string.Join(", ", Arguments.Select(a => a.ToCode()));
+            return
+                $"{TokenValues.Asterisk}{Identifiers}{TokenValues.LeftParenthesis}{arguments}{TokenValues.RightParenthesis}{TokenValues.Semicolon}";
+        }
     }
 }

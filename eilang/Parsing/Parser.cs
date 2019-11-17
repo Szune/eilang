@@ -5,6 +5,7 @@ using eilang.Ast;
 using eilang.Extensions;
 using eilang.Interfaces;
 using eilang.Lexing;
+using eilang.Tokens;
 
 namespace eilang.Parsing
 {
@@ -871,7 +872,7 @@ namespace eilang.Parsing
                     Consume();
                     var expr = ParseTernaryOperator();
                     Require(TokenType.RightParenthesis);
-                    return expr;
+                    return new AstParenthesized(expr);
                 case TokenType.Continue:
                     if (!InLoop)
                     {

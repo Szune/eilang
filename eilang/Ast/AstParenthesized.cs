@@ -1,15 +1,16 @@
 ﻿using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
-    public class AstMemberReference : AstExpression
+    public class AstParenthesized : AstExpression
     {
-        public string Ident { get; }
+        public AstExpression Expr { get; }
 
-        public AstMemberReference(string ident)
+        public AstParenthesized(AstExpression expr)
         {
-            Ident = ident;
+            Expr = expr;
         }
 
         public override void Accept(IVisitor visitor, Function function, Module mod)
@@ -19,7 +20,7 @@ namespace eilang.Ast
 
         public override string ToCode()
         {
-            return Ident;
+            return $"{TokenValues.LeftParenthesis}{Expr.ToCode()}{TokenValues.RightParenthesis}";
         }
     }
 }

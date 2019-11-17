@@ -1,4 +1,5 @@
 using eilang.Parsing;
+using eilang.Tokens;
 
 namespace eilang.Extensions
 {

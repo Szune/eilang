@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using eilang.Extensions;
+using eilang.Tokens;
 
 namespace eilang.Lexing
 {

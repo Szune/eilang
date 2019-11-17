@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using eilang.Classes;
 using eilang.Compiling;
@@ -43,7 +42,7 @@ namespace eilang
 
             var parser = new Parser(finalLexer);
             var ast = parser.Parse();
-
+            
             if (environment == null)
             {
                 environment = new Env(new OperationCodeFactory(), new ValueFactory());

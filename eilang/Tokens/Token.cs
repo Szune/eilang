@@ -1,75 +1,7 @@
 using System;
 
-namespace eilang
+namespace eilang.Tokens
 {
-    public enum TokenType
-    {
-        None = 0,
-        EOF,
-        Identifier,
-        LeftParenthesis,
-        RightParenthesis,
-        LeftBrace,
-        RightBrace,
-        LeftBracket,
-        RightBracket,
-        String,
-        Integer,
-        Double,
-        If,
-        Else,
-        Or,
-        And,
-        EqualsEquals,
-        NotEquals,
-        LessThan,
-        GreaterThan,
-        LessThanEquals,
-        GreaterThanEquals,
-        Class,
-        Module,
-        Function,
-        Var,
-        Comma,
-        Colon,
-        DoubleColon,
-        Semicolon,
-        Equals,
-        Dot,
-        DoubleDot,
-        Asterisk,
-        Constructor,
-        Plus,
-        PlusEquals,
-        MinusEquals,
-        TimesEquals,
-        DivideEquals,
-        For,
-        True,
-        False,
-        Minus,
-        Slash,
-        Not,
-        It,
-        Ix,
-        Return,
-        /// <summary>
-        /// Current object access
-        /// </summary>
-        Me,
-        Continue,
-        Break,
-        PlusPlus,
-        MinusMinus,
-        QuestionMark,
-        At,
-        Percent,
-        ModuloEquals,
-        Import,
-        Tilde
-    }
-    
-    
     public class Token
     {
         public TokenType Type { get; }
@@ -118,7 +50,7 @@ namespace eilang
 
         public string GetTextBack()
         {
-            var text = "";
+            var c = '\0';
             switch (Type)
             {
                 case TokenType.None:
@@ -128,17 +60,23 @@ namespace eilang
                 case TokenType.Identifier:
                     return Text;
                 case TokenType.LeftParenthesis:
-                    return "(";
+                    c = TokenValues.LeftParenthesis;
+                    break;
                 case TokenType.RightParenthesis:
-                    return ")";
+                    c = TokenValues.RightParenthesis;
+                    break;
                 case TokenType.LeftBrace:
-                    return "{";
+                    c = TokenValues.LeftBrace;
+                    break;
                 case TokenType.RightBrace:
-                    return "}";
+                    c = TokenValues.RightBrace;
+                    break;
                 case TokenType.LeftBracket:
-                    return "[";
+                    c = TokenValues.LeftBracket;
+                    break;
                 case TokenType.RightBracket:
-                    return "]";
+                    c = TokenValues.RightBracket;
+                    break;
                 case TokenType.String:
                     return $"\"{Text}\"";
                 case TokenType.Integer:
@@ -146,106 +84,122 @@ namespace eilang
                 case TokenType.Double:
                     return Double.ToString();
                 case TokenType.If:
-                    return "if";
+                    return TokenValues.If;
                 case TokenType.Else:
-                    return "else";
+                    return TokenValues.Else;
                 case TokenType.Or:
-                    return "||";
+                    return TokenValues.Or;
                 case TokenType.And:
-                    return "&&";
+                    return TokenValues.And;
                 case TokenType.EqualsEquals:
-                    return "==";
+                    return TokenValues.EqualsEquals;
                 case TokenType.NotEquals:
-                    return "!=";
+                    return TokenValues.NotEquals;
                 case TokenType.LessThan:
-                    return "<";
+                    c = TokenValues.LessThan;
+                    break;
                 case TokenType.GreaterThan:
-                    return ">";
+                    c = TokenValues.GreaterThan;
+                    break;
                 case TokenType.LessThanEquals:
-                    return "<=";
+                    return TokenValues.LessThanEquals;
                 case TokenType.GreaterThanEquals:
-                    return ">=";
+                    return TokenValues.GreaterThanEquals;
                 case TokenType.Class:
-                    return "typ ";
+                    return TokenValues.Class + " ";
                 case TokenType.Module:
-                    return "modu ";
+                    return TokenValues.Module + " ";
                 case TokenType.Function:
-                    return "fun ";
+                    return TokenValues.Function + " ";
                 case TokenType.Var:
-                    return "var ";
+                    return TokenValues.Var + " ";
                 case TokenType.Comma:
-                    return ",";
+                    c = TokenValues.Comma;
+                    break;
                 case TokenType.Colon:
-                    return ":";
+                    c = TokenValues.Colon;
+                    break;
                 case TokenType.DoubleColon:
-                    return "::";
+                    return TokenValues.DoubleColon;
                 case TokenType.Semicolon:
-                    return ";";
+                    c = TokenValues.Semicolon;
+                    break;
                 case TokenType.Equals:
-                    return "=";
+                    c = TokenValues.EqualsAssign;
+                    break;
                 case TokenType.Dot:
-                    return ".";
+                    c = TokenValues.Dot;
+                    break;
                 case TokenType.DoubleDot:
-                    return "..";
+                    return TokenValues.DoubleDot;
                 case TokenType.Asterisk:
-                    return "*";
+                    c = TokenValues.Asterisk;
+                    break;
                 case TokenType.Constructor:
-                    return "ctor";
+                    return TokenValues.Constructor;
                 case TokenType.Plus:
-                    return "+";
+                    c = TokenValues.Plus;
+                    break;
                 case TokenType.PlusEquals:
-                    return "+=";
+                    return TokenValues.PlusEquals;
                 case TokenType.MinusEquals:
-                    return "-=";
+                    return TokenValues.MinusEquals;
                 case TokenType.TimesEquals:
-                    return "*=";
+                    return TokenValues.TimesEquals;
                 case TokenType.DivideEquals:
-                    return "/=";
+                    return TokenValues.DivideEquals;
                 case TokenType.For:
-                    return "for";
+                    return TokenValues.For;
                 case TokenType.True:
-                    return "true";
+                    return TokenValues.True;
                 case TokenType.False:
-                    return "false";
+                    return TokenValues.False;
                 case TokenType.Minus:
-                    return "-";
+                    c = TokenValues.Minus;
+                    break;
                 case TokenType.Slash:
-                    return "/";
+                    c = TokenValues.Slash;
+                    break;
                 case TokenType.Not:
-                    return "!";
+                    c = TokenValues.Not;
+                    break;
                 case TokenType.It:
-                    return "it";
+                    return TokenValues.It;
                 case TokenType.Ix:
-                    return "ix";
+                    return TokenValues.Ix;
                 case TokenType.Return:
-                    return "ret";
+                    return TokenValues.Return;
                 case TokenType.Me:
-                    return "me";
+                    return TokenValues.Me;
                 case TokenType.Continue:
-                    return "continue";
+                    return TokenValues.Continue;
                 case TokenType.Break:
-                    return "break";
+                    return TokenValues.Break;
                 case TokenType.PlusPlus:
-                    return "++";
+                    return TokenValues.PlusPlus;
                 case TokenType.MinusMinus:
-                    return "--";
+                    return TokenValues.MinusMinus;
                 case TokenType.QuestionMark:
-                    return "?";
+                    c = TokenValues.QuestionMark;
+                    break;
                 case TokenType.At:
-                    return "@";
+                    c = TokenValues.At;
+                    break;
                 case TokenType.Percent:
-                    return "%";
+                    c = TokenValues.Percent;
+                    break;
                 case TokenType.ModuloEquals:
-                    return "%=";
+                    return TokenValues.ModuloEquals;
                 case TokenType.Import:
-                    return "import ";
+                    return TokenValues.Import + " ";
                 case TokenType.Tilde:
-                    return "~";
+                    c = TokenValues.Tilde;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            return text;
+            return c.ToString();
         }
     }
 }

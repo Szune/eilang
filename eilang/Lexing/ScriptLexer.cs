@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Transactions;
+using eilang.Tokens;
 
 namespace eilang.Lexing
 {
@@ -17,22 +18,22 @@ namespace eilang.Lexing
             //char x = (char) 65255;
             Keywords = new Dictionary<string, TokenType>
             {
-                {"if", TokenType.If},
-                {"else", TokenType.Else},
-                {"ret", TokenType.Return},
-                {"typ", TokenType.Class},
-                {"modu", TokenType.Module},
-                {"fun", TokenType.Function},
-                {"for", TokenType.For},
-                {"var", TokenType.Var},
-                {"it", TokenType.It},
-                {"ix", TokenType.Ix},
-                {"ctor", TokenType.Constructor},
-                {"true", TokenType.True},
-                {"false", TokenType.False},
-                {"me", TokenType.Me},
-                {"continue", TokenType.Continue},
-                {"break", TokenType.Break},
+                {TokenValues.If, TokenType.If},
+                {TokenValues.Else, TokenType.Else},
+                {TokenValues.Return, TokenType.Return},
+                {TokenValues.Class, TokenType.Class},
+                {TokenValues.Module, TokenType.Module},
+                {TokenValues.Function, TokenType.Function},
+                {TokenValues.For, TokenType.For},
+                {TokenValues.Var, TokenType.Var},
+                {TokenValues.It, TokenType.It},
+                {TokenValues.Ix, TokenType.Ix},
+                {TokenValues.Constructor, TokenType.Constructor},
+                {TokenValues.True, TokenType.True},
+                {TokenValues.False, TokenType.False},
+                {TokenValues.Me, TokenType.Me},
+                {TokenValues.Continue, TokenType.Continue},
+                {TokenValues.Break, TokenType.Break},
             };
         }
 
@@ -112,8 +113,8 @@ namespace eilang.Lexing
                         return new Token(TokenType.String, _reader.Line, _reader.Col, text: _commonLexer.GetString('\''));
                     case '"':
                         return new Token(TokenType.String, _reader.Line, _reader.Col, text: _commonLexer.GetString('"'));
-                    case ':':
-                        if (_reader.Next == ':')
+                    case TokenValues.Colon:
+                        if (_reader.Next == TokenValues.Colon)
                         {
                             token = GetToken(TokenType.DoubleColon);
                             _reader.ConsumeChar();
@@ -124,31 +125,31 @@ namespace eilang.Lexing
                         }
 
                         break;
-                    case '?':
+                    case TokenValues.QuestionMark:
                         token = GetToken(TokenType.QuestionMark);
                         break;
-                    case '@':
+                    case TokenValues.At:
                         token = GetToken(TokenType.At);
                         break;
-                    case '~':
+                    case TokenValues.Tilde:
                         token = GetToken(TokenType.Tilde);
                         break;
-                    case ';':
+                    case TokenValues.Semicolon:
                         token = GetToken(TokenType.Semicolon);
                         break;
-                    case '(':
+                    case TokenValues.LeftParenthesis:
                         token = GetToken(TokenType.LeftParenthesis);
                         break;
-                    case ')':
+                    case TokenValues.RightParenthesis:
                         token = GetToken(TokenType.RightParenthesis);
                         break;
-                    case '[':
+                    case TokenValues.LeftBracket:
                         token = GetToken(TokenType.LeftBracket);
                         break;
-                    case ']':
+                    case TokenValues.RightBracket:
                         token = GetToken(TokenType.RightBracket);
                         break;
-                    case '!':
+                    case TokenValues.Not:
                         if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.NotEquals);
@@ -160,7 +161,7 @@ namespace eilang.Lexing
                         }
 
                         break;
-                    case '=':
+                    case TokenValues.EqualsAssign:
                         if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.EqualsEquals);
@@ -172,22 +173,22 @@ namespace eilang.Lexing
                         }
 
                         break;
-                    case '{':
+                    case TokenValues.LeftBrace:
                         token = GetToken(TokenType.LeftBrace);
                         break;
-                    case '}':
+                    case TokenValues.RightBrace:
                         token = GetToken(TokenType.RightBrace);
                         break;
-                    case ',':
+                    case TokenValues.Comma:
                         token = GetToken(TokenType.Comma);
                         break;
-                    case '+':
+                    case TokenValues.Plus:
                         if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.PlusEquals);
                             _reader.ConsumeChar();
                         }
-                        else if (_reader.Next == '+')
+                        else if (_reader.Next == TokenValues.Plus)
                         {
                             token = GetToken(TokenType.PlusPlus);
                             _reader.ConsumeChar();
@@ -198,13 +199,13 @@ namespace eilang.Lexing
                         }
 
                         break;
-                    case '-':
+                    case TokenValues.Minus:
                         if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.MinusEquals);
                             _reader.ConsumeChar();
                         }
-                        else if (_reader.Next == '-')
+                        else if (_reader.Next == TokenValues.Minus)
                         {
                             token = GetToken(TokenType.MinusMinus);
                             _reader.ConsumeChar();
@@ -215,7 +216,7 @@ namespace eilang.Lexing
                         }
 
                         break;
-                    case '/':
+                    case TokenValues.Slash:
                         if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.DivideEquals);
@@ -227,8 +228,8 @@ namespace eilang.Lexing
                         }
 
                         break;
-                    case '.':
-                        if (_reader.Next == '.')
+                    case TokenValues.Dot:
+                        if (_reader.Next == TokenValues.Dot)
                         {
                             token = GetToken(TokenType.DoubleDot);
                             _reader.ConsumeChar();
@@ -239,7 +240,7 @@ namespace eilang.Lexing
                         }
 
                         break;
-                    case '*':
+                    case TokenValues.Asterisk:
                         if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.TimesEquals);
@@ -251,7 +252,7 @@ namespace eilang.Lexing
                         }
 
                         break;
-                    case '%':
+                    case TokenValues.Percent:
                         if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.ModuloEquals);
@@ -279,7 +280,7 @@ namespace eilang.Lexing
                         }
 
                         break;
-                    case '<':
+                    case TokenValues.LessThan:
                         if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.LessThanEquals);
@@ -291,7 +292,7 @@ namespace eilang.Lexing
                         }
 
                         break;
-                    case '>':
+                    case TokenValues.GreaterThan:
                         if (_reader.Next == '=')
                         {
                             token = GetToken(TokenType.GreaterThanEquals);

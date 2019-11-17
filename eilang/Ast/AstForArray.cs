@@ -1,5 +1,6 @@
 ﻿using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Tokens;
 
 namespace eilang.Ast
 {
@@ -20,21 +21,12 @@ namespace eilang.Ast
         {
             visitor.Visit(this, function, mod);
         }
-    }
-    
-    public class AstForInfinite : AstExpression
-    {
-        public AstBlock Body { get; }
 
-        public AstForInfinite(AstBlock body)
+        public override string ToCode()
         {
-            Body = body;
-        }
-
-        public override void Accept(IVisitor visitor, Function function, Module mod)
-        {
-            visitor.Visit(this, function, mod);
+            if(!Reversed)
+                return $"{TokenValues.For} {TokenValues.LeftParenthesis}{Array.ToCode()}{TokenValues.RightParenthesis} {{\n{Body.ToCode()}\n}}";
+            return $"{TokenValues.Tilde}{TokenValues.For} {TokenValues.LeftParenthesis}{Array.ToCode()}{TokenValues.RightParenthesis} {{\n{Body.ToCode()}\n}}";
         }
     }
-    
 }

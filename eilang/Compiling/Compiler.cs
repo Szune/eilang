@@ -598,6 +598,11 @@ namespace eilang.Compiling
             function.Write(_opFactory.Push(_valueFactory.FunctionPointer(funcPointer.Ident)));
         }
 
+        public void Visit(AstParenthesized parenthesized, Function function, Module mod)
+        {
+            parenthesized.Expr.Accept(this, function, mod);
+        }
+
         private void AssignLoopControlFlowJumps(Function function, int forDepth, int loopStep, int loopEnd)
         {
             if (!_loopControlFlowOps.TryGetValue(forDepth, out var stack) || stack.Count <= 0)
@@ -754,7 +759,7 @@ namespace eilang.Compiling
 
             if (_env.Functions.ContainsKey(newFunc.FullName))
                 throw new CompilerException(
-                    $"Function '{newFunc.Name}' has already been declared in namespace '{mod.Name}'.");
+                    $"Function '{newFunc.Name}' has already been declared in namespace '{mod.Name}'.\nNear code: {func.ToCode()}");
             _env.Functions.Add(newFunc.FullName, newFunc);
         }
 

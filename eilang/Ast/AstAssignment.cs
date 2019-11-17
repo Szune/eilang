@@ -22,5 +22,10 @@ namespace eilang.Ast
         {
             visitor.Visit(this, function, mod);
         }
+
+        public override string ToCode()
+        {
+            return $"{Reference.ToCode()} {Value.ToCode()}";
+        }
     }
 }

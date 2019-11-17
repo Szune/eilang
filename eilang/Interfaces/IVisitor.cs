@@ -50,5 +50,6 @@ namespace eilang.Interfaces
         void Visit(AstMe me, Function function, Module mod);
         void Visit(AstTernary ternary, Function function, Module mod);
         void Visit(AstFunctionPointer funcPointer, Function function, Module mod);
+        void Visit(AstParenthesized parenthesized, Function function, Module mod);
     }
 }

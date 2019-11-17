@@ -15,5 +15,10 @@ namespace eilang.Ast
         {
             throw new InvalidOperationException($"{nameof(AstEmpty)} should never be compiled");
         }
+
+        public override string ToCode()
+        {
+            throw new InvalidOperationException($"{nameof(AstEmpty)} should never be compiled");
+        }
     }
 }

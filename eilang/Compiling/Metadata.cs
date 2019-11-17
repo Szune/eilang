@@ -4,5 +4,6 @@
     {
         public string Variable { get; set; }
         public int IndexerDepth { get; set; }
+        public string Code { get; set; }
     }
 }

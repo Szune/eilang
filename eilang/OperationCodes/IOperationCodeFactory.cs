@@ -69,5 +69,11 @@ namespace eilang.OperationCodes
         StringToDouble StringToDouble();
         StringToBool StringToBool();
         ProcessStart ProcessStart();
+        Dispose Dispose();
+        FileOpen FileOpen();
+        FileWrite FileWrite(bool appendLine = false);
+        FileRead FileRead(bool entireLine = false);
+        FileEOF FileEOF();
+        FileClear FileClear();
     }
 }

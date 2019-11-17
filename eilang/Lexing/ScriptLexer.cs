@@ -34,6 +34,7 @@ namespace eilang.Lexing
                 {TokenValues.Me, TokenType.Me},
                 {TokenValues.Continue, TokenType.Continue},
                 {TokenValues.Break, TokenType.Break},
+                {TokenValues.Use, TokenType.Use}
             };
         }
 

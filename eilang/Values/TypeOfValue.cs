@@ -15,6 +15,8 @@ namespace eilang.Values
         Void = 64,
         List = 128,
         FunctionPointer = 256,
-        Uninitialized = 512
+        Uninitialized = 512,
+        Disposable = 1024,
+        Any = 2048
     }
 }

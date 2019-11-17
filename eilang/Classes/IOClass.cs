@@ -1,4 +1,5 @@
-﻿using eilang.Compiling;
+﻿using System.Collections.Generic;
+using eilang.Compiling;
 using eilang.OperationCodes;
 
 namespace eilang.Classes
@@ -12,7 +13,15 @@ namespace eilang.Classes
         {
             CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
             CtorForMembersWithValues.Write(factory.Return());
-            // TODO: implement
+            Functions.Add("open_file",
+                new MemberFunction("open_file", Module, new List<string> {"fileName", "append"}, this)
+                {
+                    Code =
+                    {
+                        new Bytecode(factory.FileOpen()),
+                        new Bytecode(factory.Return())
+                    }
+                });
         }
     }
 }

@@ -608,6 +608,15 @@ namespace eilang.Compiling
             function.Write(_opFactory.Push(_valueFactory.Uninitialized()), new Metadata{Ast = uninit});
         }
 
+        public void Visit(AstUse astUse, Function function, Module mod)
+        {
+            astUse.Expression.Accept(this, function, mod);
+            function.Write(_opFactory.Define(_valueFactory.String(astUse.Identifier)));
+            astUse.Body.Accept(this, function, mod);
+            function.Write(_opFactory.Reference(_valueFactory.String(astUse.Identifier)));
+            function.Write(_opFactory.Dispose());
+        }
+
         private void AssignLoopControlFlowJumps(IAst ast, Function function, int forDepth, int loopStep, int loopEnd)
         {
             if (!_loopControlFlowOps.TryGetValue(forDepth, out var stack) || stack.Count <= 0)

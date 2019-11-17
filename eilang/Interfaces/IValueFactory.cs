@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using eilang.Classes;
 using eilang.Values;
 
@@ -19,5 +21,7 @@ namespace eilang.Interfaces
         IValue List(List<IValue> items = default);
         IValue FunctionPointer(string ident);
         IValue Bool(bool parse);
+        IValue DisposableObject(IDisposable obj);
+        IValue FileHandle(FileStream stream, TextReader reader, StreamWriter writer);
     }
 }

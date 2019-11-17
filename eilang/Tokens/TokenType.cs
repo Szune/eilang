@@ -64,6 +64,7 @@
         Percent,
         ModuloEquals,
         Import,
-        Tilde
+        Tilde,
+        Use
     }
 }

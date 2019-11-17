@@ -14,7 +14,7 @@ namespace eilang.Values
         public object Value { get; }
         public virtual TValue Item => (TValue) Value;
         
-        public T As<T>() where T : class
+        public T As<T>() where T : class, IValue
         {
             return this as T;
         }

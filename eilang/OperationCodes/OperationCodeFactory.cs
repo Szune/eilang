@@ -52,6 +52,14 @@ namespace eilang.OperationCodes
         private readonly StringToDouble _stringToDouble = new StringToDouble();
         private readonly StringToBool _stringToBool = new StringToBool();
         private readonly ProcessStart _processStart = new ProcessStart();
+        private readonly Dispose _dispose = new Dispose();
+        private readonly FileOpen _fileOpen = new FileOpen();
+        private readonly FileWrite _fileWriteLine = new FileWrite(true);
+        private readonly FileWrite _fileWrite = new FileWrite(false);
+        private readonly FileRead _fileReadEntire = new FileRead(true);
+        private readonly FileRead _fileReadChar = new FileRead(false);
+        private readonly FileEOF _fileEof = new FileEOF();
+        private readonly FileClear _fileClear = new FileClear();
 
         public Push Push(IValue value)
         {
@@ -376,6 +384,45 @@ namespace eilang.OperationCodes
         public ProcessStart ProcessStart()
         {
             return _processStart;
+        }
+
+        public Dispose Dispose()
+        {
+            return _dispose;
+        }
+
+        public FileOpen FileOpen()
+        {
+            return _fileOpen;
+        }
+
+        public FileWrite FileWrite(bool appendLine = false)
+        {
+            if (appendLine)
+            {
+                return _fileWriteLine;
+            }
+
+            return _fileWrite;
+        }
+
+        public FileRead FileRead(bool entireLine = false)
+        {
+            if (entireLine)
+            {
+                return _fileReadEntire;
+            }
+            return _fileReadChar;
+        }
+
+        public FileEOF FileEOF()
+        {
+            return _fileEof;
+        }
+
+        public FileClear FileClear()
+        {
+            return _fileClear;
         }
     }
 }

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using eilang.Classes;
 using eilang.Interfaces;
 using eilang.Interpreting;
@@ -56,6 +58,22 @@ namespace eilang.Values
         public IValue Bool(bool value)
         {
             return value ? _true : _false;
+        }
+
+        public IValue DisposableObject(IDisposable obj)
+        {
+            var scope = new Scope();
+            scope.DefineVariable(SpecialVariables.Disposable, new AnyValue(obj));
+            return new DisposableObjectValue(new Instance(scope, new DisposableClass(_operationCodeFactory, this)));
+        }
+
+        public IValue FileHandle(FileStream stream, TextReader reader, StreamWriter writer)
+        {
+            var scope = new Scope();
+            scope.DefineVariable(SpecialVariables.Disposable, new AnyValue(stream));
+            scope.DefineVariable(SpecialVariables.FileRead, new AnyValue(reader));
+            scope.DefineVariable(SpecialVariables.FileWrite, new AnyValue(writer));
+            return new FileHandleValue(new Instance(scope, new FileHandleClass(_operationCodeFactory, this)));
         }
 
         public IValue Class(Class clas)

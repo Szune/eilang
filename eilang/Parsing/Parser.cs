@@ -267,6 +267,9 @@ namespace eilang.Parsing
                 case TokenType.If:
                     ParseIf(ast);
                     return;
+                case TokenType.Use:
+                    ParseUse(ast);
+                    return;
                 case TokenType.For:
                     ParseFor(ast);
                     return;
@@ -290,6 +293,22 @@ namespace eilang.Parsing
                     Require(TokenType.Semicolon);
                     return;
             }
+        }
+
+        private void ParseUse(IHaveExpression ast)
+        {
+            // compile to dispose the value in 'ident' at the end of the use block
+            Require(TokenType.Use);
+            var pos = _lastConsumed.Position;
+            Require(TokenType.LeftParenthesis);
+            Require(TokenType.Var);
+            var ident = Require(TokenType.Identifier).Text;
+            Require(TokenType.Equals);
+            var expr = ParseDots();
+            Require(TokenType.RightParenthesis);
+            var block = new AstBlock(_lastConsumed.Position);
+            ParseBlock(block);
+            ast.Expressions.Add(new AstUse(ident, expr, block, _lastConsumed.Position));
         }
 
         private void ParseSelfAssignment(IHaveExpression ast)

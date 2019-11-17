@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Values;
 
 namespace eilang.Interpreting
 {
@@ -24,6 +25,14 @@ namespace eilang.Interpreting
             TemporaryVariables = temporaryVariables;
             ValueFactory = valueFactory;
             FinishedExecution = false;
+        }
+
+        public void PushIfNonVoidValue(IValue result)
+        {
+            if (result.Type != TypeOfValue.Void)
+            {
+                Stack.Push(result);
+            }
         }
     }
 }

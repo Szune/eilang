@@ -12,6 +12,8 @@ namespace eilang.Values
         private static readonly IValue _true = new BoolValue(true);
         private static readonly IValue _false = new BoolValue(false);
         private static readonly IOperationCodeFactory _operationCodeFactory = new OperationCodeFactory();
+        private static readonly IValue _uninitialized = new UninitializedValue();
+
         public IValue Double(double doub)
         {
             return new DoubleValue(doub);
@@ -69,6 +71,11 @@ namespace eilang.Values
         public IValue Void()
         {
             return _empty;
+        }
+
+        public IValue Uninitialized()
+        {
+            return _uninitialized;
         }
 
         public IValue List(List<IValue> items = default)

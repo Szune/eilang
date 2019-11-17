@@ -88,7 +88,7 @@ namespace eilang.Compiling
         public void Visit(AstMemberVariableDeclaration member, Class clas, Module mod)
         {
             Log($"Compiling member variable declaration for '{member.Ident}'");
-            clas.CtorForMembersWithValues.Write(_opFactory.Push(_valueFactory.Void()), new Metadata{Ast = member});
+            clas.CtorForMembersWithValues.Write(_opFactory.Push(_valueFactory.Uninitialized()), new Metadata{Ast = member});
             clas.CtorForMembersWithValues.Write(_opFactory.Define(_valueFactory.String(member.Ident)), new Metadata{Ast = member});
         }
 
@@ -466,7 +466,7 @@ namespace eilang.Compiling
 
             function.Write(_opFactory.Define(_valueFactory.String($".ix{_forDepth}")), new Metadata{Ast = forArray});
             // define 'it' variable
-            function.Write(_opFactory.Push(_valueFactory.Void()), new Metadata{Ast = forArray});
+            function.Write(_opFactory.Push(_valueFactory.Uninitialized()), new Metadata{Ast = forArray});
             function.Write(_opFactory.Define(_valueFactory.String($".it{_forDepth}")), new Metadata{Ast = forArray});
             function.Write(_opFactory.Reference(_valueFactory.String($".ix{_forDepth}")), new Metadata{Ast = forArray});
             var addressOfCmp = function.Code.Count - 1;
@@ -695,7 +695,34 @@ namespace eilang.Compiling
             newClass.CtorForMembersWithValues.Write(_opFactory.Return(), new Metadata{Ast = clas});
             clas.Functions.Accept(this, newClass, mod);
             clas.Constructors.Accept(this, newClass, mod);
+            InsertMemberValueInitializationInConstructors(newClass, clas);
             _env.Classes.Add(newClass.FullName, newClass);
+        }
+
+        private void InsertMemberValueInitializationInConstructors(Class clas, AstClass ast)
+        {
+            foreach (var ctor in clas.Constructors)
+            {
+                if (ConstructorInitializesAllMembers(ctor.Arguments, ast.Variables))
+                { 
+                    // skip constructors that already initialize all member variables
+                    continue;
+                }
+                // figure out which member variables still need to be initialized and find the code that initializes them
+                // and inject it into the start of the current constructor
+                for (int i = 0; i < clas.CtorForMembersWithValues.Length; i++)
+                {
+                    ctor.Code.Insert(i, clas.CtorForMembersWithValues[i]);
+                }
+            }
+        }
+
+        private bool ConstructorInitializesAllMembers(List<string> constructorArguments, List<AstMemberVariableDeclaration> memberVariables)
+        {
+            // if constructorArguments contains all the members in memberVariables, we don't need to initialize any more variables,
+            // because they will have been initialized by the constructor anyway, which would overwrite any pre-initialized value
+            // it's of course fine if the constructor takes additional parameters that are not pre-defined class members though
+            return memberVariables.TrueForAll(v => constructorArguments.Contains(v.Ident));
         }
 
         public void Visit(AstDeclarationAssignment assignment, Function function, Module mod)

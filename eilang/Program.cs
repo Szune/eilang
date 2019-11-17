@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using eilang.Extensions;
 
@@ -11,12 +12,27 @@ namespace eilang
     {
         static void Main(string[] args)
         {
-            #if !DEBUG
-            var first = args.FirstOrDefault();
+#if !DEBUG
+            var first = args.FirstOrDefault()?.Trim().ToUpperInvariant();
             if (!string.IsNullOrWhiteSpace(first))
             {
-               Eilang.RunFile(args.First());
-               return;
+                if (first == "-S")
+                {
+                    if (args.Length < 2)
+                    {
+                        Console.WriteLine("-s takes a script name as the second argument.");
+                        return;
+                    }
+                    var exeDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+                    var fullPath = Path.Combine(exeDirectory, args[1]);
+                    
+                    Eilang.RunFile(fullPath);
+                }
+                else
+                {
+                    Eilang.RunFile(args.First());
+                }
+                return;
             }
 
             while (true)
@@ -51,6 +67,7 @@ namespace eilang
                         Console.WriteLine(e);
                     }
                 }
+
                 Console.WriteLine();
             }
 #endif

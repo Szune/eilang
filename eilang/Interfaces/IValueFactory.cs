@@ -15,6 +15,7 @@ namespace eilang.Interfaces
         IValue Instance(Instance instance, TypeOfValue type = TypeOfValue.Instance);
         IValue Class(Class clas);
         IValue Void();
+        IValue Uninitialized();
         IValue List(List<IValue> items = default);
         IValue FunctionPointer(string ident);
         IValue Bool(bool parse);

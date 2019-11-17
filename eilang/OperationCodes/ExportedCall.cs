@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Values;
@@ -20,7 +21,8 @@ namespace eilang.OperationCodes
             if (argLength == 1)
             {
                 var val = state.Stack.Pop();
-                state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state.ValueFactory, val);
+                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state.ValueFactory, val);
+                state.PushIfNonVoidValue(result);
             }
             else
             {
@@ -31,7 +33,8 @@ namespace eilang.OperationCodes
                 }
 
                 var list = state.ValueFactory.List(values);
-                state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state.ValueFactory, list);
+                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state.ValueFactory, list);
+                state.PushIfNonVoidValue(result);
             }
         }
     }

@@ -14,7 +14,7 @@ namespace eilang.OperationCodes
         
         public void Execute(State state)
         {
-            state.Stack.Push(_value);
+            state.PushIfNonVoidValue(_value);
         }
     }
 }

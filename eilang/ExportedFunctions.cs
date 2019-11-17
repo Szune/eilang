@@ -7,6 +7,11 @@ namespace eilang
 {
     public static class ExportedFunctions
     {
+        [ExportFunction("input")]
+        public static IValue Input(IValueFactory fac, IValue code)
+        {
+            return fac.String(Console.ReadLine() ?? "");
+        }
         [ExportFunction("eval")]
         public static IValue Eval(IValueFactory fac, IValue code)
         {

@@ -65,6 +65,7 @@
         ModuloEquals,
         Import,
         Tilde,
-        Use
+        Use,
+        While
     }
 }

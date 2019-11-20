@@ -435,6 +435,40 @@ namespace eilang.Compiling
             throw new NotImplementedException("should never arrive here");
         }
 
+        public void Visit(AstWhile astWhile, Function function, Module mod)
+        {
+            _forDepth++;
+            function.Write(_opFactory.ScopeNew(), new Metadata{Ast = astWhile});
+            var addressOfCmp = function.Code.Count;
+            astWhile.Condition.Accept(this, function, mod);
+            function.Write(_opFactory.JumpIfFalse(_valueFactory.Integer(0)), new Metadata{Ast = astWhile});
+            var addressOfJmpF = function.Code.Count - 1;
+            astWhile.Body.Accept(this, function, mod);
+            function.Write(_opFactory.Jump(_valueFactory.Integer(addressOfCmp)), new Metadata{Ast = astWhile});
+            var endOfLoop = function.Length;
+            function.Write(_opFactory.ScopePop(), new Metadata{Ast = astWhile});
+            function[addressOfJmpF] = new Bytecode(_opFactory.JumpIfFalse(_valueFactory.Integer(endOfLoop)), new Metadata{Ast = astWhile});
+            AssignLoopControlFlowJumps(astWhile, function, _forDepth, addressOfCmp, endOfLoop);
+            _forDepth--;
+        }
+
+        public void Visit(AstNestedExpression nested, Function function, Module mod)
+        {
+            nested.First.Accept(this, function, mod);
+            nested.Second.Accept(this, function, mod);
+        }
+
+        public void Visit(AstIndexerOnReturnedValue indexer, Function function, Module mod)
+        {
+            for(int i = 0; i < indexer.IndexExprs.Count; i++)
+            {
+                function.Write(_opFactory.TypeGet(), new Metadata{Ast = indexer});
+                indexer.IndexExprs[i].Accept(this, function, mod);
+                function.Write(_opFactory.Push(_valueFactory.Integer(1)), new Metadata{Ast = indexer}); // arg count
+                function.Write(_opFactory.MemberCall(_valueFactory.String("idx_get")),
+                    new Metadata { IndexerDepth = i, Ast = indexer});
+            }
+        }
 
         public void Visit(AstForArray forArray, Function function, Module mod)
         {
@@ -616,6 +650,7 @@ namespace eilang.Compiling
             function.Write(_opFactory.Reference(_valueFactory.String(astUse.Identifier)));
             function.Write(_opFactory.Dispose());
         }
+
 
         private void AssignLoopControlFlowJumps(IAst ast, Function function, int forDepth, int loopStep, int loopEnd)
         {

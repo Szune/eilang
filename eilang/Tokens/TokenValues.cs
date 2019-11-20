@@ -11,6 +11,7 @@
         public const string Var = "var";
         public const string Constructor = "ctor";
         public const string For = "for";
+        public const string While = "while";
         public const string True = "true";
         public const string False = "false";
         public const string It = "it";

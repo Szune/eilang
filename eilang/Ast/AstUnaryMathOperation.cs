@@ -30,7 +30,7 @@ namespace eilang.Ast
 
         public override string ToCode()
         {
-            return $"{Expr.ToCode()}{GetOperator()}";
+            return $"{GetOperator()}{Expr.ToCode()}";
         }
 
         private string GetOperator()

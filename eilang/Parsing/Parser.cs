@@ -273,6 +273,9 @@ namespace eilang.Parsing
                 case TokenType.For:
                     ParseFor(ast);
                     return;
+                case TokenType.While:
+                    ParseWhile(ast);
+                    return;
                 case TokenType.Return:
                     ParseReturn(ast);
                     return;
@@ -458,6 +461,37 @@ namespace eilang.Parsing
             }
             return new AstIndexerReference(name, idxExprs, outerPos);
         }
+        
+        private AstExpression ParseIndexerOnReturnedValue()
+        {
+            var outerPos = _lastConsumed.Position;
+            var idxExprs = new List<AstExpression>();
+            while (Match(TokenType.LeftBracket))
+            {
+                Consume();
+                var pos = _lastConsumed.Position;
+                var expr = ParseOr();
+                Require(TokenType.RightBracket);
+                idxExprs.Add(new AstIndex(expr, pos));
+            }
+            return new AstIndexerOnReturnedValue(idxExprs, outerPos);
+        }
+        
+        
+        private void ParseWhile(IHaveExpression ast)
+        {
+            Require(TokenType.While);
+            var pos = _lastConsumed.Position;
+            Require(TokenType.LeftParenthesis);
+            var condition = ParseOr();
+            Require(TokenType.RightParenthesis);
+            var block = new AstBlock(_lastConsumed.Position);
+            _forDepth++;
+            ParseBlock(block);
+            _forDepth--;
+            ast.Expressions.Add(new AstWhile(condition, block, pos));
+        }
+
 
         private void ParseFor(IHaveExpression ast)
         {
@@ -825,6 +859,10 @@ namespace eilang.Parsing
                 // member func call
                 var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
                 expression = new AstMemberFunctionCall(ident, args, pos);
+                if (Match(TokenType.LeftBracket))
+                {
+                    expression = new AstNestedExpression(expression, ParseIndexerOnReturnedValue(), pos);
+                }
             }
             else if (Match(TokenType.LeftBracket))
             {
@@ -997,7 +1035,10 @@ namespace eilang.Parsing
                 case TokenType.LeftBracket:
                     return ParseIndexerExpression(name);
                 case TokenType.LeftParenthesis:
-                    return ParseFunctionCall(name);
+                    var call = ParseFunctionCall(name);
+                    if (Match(TokenType.LeftBracket))
+                        return new AstNestedExpression(call, ParseIndexerOnReturnedValue(), pos);
+                    return call;
                 default:
                     return new AstIdentifier(name, pos);
             }

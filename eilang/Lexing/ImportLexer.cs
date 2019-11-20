@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using eilang.Extensions;
+using eilang.Helpers;
 using eilang.Tokens;
 
 namespace eilang.Lexing
@@ -27,7 +29,7 @@ namespace eilang.Lexing
             var lastPosition = _reader.AbsolutePosition;
             while (current.Match(TokenType.Import))
             {
-                NextToken().Require(TokenType.String);
+                NextToken().Require(TokenType.String, TokenType.Identifier);
                 NextToken().Require(TokenType.Semicolon);
                 lastPosition = _reader.AbsolutePosition;
                 current = NextToken();
@@ -42,8 +44,19 @@ namespace eilang.Lexing
             var current = NextToken();
             while (current.Match(TokenType.Import))
             {
-                var importName = NextToken().Require(TokenType.String).Text;
-                imports.Add(importName);
+                var import = NextToken().Require(TokenType.String, TokenType.Identifier);
+                if (import.Type == TokenType.Identifier)
+                {
+                    // import from std
+                    var binaryDir = PathHelper.GetEilangStdDirectory();
+                    var path = Path.Join(binaryDir, import.Text);
+                    imports.Add(path);
+                }
+                else
+                {
+                    imports.Add(import.Text);
+                }
+
                 NextToken().Require(TokenType.Semicolon);
                 current = NextToken();
             }

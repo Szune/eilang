@@ -25,6 +25,7 @@ namespace eilang.Lexing
                 {TokenValues.Module, TokenType.Module},
                 {TokenValues.Function, TokenType.Function},
                 {TokenValues.For, TokenType.For},
+                {TokenValues.While, TokenType.While},
                 {TokenValues.Var, TokenType.Var},
                 {TokenValues.It, TokenType.It},
                 {TokenValues.Ix, TokenType.Ix},

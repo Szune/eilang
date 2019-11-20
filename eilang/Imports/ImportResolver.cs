@@ -30,13 +30,14 @@ namespace eilang.Imports
                 check.Add(path);
                 var code = GetCode(path);
                 var reader = new ScriptReader(code, path);
-                var lexer = new ImportLexer(reader, new CommonLexer(reader)); // maybe inject ImportResolver with a LexerFactory,
+                var lexer = new ImportLexer(reader,
+                    new CommonLexer(reader)); // maybe inject ImportResolver with a LexerFactory,
                 // not really necessary at this point I feel
                 var imports = lexer.GetImports();
                 foreach (var import in imports)
                 {
                     var canonicalized =
-                        ResolveImportPath(import.EndsWith(".ei") ? import : $"{import}.ei", rootDirectory);
+                        ResolveImportPath(import.EndsWith(".ei") ? import : $"{import}.ei", path);
                     allImports.Add(canonicalized);
                     ResolveInner(canonicalized);
                 }
@@ -47,7 +48,7 @@ namespace eilang.Imports
 
         private string GetCode(string path)
         {
-            if(!File.Exists(path))
+            if (!File.Exists(path))
                 throw new InvalidOperationException($"Could not find file to import: '{path}'");
             return File.ReadAllText(path); // TODO: could optimize this to only read until there are no more imports
         }
@@ -55,12 +56,26 @@ namespace eilang.Imports
         private string ResolveImportPath(string import, string mainDirectory)
         {
             var fixedImport = import.Replace("\\", "/");
+            if (!fixedImport.StartsWith("/") && fixedImport.Contains("/"))
+            {
+                fixedImport = "/" + fixedImport;
+            }
+
             var fixedMainDirectory = mainDirectory.Replace("\\", "/");
-            return Path.Join(fixedMainDirectory, fixedImport).Replace("\\", "/");
-            // TODO: if publishing eilang along with some standard library stuffs,
-            // then check the executable folder if an identifier was supplied
-            // i.e. "import std; # import standard library file" 
-            // vs "import 'std'; # import file in local folder"
+            if (fixedMainDirectory.EndsWith(".ei"))
+            {
+                // TODO: could use some improvement to check if it's a folder instead of checking what the path ends with
+                fixedMainDirectory = fixedMainDirectory.Substring(0, fixedMainDirectory.LastIndexOf('/'));
+            }
+
+            var absolutePath = import.Contains(":") 
+                ? import 
+                : Path.Join(fixedMainDirectory, fixedImport).Replace("\\", "/");
+#if DEBUG
+            Console.WriteLine($"Importing {import} from {mainDirectory}");
+            Console.WriteLine($"Resulting absolute path: {absolutePath}");
+#endif
+            return absolutePath;
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection.Emit;
 using eilang.Compiling;
+using eilang.Helpers;
 using eilang.Interfaces;
 using eilang.OperationCodes;
 
@@ -28,8 +29,8 @@ namespace eilang.Classes
             get_args.Write(opFactory.ListNew());
             get_args.Write(opFactory.Return());
             Functions.Add("get_args", get_args);
-            
-            var exeDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+
+            var exeDirectory = PathHelper.GetEilangBinaryDirectory();
             Functions.Add("get_bin_dir", new MemberFunction("get_bin_dir", Module, new List<string>(), this)
             {
                 Code =
@@ -40,7 +41,7 @@ namespace eilang.Classes
                 }
             });
 
-            var currentDirectory = Directory.GetCurrentDirectory();
+            var currentDirectory = PathHelper.GetWorkingDirectory();
             Functions.Add("get_current_dir", new MemberFunction("get_current_dir", Module, new List<string>(), this)
             {
                 Code =

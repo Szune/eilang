@@ -63,17 +63,13 @@ namespace eilang.OperationCodes
         StringToUpper StringToUpper();
         StringToLower StringToLower();
         StringSplit StringSplit();
-        HttpPost HttpPost();
-        HttpGet HttpGet();
         StringToInt StringToInt();
         StringToDouble StringToDouble();
         StringToBool StringToBool();
-        ProcessStart ProcessStart();
         Dispose Dispose();
-        FileOpen FileOpen();
         FileWrite FileWrite(bool appendLine = false);
         FileRead FileRead(bool entireLine = false);
-        FileEOF FileEOF();
+        FileEof FileEOF();
         FileClear FileClear();
     }
 }

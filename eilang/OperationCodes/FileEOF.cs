@@ -4,7 +4,7 @@ using eilang.Values;
 
 namespace eilang.OperationCodes
 {
-    public class FileEOF : IOperationCode
+    public class FileEof : IOperationCode
     {
         public void Execute(State state)
         {

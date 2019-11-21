@@ -1,10 +1,7 @@
 typ wrapper { ctor(has_value, value); }
 
 typ bot {
-    ctor(token, callback)
-    {
-        me.http = *http();
-    }
+    ctor(token, callback);
     
     fun get_part(str, start_part, end_part) {
         if(str.index_of(start_part, 0) < 0) {
@@ -18,7 +15,7 @@ typ bot {
     }
     
     fun reply(msg, chatId) {
-        http.get($'https://api.telegram.org/bot{token}/sendMessage?chat_id={chatId}&text={msg}', '');
+        http::get($'https://api.telegram.org/bot{token}/sendMessage?chat_id={chatId}&text={msg}', '');
     }
 
     fun start() {
@@ -27,7 +24,7 @@ typ bot {
         var first = true;
         for { # bot loop
             var url = $'https://api.telegram.org/bot{token}/getUpdates?allowed_updates=["message", "channel_post"]&offset=-1';
-            var update = http.get(url, '');
+            var update = http::get(url, '');
             var msg_id = me.get_part(update, '"message":{"message_id":', ',');
             if(msg_id.has_value) {
                 var id = msg_id.value.int();

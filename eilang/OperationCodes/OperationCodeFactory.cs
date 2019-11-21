@@ -46,19 +46,15 @@ namespace eilang.OperationCodes
         private readonly StringReplace _stringReplace = new StringReplace();
         private readonly StringToUpper _stringToUpper = new StringToUpper();
         private readonly StringToLower _stringToLower = new StringToLower();
-        private readonly HttpPost _httpPost = new HttpPost();
-        private readonly HttpGet _httpGet = new HttpGet();
         private readonly StringToInt _stringToInt = new StringToInt();
         private readonly StringToDouble _stringToDouble = new StringToDouble();
         private readonly StringToBool _stringToBool = new StringToBool();
-        private readonly ProcessStart _processStart = new ProcessStart();
         private readonly Dispose _dispose = new Dispose();
-        private readonly FileOpen _fileOpen = new FileOpen();
         private readonly FileWrite _fileWriteLine = new FileWrite(true);
         private readonly FileWrite _fileWrite = new FileWrite(false);
         private readonly FileRead _fileReadEntire = new FileRead(true);
         private readonly FileRead _fileReadChar = new FileRead(false);
-        private readonly FileEOF _fileEof = new FileEOF();
+        private readonly FileEof _fileEof = new FileEof();
         private readonly FileClear _fileClear = new FileClear();
 
         public Push Push(IValue value)
@@ -356,16 +352,6 @@ namespace eilang.OperationCodes
             return _stringSplit;
         }
 
-        public HttpPost HttpPost()
-        {
-            return _httpPost;
-        }
-
-        public HttpGet HttpGet()
-        {
-            return _httpGet;
-        }
-
         public StringToInt StringToInt()
         {
             return _stringToInt;
@@ -381,19 +367,9 @@ namespace eilang.OperationCodes
             return _stringToBool;
         }
 
-        public ProcessStart ProcessStart()
-        {
-            return _processStart;
-        }
-
         public Dispose Dispose()
         {
             return _dispose;
-        }
-
-        public FileOpen FileOpen()
-        {
-            return _fileOpen;
         }
 
         public FileWrite FileWrite(bool appendLine = false)
@@ -415,7 +391,7 @@ namespace eilang.OperationCodes
             return _fileReadChar;
         }
 
-        public FileEOF FileEOF()
+        public FileEof FileEOF()
         {
             return _fileEof;
         }

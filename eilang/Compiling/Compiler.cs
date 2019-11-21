@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using eilang.Ast;
 using eilang.Classes;
+using eilang.Exceptions;
 using eilang.Extensions;
 using eilang.Interfaces;
 using eilang.OperationCodes;

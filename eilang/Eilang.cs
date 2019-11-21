@@ -6,6 +6,7 @@ using eilang.Imports;
 using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Lexing;
+using eilang.Modules;
 using eilang.OperationCodes;
 using eilang.Parsing;
 using eilang.Values;
@@ -46,8 +47,9 @@ namespace eilang
             if (environment == null)
             {
                 environment = new Env(new OperationCodeFactory(), new ValueFactory());
-                environment.AddClassesDerivedFromClassInAssembly<Class>();
-                environment.AddExportedFunctionsFrom(typeof(ExportedFunctions));
+                environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
+                environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
+                environment.AddExportedModulesFromAssembly(typeof(Eilang));
             }
 
             Compiler.Compile(environment, ast
@@ -74,8 +76,9 @@ namespace eilang
             if (environment == null)
             {
                 environment = new Env(new OperationCodeFactory(), new ValueFactory());
-                environment.AddClassesDerivedFromClassInAssembly<Class>();
-                environment.AddExportedFunctionsFrom(typeof(ExportedFunctions));
+                environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
+                environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
+                environment.AddExportedModulesFromAssembly(typeof(Eilang));
             }
             Compiler.Compile(environment, ast
 #if LOGGING

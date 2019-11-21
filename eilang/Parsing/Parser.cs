@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using eilang.Ast;
+using eilang.Exceptions;
 using eilang.Extensions;
 using eilang.Interfaces;
 using eilang.Lexing;

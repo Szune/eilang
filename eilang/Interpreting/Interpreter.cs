@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using eilang.Classes;
 using eilang.Compiling;
+using eilang.Exceptions;
 using eilang.Interfaces;
 using eilang.OperationCodes;
 using eilang.Values;

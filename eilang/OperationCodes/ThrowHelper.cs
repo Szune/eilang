@@ -1,4 +1,4 @@
-﻿using eilang.Interpreting;
+﻿using eilang.Exceptions;
 
 namespace eilang.OperationCodes
 {

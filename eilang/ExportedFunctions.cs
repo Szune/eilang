@@ -1,4 +1,6 @@
 ﻿using System;
+using eilang.Exceptions;
+using eilang.Exporting;
 using eilang.Extensions;
 using eilang.Interfaces;
 using eilang.Values;
@@ -10,6 +12,7 @@ namespace eilang
         [ExportFunction("input")]
         public static IValue Input(IValueFactory fac, IValue code)
         {
+            Console.WriteLine(code.ToString());
             return fac.String(Console.ReadLine() ?? "");
         }
         [ExportFunction("eval")]
@@ -34,7 +37,7 @@ namespace eilang
                 if (list.Count != 2)
                 {
                     throw new InvalidOperationException(
-                        "Assert takes 1 or 2 parameters: bool assert, [string message]");
+                        "Assert takes 1 or 2 arguments: bool assert, [string message]");
                 }
 
                 return AssertInner(fac, list[1], list[0]);

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using eilang.Exceptions;
 
 namespace eilang.Lexing
 {

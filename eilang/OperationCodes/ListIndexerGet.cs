@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using eilang.Exceptions;
 using eilang.Interfaces;
 using eilang.Interpreting;
 

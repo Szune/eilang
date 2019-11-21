@@ -1,5 +1,5 @@
 using System.Linq;
-using eilang.Parsing;
+using eilang.Exceptions;
 using eilang.Tokens;
 
 namespace eilang.Extensions

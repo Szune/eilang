@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using eilang.Classes;
+using eilang.Compiling;
+using eilang.Exporting;
 using eilang.Interfaces;
 using eilang.OperationCodes;
 using eilang.Values;
 
-namespace eilang.Compiling
+namespace eilang
 {
     public delegate IValue ExportedFunction(IValueFactory valueFactory, IValue args);
 
@@ -28,9 +30,11 @@ namespace eilang.Compiling
         public Dictionary<string, ExportedFunction> ExportedFunctions { get; } =
             new Dictionary<string, ExportedFunction>();
 
-        public void AddClassesDerivedFromClassInAssembly<T>() where T : Class
+        #region Exporting classes
+        
+        public void AddClassesDerivedFromClassInAssembly(Type type)
         {
-            var classes = typeof(T).Assembly
+            var classes = type.Assembly
                 .GetTypes()
                 .Where(t => t.IsSubclassOf(typeof(Class)));
             foreach (var c in classes)
@@ -50,9 +54,54 @@ namespace eilang.Compiling
                 Classes.Add(instance.FullName, instance);
             }
         }
-
-        public void AddExportedFunctionsFrom(Type type)
+        
+        public void AddClassesDerivedFromClassInAssembly<T>() where T : Class
         {
+            AddClassesDerivedFromClassInAssembly(typeof(T));
+        }
+        #endregion
+        
+        #region Exporting functions
+        public void AddExportedFunctionsFromClass(Type type)
+        {
+            var functions = type.GetMethods()
+                .Where(m => m.GetCustomAttributes<ExportFunctionAttribute>().Any());
+            foreach (var func in functions)
+            {
+                var names = func.GetCustomAttributes<ExportFunctionAttribute>();
+                foreach (var name in names)
+                {
+                    ExportedFunctions.Add(name.FunctionName,
+                        (ExportedFunction) func.CreateDelegate(typeof(ExportedFunction)));
+                }
+            }
+        }
+
+        public void AddExportedFunctionsFromClass<T>()
+        {
+            AddExportedFunctionsFromClass(typeof(T));
+        }
+        
+        public void AddExportedFunctionsFromAssembly(Type type)
+        {
+            var classesContainingExportedFunctions = type.Assembly.GetTypes()
+                .Where(t => t.GetMethods().Any(m => m.GetCustomAttributes<ExportFunctionAttribute>().Any()));
+            foreach (var c in classesContainingExportedFunctions)
+            {
+                AddExportedFunctionsFromClass(c);
+            }
+        }
+        
+        public void AddExportedFunctionsFromAssembly<T>()
+        {
+            AddExportedFunctionsFromAssembly(typeof(T));
+        }
+        #endregion
+        
+        #region Exporting modules
+        public void AddExportedModule(Type type)
+        {
+            var moduleName = type.GetCustomAttribute<ExportModuleAttribute>().ModuleName;
             var functions = type.GetMethods()
                 .Where(m => m.CustomAttributes.Any(a =>
                     ReferenceEquals(a.AttributeType, typeof(ExportFunctionAttribute))));
@@ -61,26 +110,32 @@ namespace eilang.Compiling
                 var names = func.GetCustomAttributes<ExportFunctionAttribute>();
                 foreach (var name in names)
                 {
-                    ExportedFunctions.Add(name.FunctionName,
+                    var nameWithModule = $"{moduleName}::{name.FunctionName}";
+                    ExportedFunctions.Add(nameWithModule,
                         (ExportedFunction) func.CreateDelegate(typeof(ExportedFunction)));
                 }
             }
         }
         
-        public void AddExportedFunctionsFrom<T>()
+        public void AddExportedModule<T>()
         {
-            var functions = typeof(T).GetMethods()
-                .Where(m => m.CustomAttributes.Any(a =>
-                    ReferenceEquals(a.AttributeType, typeof(ExportFunctionAttribute))));
-            foreach (var func in functions)
+            AddExportedModule(typeof(T));
+        }
+
+        public void AddExportedModulesFromAssembly(Type type)
+        {
+            var exportedModules = type.Assembly.GetTypes()
+                .Where(t => t.GetCustomAttributes<ExportModuleAttribute>().Any());
+            foreach (var module in exportedModules)
             {
-                var names = func.GetCustomAttributes<ExportFunctionAttribute>();
-                foreach (var name in names)
-                {
-                    ExportedFunctions.Add(name.FunctionName,
-                        (ExportedFunction) func.CreateDelegate(typeof(ExportedFunction)));
-                }
+                AddExportedModule(module);
             }
         }
+        
+        public void AddExportedModulesFromAssembly<T>()
+        {
+            AddExportedModulesFromAssembly(typeof(T));
+        }
+        #endregion
     }
 }

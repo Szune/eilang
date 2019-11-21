@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Transactions;
+using eilang.Exceptions;
 using eilang.Tokens;
 
 namespace eilang.Lexing

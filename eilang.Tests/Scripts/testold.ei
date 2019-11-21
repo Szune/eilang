@@ -35,8 +35,7 @@
 
 	typ argparse {
 		fun parse() {
-			var en = *env();
-			var args = en.get_args();
+			var args = env::get_args();
 			var cmds = [];
 			println('found ' + args.len() + ' args:');
 			println(args);

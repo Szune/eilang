@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using eilang.Exceptions;
 using eilang.Interfaces;
 using eilang.Values;
 
@@ -23,6 +25,27 @@ namespace eilang.Extensions
                     throw new NotImplementedException();
             }
             // TODO: use reflection to turn an IValue into a concrete class if requested
+        }
+        
+        
+        
+        public static IValue Require(this IValue value, TypeOfValue type, string message)
+        {
+            if (value.Type == type) 
+                return value;
+            throw new InvalidValueException(message);
+        }
+        
+        public static void OrderAsArguments(this List<IValue> value)
+        {
+            value.Reverse();
+        }
+        
+        public static ListValue RequireCount(this ListValue value, int count, string message)
+        {
+            if (value.Item.Count == count) 
+                return value;
+            throw new InvalidArgumentCountException(message);
         }
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace eilang.Lexing
+namespace eilang.Exceptions
 {
     [Serializable]
     internal class LexerException : Exception

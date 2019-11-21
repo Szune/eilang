@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace eilang
+namespace eilang.Exporting
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = true)] // AllowMultiple: allow using more than 1 name for the same function
     public class ExportFunctionAttribute : Attribute

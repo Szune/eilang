@@ -12,7 +12,6 @@ namespace eilang
         [ExportFunction("input")]
         public static IValue Input(IValueFactory fac, IValue code)
         {
-            Console.WriteLine(code.ToString());
             return fac.String(Console.ReadLine() ?? "");
         }
         [ExportFunction("eval")]

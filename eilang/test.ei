@@ -1,11 +1,24 @@
 ﻿import 'str';
 import 'cmd';
 
+typ map_thing {
+    ctor(val1);
+}
+
 fun main() {
-    var env = *env();
-    #var args = *cmd::args(env.get_args().skip(1)); # skip file name (may be some OS where that won't work, fix later if necessary)
-    #var args = *cmd::args(["-hello"]);
-    #var args = *cmd::args(["-greeting", "hello world", "-bye", "ciao world and so forth"]);
+    var int_map = {0: *map_thing(0), 1: *map_thing(1)}; # TODO 1
+    # TODO 1a) -> parse it - will need new Ast classes
+    # TODO 1b) -> compile it - may need new OpCodes
+#    var string_map = {"one": *map_thing(1), "two": *map_thing(2)}; # TODO 2
+#    var obj_map = {*map_thing(0): "zero", *map_thing(1): "one"}; # TODO 3
+#    var empty_map = {};
+#    empty_map.insert(5, "inserted item");
+#    var int_set = {0, 1, 2}; # TODO 4
+#    var string_set = {"one", "two", "three"}; # TODO 5
+#    var obj_set = {*map_thing(1), *map_thing(2)}; # TODO 6
+#    var empty_set = ~{}; # can't tell from context, use tilde to specify that it is a set and not a map
+    
+    #var args = *cmd::args(env::get_args().skip(1)); # skip file name (may be some OS where that won't work, fix later if necessary)
     var args = *cmd::args(["greetings", "hello", "-bye", "ciao", "world", "and", "so", "forth"]);
     var parsed = args.parse();
     println(parsed.is_defined("-bye"));
@@ -16,17 +29,4 @@ fun main() {
         println("-bye was defined, exiting script");
         ret;
     }
-    
-    #println("!" + str::trim(" hello world ") + "!");
-    
-    var array = ["greetings", "hello", "-bye", "ciao", "world", "and", "so", "forth"];
-    
-    for ~(array) {
-        println(it);
-    }
-    
-#    for(args.parse()) {
-#        println($'"{it.name}" with value "{it.value}"');
-#    }
-#    println(args.parse());
 }

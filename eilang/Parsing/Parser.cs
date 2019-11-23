@@ -19,6 +19,7 @@ namespace eilang.Parsing
         private bool _inClass;
         private Stack<VariableScope> _scopes = new Stack<VariableScope>();
         private Token _lastConsumed = new Token();
+        private bool _inConstructor;
 
         public Parser(ILexer lexer)
         {
@@ -127,6 +128,8 @@ namespace eilang.Parsing
                 args.Add(ident);
                 if (Match(TokenType.Comma))
                     Consume();
+                else
+                    break;
             }
 
             Require(TokenType.RightParenthesis);
@@ -137,7 +140,9 @@ namespace eilang.Parsing
                 return;
             }
             var ctor = new AstConstructor($".ctor::{clas.Name}", args, pos);
+            _inConstructor = true;
             ParseBlock(ctor); // constructor with code block
+            _inConstructor = false;
             clas.Constructors.Add(ctor);
         }
 
@@ -176,6 +181,8 @@ namespace eilang.Parsing
                 idents.Add((ident, _lastConsumed.Position));
                 if (Match(TokenType.Comma))
                     Consume();
+                else
+                    break;
             } while (Match(TokenType.Identifier));
 
             Require(TokenType.Colon);
@@ -213,6 +220,10 @@ namespace eilang.Parsing
                 {
                     Consume();
                 }
+                else
+                {
+                    break;
+                }
             }
 
             Require(TokenType.RightParenthesis);
@@ -236,6 +247,10 @@ namespace eilang.Parsing
                 if (Match(TokenType.Comma))
                 {
                     Consume();
+                }
+                else
+                {
+                    break;
                 }
             }
 
@@ -340,7 +355,15 @@ namespace eilang.Parsing
             var define = false;
             if (multi.First is AstMe && multi.Second is AstMemberReference)
             {
-                set.ChangeType(AssignmentSet.Variable);
+                if (_inConstructor)
+                {
+                    set.ChangeType(AssignmentSet.Variable);
+                }
+                else
+                {
+                    set.ChangeType(AssignmentSet.MemberVariable);
+                    set.ChangeRequiredReferences(new AstMe(_lastConsumed.Position));
+                }
                 define = true;
             }
 
@@ -380,6 +403,11 @@ namespace eilang.Parsing
 
             if (!IsNextAssignment())
             {
+                if (references is AstIdentifier && Match(TokenType.Semicolon))
+                {
+                    Consume();
+                    return references;
+                }
                 return ThrowParserException("Expecting an assignment or function call for left expression");
             }
 
@@ -407,7 +435,15 @@ namespace eilang.Parsing
 
             // expecting an assignment if it's not a function call
             if (!IsNextAssignment())
-                ThrowParserException("Expecting an assignment or function call for left expression");
+            {
+                if (Match(TokenType.Semicolon))
+                {
+                    Consume();
+                    return members;
+                }
+                ThrowParserException("Expecting an assignment or function call for left member expression");
+            }
+
             var value = ParseAssignmentValue();
             var set = GetAssignmentSet(members);
 
@@ -1064,6 +1100,10 @@ namespace eilang.Parsing
                 if (Match(TokenType.Comma))
                 {
                     Consume();
+                }
+                else
+                {
+                    break;
                 }
             }
 

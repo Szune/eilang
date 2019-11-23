@@ -12,6 +12,17 @@ namespace eilang.OperationCodes
             var left = state.Stack.Pop();
             switch (left.Type)
             {
+                case TypeOfValue.Uninitialized:
+                    switch (right.Type)
+                    {
+                        case TypeOfValue.Uninitialized:
+                            state.Stack.Push(state.ValueFactory.False());
+                            break;
+                        default:
+                            state.Stack.Push(state.ValueFactory.True());
+                            break;
+                    }
+                    break;
                 case TypeOfValue.Bool:
                     switch (right.Type)
                     {
@@ -21,7 +32,7 @@ namespace eilang.OperationCodes
                                 : state.ValueFactory.False());
                             break;
                         default:
-                            state.Stack.Push(state.ValueFactory.False());
+                            state.Stack.Push(state.ValueFactory.True());
                             break;
                     }
 
@@ -35,7 +46,7 @@ namespace eilang.OperationCodes
                                 : state.ValueFactory.False());
                             break;
                         default:
-                            state.Stack.Push(state.ValueFactory.False());
+                            state.Stack.Push(state.ValueFactory.True());
                             break;
                     }
 
@@ -49,13 +60,29 @@ namespace eilang.OperationCodes
                                 : state.ValueFactory.False());
                             break;
                         default:
-                            state.Stack.Push(state.ValueFactory.False());
+                            state.Stack.Push(state.ValueFactory.True());
                             break;
                     }
-
                     break;
+                // TODO: implement the rest
+//                case TypeOfValue.Double:
+//                    break;
+//                case TypeOfValue.Class:
+//                    break;
+//                case TypeOfValue.Instance:
+//                    break;
+//                case TypeOfValue.Void:
+//                    break;
+//                case TypeOfValue.List:
+//                    break;
+//                case TypeOfValue.FunctionPointer:
+//                    break;
+//                case TypeOfValue.Disposable:
+//                    break;
+//                case TypeOfValue.Any:
+//                    break;
                 default:
-                    state.Stack.Push(state.ValueFactory.False());
+                    state.Stack.Push(state.ValueFactory.Bool(left.Type != right.Type));
                     break;
             }
         }

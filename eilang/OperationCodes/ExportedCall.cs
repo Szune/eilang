@@ -18,7 +18,12 @@ namespace eilang.OperationCodes
         public void Execute(State state)
         {
             var argLength = state.Stack.Pop().Get<int>();
-            if (argLength == 1)
+            if (argLength == 0)
+            {
+                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state.ValueFactory, state.ValueFactory.Void());
+                state.PushIfNonVoidValue(result);
+            }
+            else if (argLength == 1)
             {
                 var val = state.Stack.Pop();
                 var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state.ValueFactory, val);

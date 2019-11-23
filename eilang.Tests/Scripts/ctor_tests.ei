@@ -22,6 +22,21 @@ typ test_without_init_value {
     ctor(y);
 }
 
+typ test_set_member_in_func {
+    a_thing: any;
+    fun change_it() {
+        me.a_thing = "new_thing";
+        assert(me.a_thing == "new_thing", "should not be uninitialized");
+        assert(a_thing == "new_thing", "should not be uninitialized");
+    }
+    
+    fun change_it_without_me() {
+        a_thing = "new_thing";
+        assert(me.a_thing == "new_thing", "should not be uninitialized");
+        assert(a_thing == "new_thing", "should not be uninitialized");
+    }
+}
+
 fun main() {
     var t = *test("init2");
     assert(t.x == "init1", $"t.x should be 'init1', but was '{t.x}' - constructor should initialize member variables that are not specified in ctor, but have initial values");
@@ -39,4 +54,15 @@ fun main() {
     var t4 = *test_without_init_value("init10");
     assert(t4.x == (), $"t4.x should be uninitialized, but was '{t4.x}' - constructor should define variables that are uninitialized, but not give them a value");
     assert(t4.y == "init10", $"t4.y should be 'init10', but was '{t4.y}' - constructor should initialize member variables that are specified in ctor argument list");
+    
+    var t5 = *test_set_member_in_func();
+    assert(t5.a_thing == (), "should be uninitialized until running the function that initializes the member");
+    t5.change_it();
+    assert(t5.a_thing == "new_thing", "should have been initialized");
+    assert(t5.a_thing != (), "should have been initialized");
+    
+    var t6 = *test_set_member_in_func();
+    assert(t6.a_thing == (), "should be uninitialized until running the function that initializes the member");
+    t6.change_it_without_me();
+    assert(t6.a_thing == "new_thing", "should not be uninitialized");
 }

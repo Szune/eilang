@@ -1,9 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using eilang.Classes;
 using eilang.Compiling;
 using eilang.Exceptions;
 using eilang.Interfaces;
@@ -12,9 +9,9 @@ using eilang.Values;
 
 namespace eilang.Interpreting
 {
-    public class Interpreter
+    public class ReplInterpreter
     {
-        private readonly ScriptEnvironment _scriptEnvironment;
+        private ScriptEnvironment _scriptEnvironment;
         private readonly IOperationCodeFactory _opFactory;
         private readonly IValueFactory _valueFactory;
         private readonly Stack<CallFrame> _frames = new Stack<CallFrame>();
@@ -23,13 +20,13 @@ namespace eilang.Interpreting
         private readonly Stack<LoneScope> _tmpVars = new Stack<LoneScope>();
         private readonly TextWriter _logger;
 
-        public Interpreter(ScriptEnvironment scriptEnvironment, IValueFactory valueFactory = null, IOperationCodeFactory opFactory = null,
+        public ReplInterpreter(IValueFactory valueFactory = null, IOperationCodeFactory opFactory = null,
             TextWriter logger = null)
         {
-            _scriptEnvironment = scriptEnvironment;
             _opFactory = opFactory ?? new OperationCodeFactory();
             _valueFactory = valueFactory ?? new ValueFactory();
             _logger = logger;
+            _scopes.Push(new Scope());
         }
 
         private void Log(string msg)
@@ -37,13 +34,13 @@ namespace eilang.Interpreting
             _logger?.WriteLine(msg);
         }
 
-        public IValue Interpret()
+        public IValue Interpret(ScriptEnvironment scriptEnvironment)
         {
+            _scriptEnvironment = scriptEnvironment;
             var state = new State(_scriptEnvironment, _frames, _stack, _scopes, _tmpVars, _valueFactory);
             Log("Interpreting...");
             var startFunc = GetStartFunction();
             _frames.Push(new CallFrame(startFunc));
-            _scopes.Push(new Scope());
             var bc = new Bytecode(null);
             var frame = new CallFrame(new Function("<FailBeforeStart>", "<FailBeforeStart>", new List<string>()));
 
@@ -53,13 +50,24 @@ namespace eilang.Interpreting
                 {
                     frame = _frames.Peek();
                     bc = frame.Function[frame.Address];
-                    bc.Op.Execute(state);
+                    if (bc.Op is Return && frame.Function.FullName == startFunc.FullName)
+                    {
+                        state.Frames.Pop(); // keep the scope for next read, so variables aren't reset
+                        var type = _stack.TryPeek(out var t) ? t.Type : TypeOfValue.Void;
+                        if (type != TypeOfValue.Void)
+                        {
+                            return _stack.TryPop(out var result)
+                                ? result
+                                : _valueFactory.Void();
+                        }
+                    }
+                    else
+                    {
+                        bc.Op.Execute(state);
+                    }
+
                     frame.Address++;
                 }
-                if (state.FinishedExecution.Value)
-                    return _stack.TryPop(out var result)
-                        ? result
-                        : _valueFactory.Void();
             }
             catch (Exception e) when (!(e is AssertionException) && !(e is ExitException))
             {

@@ -9,11 +9,26 @@ namespace eilang
 {
     public static class ExportedFunctions
     {
+        [ExportFunction("exit")]
+        public static IValue Exit(IValueFactory fac, IValue args)
+        {
+            switch (args.Type)
+            {
+                case TypeOfValue.String:
+                    throw new ExitException(args.To<string>());
+                case TypeOfValue.Integer:
+                    throw new ExitException(args.To<int>());
+                default:
+                    throw new ExitException();
+            }
+        }
+        
         [ExportFunction("input")]
         public static IValue Input(IValueFactory fac, IValue code)
         {
             return fac.String(Console.ReadLine() ?? "");
         }
+        
         [ExportFunction("eval")]
         public static IValue Eval(IValueFactory fac, IValue code)
         {

@@ -13,21 +13,21 @@ namespace eilang
 {
     public delegate IValue ExportedFunction(IValueFactory valueFactory, IValue args);
 
-    public class Env
+    public class ScriptEnvironment : IEnvironment
     {
         public IOperationCodeFactory OperationCodeFactory { get; }
-        public ValueFactory ValueFactory { get; }
+        public IValueFactory ValueFactory { get; }
 
-        public Env(IOperationCodeFactory operationCodeFactory, ValueFactory valueFactory)
+        public ScriptEnvironment(IOperationCodeFactory operationCodeFactory, IValueFactory valueFactory)
         {
             OperationCodeFactory = operationCodeFactory;
             ValueFactory = valueFactory;
         }
 
-        public Dictionary<string, Function> Functions { get; } = new Dictionary<string, Function>();
-        public Dictionary<string, Class> Classes { get; } = new Dictionary<string, Class>();
+        public virtual IDictionary<string, Function> Functions { get; } = new Dictionary<string, Function>();
+        public virtual IDictionary<string, Class> Classes { get; } = new Dictionary<string, Class>();
 
-        public Dictionary<string, ExportedFunction> ExportedFunctions { get; } =
+        public virtual IDictionary<string, ExportedFunction> ExportedFunctions { get; } =
             new Dictionary<string, ExportedFunction>();
 
         #region Exporting classes

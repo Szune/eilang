@@ -4,7 +4,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using eilang.Exceptions;
 using eilang.Extensions;
+using eilang.Values;
 
 namespace eilang
 {
@@ -28,6 +30,10 @@ namespace eilang
                     
                     Eilang.RunFile(fullPath);
                 }
+                else if (first == "-E")
+                {
+                    Eilang.ReplMode();
+                }
                 else
                 {
                     Eilang.RunFile(args.First());
@@ -45,16 +51,7 @@ namespace eilang
                     return;
                 if (path?.ToUpperInvariant().Trim() == "EVAL" || path?.ToUpperInvariant().Trim() == "'EVAL'")
                 {
-                    Console.WriteLine("Enter the code to run:");
-                    var code = Console.ReadLine();
-                    try
-                    {
-                        Eilang.Run(code);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
+                    Eilang.ReplMode();
                 }
                 else
                 {
@@ -98,7 +95,7 @@ namespace eilang
 
             //EilangScript.RunFile(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");
             Eilang.RunFile("test.ei");
-            var returnValue = Eilang.Run("println('hello world'); ret 'eilang';");
+            var returnValue = Eilang.Run("ret 'eilang';");
             Debug.Assert(returnValue.To<string>() == "eilang");
             returnValue = Eilang.Run("ret 12 * 14;");
             Debug.Assert(returnValue.To<int>() == 168);

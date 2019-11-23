@@ -13,7 +13,7 @@ namespace eilang.Ast
     {
         public string OptionalIdentifier { get; }
         public AssignmentSet Type { get; private set; }
-        public AstExpression RequiredReferences { get; }
+        public AstExpression RequiredReferences { get; private set; }
         public List<AstExpression> IndexExprs { get; }
 
         public AstAssignmentSet(string optionalIdentifier, AssignmentSet type, AstExpression requiredReferences = null, List<AstExpression> indexExprs = default)
@@ -27,6 +27,11 @@ namespace eilang.Ast
         public void ChangeType(AssignmentSet type)
         {
             Type = type;
+        }
+
+        public void ChangeRequiredReferences(AstExpression expression)
+        {
+            RequiredReferences = expression;
         }
     }
 }

@@ -14,9 +14,10 @@ namespace eilang.Modules
         {
             if (args.Type == TypeOfValue.List)
             {
-                var listValue = args.As<ListValue>();
-                listValue.RequireCount(2, "start takes 1 or 2 arguments: string processName, [string args]");
-                var list = listValue.Item;
+                var list = args
+                    .As<ListValue>()
+                    .RequireCount(2, "start takes 1 or 2 arguments: string processName, [string args]")
+                    .Item;
                 list.OrderAsArguments();
 
                 return StartInner(fac, list[0], list[1]);
@@ -27,8 +28,9 @@ namespace eilang.Modules
         
         private static IValue StartInner(IValueFactory fac, IValue processName, IValue args = null)
         {
-            processName.Require(TypeOfValue.String, "start requires that parameter 'processName' is a string.");
-            var fileName = processName.To<string>();
+            var fileName = processName
+                .Require(TypeOfValue.String, "start requires that parameter 'processName' is a string.")
+                .To<string>();
 
             if (args == null)
             {
@@ -36,8 +38,9 @@ namespace eilang.Modules
             }
             else
             {
-                args.Require(TypeOfValue.String, "start requires that parameter 'args' is a string.");
-                var argsString = args.To<string>();
+                var argsString = args
+                    .Require(TypeOfValue.String, "start requires that parameter 'args' is a string.")
+                    .To<string>();
                 Process.Start(fileName, argsString);
             }
 
@@ -45,6 +48,7 @@ namespace eilang.Modules
         }
         
         // TODO: add the following functions to the module
+        // TODO: add functionality to allow for waiting for a started process to exit
 //            Functions.Add("kill_pid", new MemberFunction("kill_pid", Module, new List<string>{"pid"}, this)
 //            {
 //                Code =

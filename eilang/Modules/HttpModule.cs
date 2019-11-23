@@ -12,10 +12,11 @@ namespace eilang.Modules
         [ExportFunction("get")]
         public static IValue Get(IValueFactory fac, IValue args)
         {
+            const string expectedArguments = "get takes 2 arguments: string url, string headers";
             var argList = args
-                .Require(TypeOfValue.List,"get takes 2 arguments: string url, string headers")
+                .Require(TypeOfValue.List, expectedArguments)
                 .As<ListValue>()
-                .RequireCount(2, "get takes 2 arguments: string url, string headers")
+                .RequireCount(2, expectedArguments)
                 .Item;
             argList.OrderAsArguments();
             var url = argList[0]
@@ -30,10 +31,11 @@ namespace eilang.Modules
         [ExportFunction("post")]
         public static IValue Post(IValueFactory fac, IValue args)
         {
+            const string expectedArguments = "post takes 3 arguments: string url, string headers, string content";
             var argList = args
-                .Require(TypeOfValue.List,"post takes 3 arguments: string url, string headers, string content")
+                .Require(TypeOfValue.List, expectedArguments)
                 .As<ListValue>()
-                .RequireCount(3, "post takes 3 arguments: string url, string headers, string content")
+                .RequireCount(3, expectedArguments)
                 .Item;
             argList.OrderAsArguments();
             var url = argList[0]

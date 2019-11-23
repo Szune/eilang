@@ -1,5 +1,4 @@
-﻿using eilang.Interfaces;
-using eilang.Interpreting;
+﻿using eilang.Interpreting;
 using eilang.Values;
 
 namespace eilang.OperationCodes
@@ -65,8 +64,25 @@ namespace eilang.OperationCodes
                     }
 
                     break;
+                // TODO: implement the rest
+//                case TypeOfValue.Double:
+//                    break;
+//                case TypeOfValue.Class:
+//                    break;
+//                case TypeOfValue.Instance:
+//                    break;
+//                case TypeOfValue.Void:
+//                    break;
+//                case TypeOfValue.List:
+//                    break;
+//                case TypeOfValue.FunctionPointer:
+//                    break;
+//                case TypeOfValue.Disposable:
+//                    break;
+//                case TypeOfValue.Any:
+//                    break;
                 default:
-                    state.Stack.Push(state.ValueFactory.False());
+                    state.Stack.Push(state.ValueFactory.Bool(left.Type == right.Type));
                     break;
             }
         }

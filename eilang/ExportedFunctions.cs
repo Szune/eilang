@@ -1,14 +1,23 @@
 ﻿using System;
+using System.Linq;
+using System.Threading;
+using eilang.Classes;
+using eilang.Compiling;
 using eilang.Exceptions;
 using eilang.Exporting;
 using eilang.Extensions;
 using eilang.Interfaces;
+using eilang.Interpreting;
 using eilang.Values;
 
 namespace eilang
 {
     public static class ExportedFunctions
     {
+        private static Lazy<Class> _typeInfoClass =
+            new Lazy<Class>(() => new Class("type_info", Compiler.GlobalFunctionAndModuleName),
+                LazyThreadSafetyMode.ExecutionAndPublication);
+
         [ExportFunction("exit")]
         public static IValue Exit(IValueFactory fac, IValue args)
         {
@@ -22,17 +31,35 @@ namespace eilang
                     throw new ExitException();
             }
         }
-        
+
+        [ExportFunction("type")]
+        public static IValue Type(IValueFactory fac, IValue args)
+        {
+            var type = args.Require(TypeOfValue.Instance, "type takes 1 argument: instance value").As<InstanceValue>();
+            var scope = new Scope();
+            scope.DefineVariable("name", fac.String(type.Item.Owner.Name));
+            scope.DefineVariable("module", fac.String(type.Item.Owner.Module));
+            scope.DefineVariable("full_name", fac.String(type.Item.Owner.FullName));
+            scope.DefineVariable("variables",
+                fac.List(type.Item.Scope.GetAllVariables().Keys
+                    .Where(k => !string.Equals(k, SpecialVariables.Me))
+                    .Select(k => fac.String(k)).ToList()));
+            scope.DefineVariable("functions",
+                fac.List(type.Item.Owner.Functions.Keys
+                    .Select(k => fac.String(k)).ToList()));
+            return fac.Instance(new Instance(scope, _typeInfoClass.Value));
+        }
+
         [ExportFunction("input")]
         public static IValue Input(IValueFactory fac, IValue code)
         {
             return fac.String(Console.ReadLine() ?? "");
         }
-        
+
         [ExportFunction("eval")]
         public static IValue Eval(IValueFactory fac, IValue code)
         {
-            return Eilang.Run(code.To<string>());
+            return Eilang.Eval(code.To<string>());
         }
 
         [ExportFunction("sleep")]
@@ -41,7 +68,7 @@ namespace eilang
             System.Threading.Thread.Sleep(milliseconds.To<int>());
             return fac.Void();
         }
-        
+
         [ExportFunction("assert")]
         public static IValue Assert(IValueFactory fac, IValue args)
         {
@@ -59,7 +86,7 @@ namespace eilang
 
             return AssertInner(fac, args);
         }
-        
+
         [ExportFunction("println")]
         public static IValue PrintLine(IValueFactory fac, IValue value)
         {
@@ -75,7 +102,8 @@ namespace eilang
                         Console.WriteLine(val.Get<Instance>().GetVariable(SpecialVariables.String).Get<string>());
                         break;
                     case TypeOfValue.FunctionPointer:
-                        Console.WriteLine(val.Get<Instance>().GetVariable(SpecialVariables.Function).Get<Instance>().GetVariable(SpecialVariables.String).Get<string>());
+                        Console.WriteLine(val.Get<Instance>().GetVariable(SpecialVariables.Function).Get<Instance>()
+                            .GetVariable(SpecialVariables.String).Get<string>());
                         break;
                     case TypeOfValue.Double:
                         Console.WriteLine(val.Get<double>());
@@ -105,7 +133,7 @@ namespace eilang
 
             return fac.Void();
         }
-        
+
         private static IValue AssertInner(IValueFactory fac, IValue assert, IValue message = null)
         {
             if (assert.Type != TypeOfValue.Bool)

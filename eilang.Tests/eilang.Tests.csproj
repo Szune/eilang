@@ -26,9 +26,6 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
       <None Remove="Scripts\testold.ei" />
-      <Content Include="Scripts\testold.ei">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
       <None Remove="Scripts\inc_dec_tests.ei" />
       <Content Include="Scripts\inc_dec_tests.ei">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -59,6 +56,22 @@
       </Content>
       <None Remove="Scripts\ctor_tests.ei" />
       <Content Include="Scripts\ctor_tests.ei">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Scripts\reflection_tests.ei" />
+      <Content Include="Scripts\reflection_tests.ei">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="assert.ei" />
+      <Content Include="assert.ei">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Scripts\equality_tests.ei" />
+      <Content Include="Scripts\equality_tests.ei">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Scripts\old_tests.ei" />
+      <Content Include="Scripts\old_tests.ei">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
     </ItemGroup>

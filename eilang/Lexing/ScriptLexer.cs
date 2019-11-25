@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Transactions;
@@ -366,7 +367,7 @@ namespace eilang.Lexing
             }
 
             if (decimalPoint)
-                return new Token(TokenType.Double, _reader.Line, _reader.Col, doubl: double.Parse(sb.ToString()));
+                return new Token(TokenType.Double, _reader.Line, _reader.Col, doubl: double.Parse(sb.ToString(), NumberFormatInfo.InvariantInfo));
             else
                 return new Token(TokenType.Integer, _reader.Line, _reader.Col, integer: int.Parse(sb.ToString()));
         }

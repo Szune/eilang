@@ -139,15 +139,6 @@ fun main() {
 	}
 	
     #+
-    var n = *net();
-    n.get();
-    n.post();
-    n.head();
-    var f = *file('x.txt');
-    var d = *dir('/home/erik/Desktop');
-    -#
-    
-    #+
         block comment
     -#
     # for loopers
@@ -166,29 +157,4 @@ fun main() {
     {
         println(ix);
     }
-    #+
-    for (1..6) {
-        println(f'[{ix}] has value {it}');
-        println('[' + ix + '] has value ' + it); # auto loop index variable?
-        pointless(it); # auto variable
-    }
-    for (i : 1..6) {
-        pointless(i); # named variable
-    }
-
-    for (val, idx : 1..6) {
-        println(idx + ' has value ' + val);
-        pointless(val);
-    }
-    var n = 10;
-    for (1..n) {
-
-    }
-    for(array) {
-        println(it);
-    }
-    for(i: array) {
-        println(i);
-    }
-    -#
 }

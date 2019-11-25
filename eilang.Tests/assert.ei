@@ -1,0 +1,4 @@
+﻿assert(0 == 1, "asserting that assert works");
+assert(() != (), "asserting that assert works");
+assert("test" == (), "asserting that assert works");
+assert("test" == "west", "asserting that assert works");

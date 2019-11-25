@@ -14,7 +14,7 @@ namespace eilang.Interpreting
 {
     public class Interpreter
     {
-        private readonly ScriptEnvironment _scriptEnvironment;
+        private readonly IEnvironment _scriptEnvironment;
         private readonly IOperationCodeFactory _opFactory;
         private readonly IValueFactory _valueFactory;
         private readonly Stack<CallFrame> _frames = new Stack<CallFrame>();
@@ -23,7 +23,7 @@ namespace eilang.Interpreting
         private readonly Stack<LoneScope> _tmpVars = new Stack<LoneScope>();
         private readonly TextWriter _logger;
 
-        public Interpreter(ScriptEnvironment scriptEnvironment, IValueFactory valueFactory = null, IOperationCodeFactory opFactory = null,
+        public Interpreter(IEnvironment scriptEnvironment, IValueFactory valueFactory = null, IOperationCodeFactory opFactory = null,
             TextWriter logger = null)
         {
             _scriptEnvironment = scriptEnvironment;

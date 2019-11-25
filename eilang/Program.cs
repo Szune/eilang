@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using eilang.Exceptions;
 using eilang.Extensions;
+using eilang.Helpers;
 using eilang.Values;
 
 namespace eilang
@@ -25,7 +26,8 @@ namespace eilang
                         Console.WriteLine("-s takes a script name as the second argument.");
                         return;
                     }
-                    var exeDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+
+                    var exeDirectory = PathHelper.GetEilangBinaryDirectory();
                     var fullPath = Path.Combine(exeDirectory, args[1]);
                     
                     Eilang.RunFile(fullPath);
@@ -47,9 +49,9 @@ namespace eilang
                 var path = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(path))
                     continue;
-                if (path?.ToUpperInvariant().Trim() == "EXIT" || path?.ToUpperInvariant().Trim() == "'EXIT'")
+                if (path.ToUpperInvariant().Trim() == "EXIT" || path.ToUpperInvariant().Trim() == "'EXIT'")
                     return;
-                if (path?.ToUpperInvariant().Trim() == "EVAL" || path?.ToUpperInvariant().Trim() == "'EVAL'")
+                if (path.ToUpperInvariant().Trim() == "EVAL" || path.ToUpperInvariant().Trim() == "'EVAL'")
                 {
                     Eilang.ReplMode();
                 }
@@ -95,9 +97,9 @@ namespace eilang
 
             //EilangScript.RunFile(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");
             Eilang.RunFile("test.ei");
-            var returnValue = Eilang.Run("ret 'eilang';");
+            var returnValue = Eilang.Eval("ret 'eilang';");
             Debug.Assert(returnValue.To<string>() == "eilang");
-            returnValue = Eilang.Run("ret 12 * 14;");
+            returnValue = Eilang.Eval("ret 12 * 14;");
             Debug.Assert(returnValue.To<int>() == 168);
 #endif
         }

@@ -7,7 +7,7 @@ namespace eilang.Interpreting
 {
     public ref struct State
     {
-        public ScriptEnvironment Environment { get; }
+        public IEnvironment Environment { get; }
         public StackWithoutNullItems<IValue> Stack { get; }
         public Stack<Scope> Scopes { get; }
         public Stack<LoneScope> TemporaryVariables { get; }
@@ -15,7 +15,7 @@ namespace eilang.Interpreting
         public IValueFactory ValueFactory { get; }
         public BoolWrapper FinishedExecution { get; } // BoolWrapper is used to make it mutable
 
-        public State(ScriptEnvironment environment, Stack<CallFrame> frames, StackWithoutNullItems<IValue> stack, Stack<Scope> scopes,
+        public State(IEnvironment environment, Stack<CallFrame> frames, StackWithoutNullItems<IValue> stack, Stack<Scope> scopes,
             Stack<LoneScope> temporaryVariables, IValueFactory valueFactory)
         {
             Environment = environment;

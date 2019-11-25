@@ -44,6 +44,12 @@ namespace eilang.OperationCodes
                                 ? state.ValueFactory.True()
                                 : state.ValueFactory.False());
                             break;
+                        case TypeOfValue.Double:
+                            // int has precedence in any int-double comparisons
+                            state.Stack.Push(
+                                state.ValueFactory.Bool(left.As<IntegerValue>().Item ==
+                                                        (int) right.As<DoubleValue>().Item));
+                            break;
                         default:
                             state.Stack.Push(state.ValueFactory.False());
                             break;
@@ -64,9 +70,42 @@ namespace eilang.OperationCodes
                     }
 
                     break;
+                case TypeOfValue.Double:
+                {
+                    switch (right.Type)
+                    {
+                        case TypeOfValue.Double:
+                            // yes, this is a bad comparison for doubles, but a decision needs to be made here,
+                            // I'm not sure if I like eilang making predictions on what accuracy is fine for the user
+                            // so for now, I'm leaving it up to the user to make such checks
+                            state.Stack.Push(
+                                state.ValueFactory.Bool(left.As<DoubleValue>().Item == right.As<DoubleValue>().Item));
+                            break;
+                        case TypeOfValue.Integer:
+                            state.Stack.Push(
+                                state.ValueFactory.Bool((int) left.As<DoubleValue>().Item ==
+                                                        right.As<IntegerValue>().Item));
+                            break;
+                        default:
+                            state.Stack.Push(state.ValueFactory.False());
+                            break;
+                    }
+                }
+                    break;
+                case TypeOfValue.FunctionPointer:
+                    switch (right.Type)
+                    {
+                        case TypeOfValue.FunctionPointer:
+                            state.Stack.Push(state.ValueFactory.Bool(
+                                left.As<FunctionPointerValue>().Item == right.As<FunctionPointerValue>().Item));
+                            break;
+                        default:
+                            state.Stack.Push(state.ValueFactory.False());
+                            break;
+                    }
+
+                    break;
                 // TODO: implement the rest
-//                case TypeOfValue.Double:
-//                    break;
 //                case TypeOfValue.Class:
 //                    break;
 //                case TypeOfValue.Instance:
@@ -74,8 +113,6 @@ namespace eilang.OperationCodes
 //                case TypeOfValue.Void:
 //                    break;
 //                case TypeOfValue.List:
-//                    break;
-//                case TypeOfValue.FunctionPointer:
 //                    break;
 //                case TypeOfValue.Disposable:
 //                    break;

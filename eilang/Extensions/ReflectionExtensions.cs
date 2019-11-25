@@ -8,10 +8,14 @@ namespace eilang.Extensions
     {
         public static MemberInfo GetMemberInfo(this Type type, string name)
         {
-            var typeVariable = type.GetMembers(BindingFlags.Instance | BindingFlags.Public)
-                .FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            return type.GetMember(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase).FirstOrDefault();
+        }
 
-            return typeVariable;
+        public static MemberInfo[] GetMemberInfos(this Type type)
+        {
+            return type
+                .GetFields(BindingFlags.Instance | BindingFlags.Public)
+                .Concat((MemberInfo[])type.GetProperties(BindingFlags.Instance | BindingFlags.Public)).ToArray();
         }
         
         public static Type GetActualType(this MemberInfo memberInfo)
@@ -36,6 +40,22 @@ namespace eilang.Extensions
             else if (memberInfo is PropertyInfo pi)
             {
                 pi.SetValue(instance, value);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Failed to set value, the {nameof(MemberInfo)} instance was neither a {nameof(FieldInfo)} nor a {nameof(PropertyInfo)}.");
+            }
+        }
+        
+        public static object GetValue(this MemberInfo memberInfo, object instance)
+        {
+            if (memberInfo is FieldInfo fi)
+            {
+                return fi.GetValue(instance);
+            }
+            else if (memberInfo is PropertyInfo pi)
+            {
+                return pi.GetValue(instance);
             }
             else
             {

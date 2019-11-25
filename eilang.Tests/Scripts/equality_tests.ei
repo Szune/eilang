@@ -1,0 +1,18 @@
+﻿assert(0 == 0, "testing 0 == 0");
+assert(0 != 1, "testing 0 != 1");
+assert(() == (), "testing uninitialized == uninitialized, e.g. () == ()");
+assert("rest" == "rest", "testing 'rest' == 'rest'");
+assert("jest" != "rest", "testing 'jest' != 'rest'");
+assert(0.0 == 0.0, "testing 0.0 == 0.0");
+assert(2.0 != 0.0, "testing 2.0 != 0.0");
+assert(0.9 == 0, "testing 0.9 == 0"); # int has precedence, no rounding is performed
+assert(1.1 != 2, "testing 1.1 != 0"); # int has precedence, no rounding is performed
+assert(true == true, "testing true == true");
+assert(true != false, "testing true != false");
+assert(false != true, "testing false != true");
+
+
+fun test1() { }
+fun test2() { }
+assert(@test1 == @test1, "testing @test1 == @test1 (function pointers)");
+assert(@test1 != @test2, "testing @test1 != @test2 (function pointers)");

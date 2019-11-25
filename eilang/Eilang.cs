@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using eilang.Compiling;
 using eilang.Exceptions;
+using eilang.Extensions;
 using eilang.Imports;
 using eilang.Interfaces;
 using eilang.Interpreting;
@@ -16,6 +17,24 @@ namespace eilang
 {
     public static class Eilang
     {
+        public static IValue RunFunction(IEnvironment compiledEnvironment, string functionName, params object[] arguments)
+        {
+            var main = new Function("main", Compiler.GlobalFunctionAndModuleName, new List<string>());
+            var args = arguments.ToList();
+            foreach(var arg in args)
+            {
+                main.Write(compiledEnvironment.OperationCodeFactory.Push(arg.ToValue(compiledEnvironment.ValueFactory)));
+            }
+            main.Write(compiledEnvironment.OperationCodeFactory.Push(compiledEnvironment.ValueFactory.Integer(args.Count)));
+            main.Write(compiledEnvironment.OperationCodeFactory.Call(compiledEnvironment.ValueFactory.String(functionName)));
+            main.Write(compiledEnvironment.OperationCodeFactory.Return());
+            
+            compiledEnvironment.Functions[$"{Compiler.GlobalFunctionAndModuleName}::main"] = main;
+
+            var interpreter = new Interpreter(compiledEnvironment);
+            return interpreter.Interpret();
+        }
+        
         public static IValue RunFile(string path, ScriptEnvironment environment = null)
         {
             var imports = new ImportResolver().ResolveImportsFromFile(path);
@@ -66,7 +85,7 @@ namespace eilang
             return interpreter.Interpret();
         }
 
-        public static IValue Run(string code, ScriptEnvironment environment = null)
+        public static IValue Eval(string code, ScriptEnvironment environment = null)
         {
             var reader = new ScriptReader(code, "eval");
             var lexer = new ScriptLexer(reader, new CommonLexer(reader));
@@ -160,6 +179,29 @@ namespace eilang
                     return $"({code});";
                 }
             }
+        }
+
+        // TODO: make another method to compile from file and allow imports
+        public static IEnvironment Compile(string code, IEnvironment environment = null)
+        {
+            var reader = new ScriptReader(code, "compiled");
+            var lexer = new ScriptLexer(reader, new CommonLexer(reader));
+            var parser = new Parser(lexer);
+            var ast = parser.Parse();
+
+            if (environment == null)
+            {
+                var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+                // TODO: turn the following methods into extension methods on IEnvironment
+                env.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
+                env.AddExportedFunctionsFromAssembly(typeof(Eilang));
+                env.AddExportedModulesFromAssembly(typeof(Eilang));
+                environment = env;
+            }
+
+            Compiler.Compile(environment, ast);
+
+            return environment;
         }
     }
 }

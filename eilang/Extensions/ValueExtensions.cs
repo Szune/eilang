@@ -1,14 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using eilang.Classes;
+using eilang.Compiling;
 using eilang.Exceptions;
 using eilang.Interfaces;
+using eilang.Interpreting;
 using eilang.Values;
 
 namespace eilang.Extensions
 {
     public static class ValueExtensions
     {
+        public static IValue ToValue(this object obj, IValueFactory factory = default)
+        {
+            if (factory == null)
+            {
+                factory = new ValueFactory();
+            }
+            
+            var type = obj.GetType();
+            switch (type)
+            {
+                case var _ when type == typeof(string):
+                    return factory.String((string) obj);
+                case var _ when type == typeof(int):
+                    return factory.Integer((int) obj);
+                case var _ when type == typeof(double):
+                    return factory.Double((double) obj);
+                case var _ when type == typeof(bool):
+                    return factory.Bool((bool) obj);
+                case var _ when !type.IsAbstract && !type.IsPrimitive: // probably going to need more guards here
+                    return ConvertToEilangInstance(type, obj, factory);
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        private static IValue ConvertToEilangInstance(Type type, object obj, IValueFactory factory)
+        {
+            var members = type.GetMemberInfos();
+            var name = type.Name;
+            var clas = new Class(name, Compiler.GlobalFunctionAndModuleName);
+            var scope = new Scope();
+            foreach (var member in members)
+            {
+                var value = member.GetValue(obj).ToValue(factory);
+                scope.DefineVariable(member.Name, value);
+            }
+            return factory.Instance(new Instance(scope, clas));
+        }
+
         public static T To<T>(this IValue value)
         {
             return (T) To(value, typeof(T));
@@ -29,14 +71,14 @@ namespace eilang.Extensions
                 case var _ when !type.IsAbstract && !type.IsPrimitive: // probably going to need more guards here
                     var instance = value.As<InstanceValue>();
                     var variables = instance.Item.Scope.GetAllVariables().Where(v => v.Key != SpecialVariables.Me);
-                    return ConvertToClass(type, variables);
+                    return ConvertToCSharpObject(type, variables);
                 default:
                     throw new NotImplementedException();
                 // TODO: implement converting from an eilang list to C# List<T>
             }
         }
 
-        private static object ConvertToClass(Type type, IEnumerable<KeyValuePair<string, IValue>> variables)
+        private static object ConvertToCSharpObject(Type type, IEnumerable<KeyValuePair<string, IValue>> variables)
         {
             var instance = Activator.CreateInstance(type);
             foreach (var (name, value) in variables)

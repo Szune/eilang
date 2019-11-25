@@ -1,0 +1,20 @@
+﻿modu x {
+    typ reflection_test {
+        arg: any;
+        fun printy() {
+            println('printy!');
+        }
+    }
+}
+var ref = *x::reflection_test();
+var t = type(ref);
+assert(t.name == 'reflection_test', 'class name is "reflection_test" and so that is what should be returned.');
+assert(t.module == 'x', 'module name is "x" and so that is what should be returned.');
+assert(t.full_name == 'x::reflection_test', 'full_name should include both module and class name');
+assert(t.functions[0] == 'printy', 'class only contains one function and it is called "printy"');
+assert(t.variables[0] == 'arg', 'class only contains one variable and it is called "arg"');
+
+var t2 = type(t);
+assert(t2.name == 'type_info', "now we're getting the type_info, so the name should be 'type_info'");
+assert(t2.module == '.global', "type_info should be in the global module");
+assert(t2.full_name == '.global::type_info', "full_name of type_info should work the same as any instance");

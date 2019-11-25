@@ -1,12 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using eilang.Classes;
-using eilang.Compiling;
-using eilang.Imports;
-using eilang.Interpreting;
-using eilang.Lexing;
-using eilang.Parsing;
-using eilang.Values;
+using System.Linq;
+using eilang.Exceptions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,77 +16,123 @@ namespace eilang.Tests
         {
             _testOutput = testOutput;
         }
-        [Fact]
-        public void RunAssignmentTests()
-        {
-            RunScript("Scripts/assignment_tests.ei");
-            Console.WriteLine("Assignment tests completed");
-        }
 
         [Fact]
-        public void RunCtorTests()
+        public void RunAllTests()
         {
-            RunScript("Scripts/ctor_tests.ei");
-            Console.WriteLine("Ctor tests completed");
+            EnsureAssertWorksAsExpected();
+            var result = RunTests("Scripts");
+            var asserts = result.Failed.Where(e => e.Exception is AssertionException).ToList();
+            var exceptions = result.Failed.Where(e => !(e.Exception is AssertionException)).ToList();
+            WriteResults(exceptions, asserts, result.Passed);
+            ThrowOnError(exceptions, asserts);
         }
 
-        [Fact]
-        public void RunForTests()
+        private void EnsureAssertWorksAsExpected()
         {
-            RunScript("Scripts/for_tests.ei");
-            Console.WriteLine("For tests completed");
-        }
-        
-        [Fact]
-        public void RunImportTests()
-        {
-            RunScript("Scripts/import_tests.ei");
-            Console.WriteLine("Import tests completed");
-        }
-        
-        [Fact]
-        public void RunIncrementAndDecrementTests()
-        {
-            RunScript("Scripts/inc_dec_tests.ei");
-            Console.WriteLine("Increment and decrement tests completed");
-        }
-        
-        [Fact]
-        public void RunFunctionPointerTests()
-        {
-            RunScript("Scripts/function_pointer_tests.ei");
-            Console.WriteLine("Function pointer tests completed");
-        }
-        
-        [Fact]
-        public void RunMeTests()
-        {
-            RunScript("Scripts/me_tests.ei");
-            Console.WriteLine("Me tests completed");
-        }
-        
-        [Fact]
-        public void RunStringInterpolationTests()
-        {
-            RunScript("Scripts/str_interpolation_tests.ei");
-            Console.WriteLine("String interpolation tests completed");
-        }
-        
-        [Fact]
-        public void RunTernaryTests()
-        {
-            RunScript("Scripts/ternary_tests.ei");
-            Console.WriteLine("Ternary tests completed");
-        }
-        
-        
-        [Fact]
-        public void RunOldRegressionTests()
-        {
-            RunScript("Scripts/testold.ei");
-            Console.WriteLine("Old regression tests completed");
+            var assertionWorks = false;
+            try
+            {
+                RunScript("assert.ei");
+            }
+            catch (AssertionException)
+            {
+                assertionWorks = true;
+            }
+
+            if (!assertionWorks)
+            {
+                throw new InvalidOperationException("assert() function does not work as expected, cannot run tests");
+            }
         }
 
+        private TestResults RunTests(string directory)
+        {
+            var files = new DirectoryInfo(directory).GetFiles("*_tests.ei");
+            if (!files.Any())
+            {
+                throw new InvalidOperationException("No tests found!");
+            }
+            
+            var failed = new List<FailedTest>();
+            var passed = new List<string>();
+            foreach (var file in files)
+            {
+                try
+                {
+                    RunScript(file.FullName);
+                    passed.Add(file.Name);
+                }
+                catch(Exception e)
+                {
+                    failed.Add(new FailedTest(file.Name, e));
+                }
+            }
+            return new TestResults(passed, failed);
+        }
+
+        private void WriteResults(List<FailedTest> exceptions, List<FailedTest> asserts, List<string> passed)
+        {
+            if (exceptions.Any())
+            {
+                Console.WriteLine("--EXCEPTIONS--");
+                _testOutput.WriteLine("--EXCEPTIONS--");
+                foreach (var e in exceptions)
+                {
+                    Console.WriteLine($"ERROR {e.Name}: {e.Exception}");
+                    _testOutput.WriteLine($"ERROR {e.Name}: {e.Exception}");
+                }
+            }
+
+            if (asserts.Any())
+            {
+                Console.WriteLine("--ASSERT FAILURES--");
+                _testOutput.WriteLine("--ASSERT FAILURES--");
+                foreach (var e in asserts)
+                {
+                    Console.WriteLine($"ASSERT FAIL {e.Name}: {e.Exception.Message}");
+                    _testOutput.WriteLine($"ASSERT FAIL {e.Name}: {e.Exception.Message}");
+                }
+            }
+
+            if (passed.Any())
+            {
+                Console.WriteLine("--PASSED--");
+                _testOutput.WriteLine("--PASSED--");
+                foreach (var f in passed)
+                {
+                    Console.WriteLine($"OK {f}");
+                    _testOutput.WriteLine($"OK {f}");
+                }
+            }
+        }
+
+        private static void ThrowOnError(List<FailedTest> exceptions, List<FailedTest> asserts)
+        {
+            if (exceptions.Any())
+            {
+                if (exceptions.Count > 1)
+                {
+                    throw new AggregateException(exceptions.Select(e => e.Exception));
+                }
+                else
+                {
+                    throw exceptions.First().Exception;
+                }
+            }
+
+            if (asserts.Any())
+            {
+                if (asserts.Count > 1)
+                {
+                    throw new AggregateException(asserts.Select(e => e.Exception));
+                }
+                else
+                {
+                    throw asserts.First().Exception;
+                }
+            }
+        }
 
         private static void RunScript(string path) => Eilang.RunFile(path);
     }

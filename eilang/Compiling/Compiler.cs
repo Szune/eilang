@@ -51,7 +51,7 @@ namespace eilang.Compiling
                 opFactory ?? new OperationCodeFactory());
             compiler.Visit(root);
         }
-
+        
         public void Visit(AstRoot root)
         {
             Log("Compiling...");

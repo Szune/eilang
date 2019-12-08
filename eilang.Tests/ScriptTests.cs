@@ -113,6 +113,7 @@ namespace eilang.Tests
             {
                 if (exceptions.Count > 1)
                 {
+                    throw new ErrorMessageException("Failure.");
                     throw new AggregateException(exceptions.Select(e => e.Exception));
                 }
                 else
@@ -125,6 +126,7 @@ namespace eilang.Tests
             {
                 if (asserts.Count > 1)
                 {
+                    throw new ErrorMessageException("Failure.");
                     throw new AggregateException(asserts.Select(e => e.Exception));
                 }
                 else

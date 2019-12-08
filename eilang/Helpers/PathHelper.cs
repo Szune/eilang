@@ -31,5 +31,10 @@ namespace eilang.Helpers
         {
             return Directory.GetCurrentDirectory();
         }
+
+        public static void SetWorkingDirectory(string directory)
+        {
+            Directory.SetCurrentDirectory(directory);
+        }
     }
 }

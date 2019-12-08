@@ -12,6 +12,7 @@ namespace eilang.Interfaces
         void Visit(AstFunctionCall funcCall, Function function, Module mod);
         void Visit(AstClass clas, Module mod);
         void Visit(AstFunction func, Module mod);
+        void Visit(AstExtensionFunction func, Module mod);
         void Visit(AstMemberFunction memberFunc, Class clas, Module mod);
         void Visit(AstStringConstant constant, Function function, Module mod);
         void Visit(AstIntegerConstant constant, Function function, Module mod);

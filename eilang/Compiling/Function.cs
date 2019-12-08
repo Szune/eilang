@@ -10,6 +10,7 @@ namespace eilang.Compiling
         public string Module { get; }
         public virtual string FullName => $"{Module}::{Name}";
         public List<string> Arguments { get; }
+        public bool VariableAmountOfArguments { get; set; }
 
         public Function(string name, string module, List<string> arguments)
         {

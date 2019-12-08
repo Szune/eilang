@@ -6,9 +6,9 @@ namespace eilang.OperationCodes
 {
     public class Define : IOperationCode
     {
-        public IValue Name { get; }
+        public string Name { get; }
 
-        public Define(IValue name)
+        public Define(string name)
         {
             Name = name;
         }
@@ -16,7 +16,7 @@ namespace eilang.OperationCodes
         public void Execute(State state)
         {
             var value = state.Stack.Pop();
-            state.Scopes.Peek().DefineVariable(Name.To<string>(), value);
+            state.Scopes.Peek().DefineVariable(Name, value);
         }
     }
 }

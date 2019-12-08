@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using eilang.Exporting;
 using eilang.Extensions;
 using eilang.Interfaces;
@@ -46,6 +47,39 @@ namespace eilang.Modules
 
             return fac.Void();
         }
+
+        [ExportFunction("kill")]
+        public static IValue KillProcess(IValueFactory fac, IValue args)
+        {
+            var name = args.GetStringArgument("kill takes 1 argument: string processName");
+            var processes = Process.GetProcessesByName(name);
+            foreach (var proc in processes)
+            {
+                proc.Kill();
+            }
+            return fac.Void();
+        }
+        
+        [ExportFunction("kill_wait")]
+        public static IValue KillProcessAndWaitForExit(IValueFactory fac, IValue args)
+        {
+            var name = args.GetStringArgument("kill_wait takes 1 argument: string processName");
+            var processes = Process.GetProcessesByName(name);
+            foreach (var proc in processes)
+            {
+                proc.Kill();
+                proc.WaitForExit(60_000);
+            }
+            return fac.Void();
+        }
+        
+        [ExportFunction("get")]
+        public static IValue GetProcesses(IValueFactory fac, IValue args)
+        {
+            var name = args.GetStringArgument("get takes 1 argument: string processName");
+            var processes = Process.GetProcessesByName(name);
+            return fac.List(processes.Select(s => fac.Integer(s.Id)).ToList());
+        }
         
         // TODO: add the following functions to the module
         // TODO: add functionality to allow for waiting for a started process to exit
@@ -54,20 +88,6 @@ namespace eilang.Modules
 //                Code =
 //                {
 //                    new Bytecode(factory.KPPROC)
-//                }
-//            });
-//            Functions.Add("kill", new MemberFunction("kill", Module, new List<string>{"name"}, this)
-//            {
-//                Code =
-//                {
-//                    new Bytecode(factory.KPROC)
-//                }
-//            });
-//            Functions.Add("get", new MemberFunction("get", Module, new List<string>{"name"}, this)
-//            {
-//                Code =
-//                {
-//                    new Bytecode(factory.GPROC)
 //                }
 //            });
 //            Functions.Add("get_pid", new MemberFunction("get_pid", Module, new List<string>{"pid"}, this)

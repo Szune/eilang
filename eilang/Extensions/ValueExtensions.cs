@@ -41,7 +41,7 @@ namespace eilang.Extensions
         {
             var members = type.GetMemberInfos();
             var name = type.Name;
-            var clas = new Class(name, Compiler.GlobalFunctionAndModuleName);
+            var clas = new Class(name, SpecialVariables.Global);
             var scope = new Scope();
             foreach (var member in members)
             {
@@ -109,5 +109,13 @@ namespace eilang.Extensions
                 return value;
             throw new InvalidArgumentCountException(message);
         }
+
+        public static string GetStringArgument(this IValue value, string errorMessage)
+        {
+            return value
+                .Require(TypeOfValue.String, errorMessage)
+                .To<string>();
+        }
+        
     }
 }

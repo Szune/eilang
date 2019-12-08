@@ -7,7 +7,6 @@ using eilang.Compiling;
 using eilang.Exporting;
 using eilang.Interfaces;
 using eilang.OperationCodes;
-using eilang.Values;
 
 namespace eilang
 {
@@ -29,6 +28,8 @@ namespace eilang
 
         public virtual IDictionary<string, ExportedFunction> ExportedFunctions { get; } =
             new Dictionary<string, ExportedFunction>();
+
+        public virtual IDictionary<string, ExtensionFunction> ExtensionFunctions { get; } = new Dictionary<string, ExtensionFunction>();
 
         #region Exporting classes
         
@@ -85,7 +86,8 @@ namespace eilang
         public void AddExportedFunctionsFromAssembly(Type type)
         {
             var classesContainingExportedFunctions = type.Assembly.GetTypes()
-                .Where(t => t.GetMethods().Any(m => m.GetCustomAttributes<ExportFunctionAttribute>().Any()));
+                .Where(t => !t.GetCustomAttributes<ExportModuleAttribute>().Any() 
+                            && t.GetMethods().Any(m => m.GetCustomAttributes<ExportFunctionAttribute>().Any()));
             foreach (var c in classesContainingExportedFunctions)
             {
                 AddExportedFunctionsFromClass(c);

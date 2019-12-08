@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using eilang.Exporting;
 using eilang.Extensions;
@@ -10,6 +11,37 @@ namespace eilang.Modules
     [ExportModule("io")]
     public static class IoModule
     {
+        public static IValue Move(string func, IValueFactory fac, IValue args, Action<string, string> moveAction)
+        {
+            const string moveError = " takes 2 arguments: string currentName, string newName";
+            var argList = args
+                .Require(TypeOfValue.List, func + moveError)
+                .As<ListValue>()
+                .RequireCount(2, func + moveError)
+                .Item;
+            argList.OrderAsArguments();
+            
+            var currentName = argList[0]
+                .Require(TypeOfValue.String, "currentName has to be a string")
+                .To<string>();
+            
+            var newName = argList[1]
+                .Require(TypeOfValue.String, "newName has to be a string")
+                .To<string>();
+            try
+            {
+                moveAction(currentName, newName);
+                return fac.True();
+            }
+            catch(Exception ex)
+            {
+#if DEBUG
+Console.WriteLine(ex.ToString());
+#endif
+                return fac.False();
+            }
+        }
+
         [ExportFunction("get_drives")]
         public static IValue GetDrives(IValueFactory fac, IValue args)
         {
@@ -68,48 +100,6 @@ namespace eilang.Modules
             var dir = new DirectoryInfo(dirName);
             var files = dir.GetFiles().Select(d => fac.String(d.Name)).ToList();
             return fac.List(files);
-        }
-        
-        [ExportFunction("open_file")]
-        public static IValue OpenFile(IValueFactory fac, IValue args)
-        {
-            if (args.Type == TypeOfValue.List)
-            {
-                var list = args.As<ListValue>()
-                    .RequireCount(2, "open_file takes 1 or 2 arguments: string fileName, [bool append]")
-                    .Item;
-                list.OrderAsArguments();
-                return OpenFileInner(fac, list[0], list[1]);
-            }
-
-            return OpenFileInner(fac, args);
-        }
-
-        private static IValue OpenFileInner(IValueFactory fac, IValue fileName, IValue append = null)
-        {
-            var name = fileName
-                .Require(TypeOfValue.String, "open_file requires that parameter 'fileName' is a string.")
-                .To<string>();
-            var shouldAppend = append?
-                .Require(TypeOfValue.Bool, "open_file requires that parameter 'append' is a bool.")
-                .To<bool>() ?? false;
-
-            // TODO: add encoding options
-            FileStream fileStream;
-            TextReader reader;
-            if (shouldAppend)
-            {
-                fileStream = new FileStream(name, FileMode.Append, FileAccess.Write, FileShare.None);
-                reader = new StringReader("Cannot read from file that was opened with 'append' set to true.");
-            }
-            else
-            {
-                fileStream = new FileStream(name, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-                reader = new StreamReader(fileStream);
-            }
-            
-            var writer = new StreamWriter(fileStream);
-            return fac.FileHandle(fileStream, reader, writer);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace eilang.Classes
     public class DisposableClass : Class
     {
         public DisposableClass(IOperationCodeFactory factory, IValueFactory valueFactory) : base(
-            SpecialVariables.Disposable, Compiler.GlobalFunctionAndModuleName)
+            SpecialVariables.Disposable, SpecialVariables.Global)
         {
             CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
             CtorForMembersWithValues.Write(factory.Return());

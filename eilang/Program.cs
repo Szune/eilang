@@ -29,8 +29,15 @@ namespace eilang
 
                     var exeDirectory = PathHelper.GetEilangBinaryDirectory();
                     var fullPath = Path.Combine(exeDirectory, args[1]);
-                    
-                    Eilang.RunFile(fullPath);
+
+                    try
+                    {
+                        Eilang.RunFile(fullPath);
+                    }
+                    catch (ErrorMessageException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                 }
                 else if (first == "-E")
                 {
@@ -38,7 +45,14 @@ namespace eilang
                 }
                 else
                 {
-                    Eilang.RunFile(args.First());
+                    try
+                    {
+                        Eilang.RunFile(args.First());
+                    }
+                    catch (ErrorMessageException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                 }
                 return;
             }
@@ -61,6 +75,10 @@ namespace eilang
                     {
                         Eilang.RunFile(path);
                     }
+                    catch (ErrorMessageException e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
@@ -72,6 +90,9 @@ namespace eilang
 #endif
 
 #if DEBUG
+            // TODO: -0.8 decide if and how to implement "dynamic analysis" (type checking on arguments when the function call is being made, meh)
+            // TODO: finish changing exceptions in operation codes to ErrorMessageException instead of InterpreterException
+            // TODO: -0.5 implement try/catch/finally
             // TODO: 0. parser bug: fix variable scope bug (variables inside class functions collide with global variables,
             // scope should simply take the nearest one in this case), allow global variables to have the same names as 
             // class function variables or class variables

@@ -8,12 +8,12 @@ namespace eilang.Ast
 {
     public class AstClassInitialization : AstExpression
     {
-        public string Identifiers { get; }
+        public string Class { get; }
         public List<AstExpression> Arguments { get; }
 
-        public AstClassInitialization (string identifiers, List<AstExpression> arguments, Position position) : base(position)
+        public AstClassInitialization (string clas, List<AstExpression> arguments, Position position) : base(position)
         {
-            Identifiers = identifiers;
+            Class = clas;
             Arguments = arguments;
         }
         public override void Accept(IVisitor visitor, Function function, Module mod)
@@ -25,7 +25,7 @@ namespace eilang.Ast
         {
             var arguments = string.Join(", ", Arguments.Select(a => a.ToCode()));
             return
-                $"{TokenValues.Asterisk}{Identifiers}{TokenValues.LeftParenthesis}{arguments}{TokenValues.RightParenthesis}";
+                $"{TokenValues.Asterisk}{Class}{TokenValues.LeftParenthesis}{arguments}{TokenValues.RightParenthesis}";
         }
     }
 }

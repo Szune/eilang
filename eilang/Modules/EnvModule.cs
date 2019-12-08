@@ -2,8 +2,10 @@
 using System.Linq;
 using System.Threading;
 using eilang.Exporting;
+using eilang.Extensions;
 using eilang.Helpers;
 using eilang.Interfaces;
+using eilang.Values;
 
 namespace eilang.Modules
 {
@@ -31,6 +33,16 @@ namespace eilang.Modules
         {
             var currentDirectory = PathHelper.GetWorkingDirectory();
             return fac.String(currentDirectory);
+        }
+        
+        [ExportFunction("set_current_dir")]
+        public static IValue SetWorkingDirectory(IValueFactory fac, IValue args)
+        {
+            var dir = args
+                .Require(TypeOfValue.String, "set_current_dir takes 1 argument: string directory")
+                .To<string>();
+            PathHelper.SetWorkingDirectory(dir);
+            return fac.Void();
         }
     }
 }

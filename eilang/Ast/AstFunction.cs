@@ -19,7 +19,7 @@ namespace eilang.Ast
         public Position Position { get; }
         public List<AstExpression> Expressions {get;} = new List<AstExpression>();
 
-        public void Accept(IVisitor visitor, Module mod)
+        public virtual void Accept(IVisitor visitor, Module mod)
         {
             visitor.Visit(this, mod);
         }

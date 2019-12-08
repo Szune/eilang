@@ -1,4 +1,5 @@
-﻿using eilang.Exceptions;
+﻿using eilang.Compiling;
+using eilang.Exceptions;
 
 namespace eilang.OperationCodes
 {
@@ -12,6 +13,13 @@ namespace eilang.OperationCodes
         public static void VariableNotFound(string variable)
         {
             throw new InterpreterException($"Variable not found: {variable}");
+        }
+        
+        public static void InvalidArgumentCount(Function func, int argumentCount)
+        {
+            var arguments = string.Join(", ", func.Arguments);
+            throw new InvalidArgumentCountException(
+                $"Function {func.FullName}({arguments}) expected {func.Arguments.Count} arguments, but received {argumentCount}.");
         }
     }
 }

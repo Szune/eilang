@@ -5,7 +5,7 @@ namespace eilang.OperationCodes
     public interface IOperationCodeFactory
     {
         Push Push(IValue value);
-        Define Define(IValue name);
+        Define Define(string name);
         Set Set(IValue name);
         Equals Equals();
         NotEquals NotEquals();

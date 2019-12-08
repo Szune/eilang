@@ -15,7 +15,7 @@ namespace eilang
     public static class ExportedFunctions
     {
         private static Lazy<Class> _typeInfoClass =
-            new Lazy<Class>(() => new Class("type_info", Compiler.GlobalFunctionAndModuleName),
+            new Lazy<Class>(() => new Class("type_info", SpecialVariables.Global),
                 LazyThreadSafetyMode.ExecutionAndPublication);
 
         [ExportFunction("exit")]

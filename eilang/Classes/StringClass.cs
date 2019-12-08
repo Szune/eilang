@@ -6,9 +6,8 @@ namespace eilang.Classes
 {
     public class StringClass : Class
     {
-        public StringClass(IOperationCodeFactory factory) : base(SpecialVariables.String, SpecialVariables.Internal)
+        public StringClass(IOperationCodeFactory factory) : base(SpecialVariables.String, SpecialVariables.Global)
         {
-            CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
             CtorForMembersWithValues.Write(factory.Return());
             Functions.Add("len", new MemberFunction("len", Module, new List<string>(), this)
             {

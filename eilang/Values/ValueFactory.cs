@@ -45,7 +45,9 @@ namespace eilang.Values
         {
             var scope = new Scope();
             scope.DefineVariable(SpecialVariables.String, new InternalStringValue(str));
-            return new StringValue(new Instance(scope, new StringClass(_operationCodeFactory)));
+            var instance = new Instance(scope, new StringClass(_operationCodeFactory));
+            scope.DefineVariable(SpecialVariables.Me, new InstanceValue(instance));
+            return new StringValue(instance);
         }
         
         public IValue FunctionPointer(string ident)
@@ -100,7 +102,9 @@ namespace eilang.Values
         {
             var scope = new Scope();
             scope.DefineVariable(SpecialVariables.List, new InternalListValue(items ?? new List<IValue>()));
-            return new ListValue(new Instance(scope, new ListClass(_operationCodeFactory)));
+            var instance = new Instance(scope, new ListClass(_operationCodeFactory));
+            scope.DefineVariable(SpecialVariables.Me, new InstanceValue(instance));
+            return new ListValue(instance);
         }
     }
 }

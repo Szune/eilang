@@ -6,6 +6,7 @@ typ map_thing {
 }
 
 fun main() {
+#+
     var int_map = {0: *map_thing(0), 1: *map_thing(1)}; # TODO 1
     # TODO 1a) -> parse it - will need new Ast classes
     # TODO 1b) -> compile it - may need new OpCodes
@@ -29,4 +30,5 @@ fun main() {
         println("-bye was defined, exiting script");
         ret;
     }
+-#
 }

@@ -8,7 +8,7 @@ namespace eilang.Classes
     public class FileHandleClass : Class
     {
         public FileHandleClass(IOperationCodeFactory factory, IValueFactory valueFactory) : base(".file",
-            Compiler.GlobalFunctionAndModuleName)
+            SpecialVariables.Global)
         {
             CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
             CtorForMembersWithValues.Write(factory.Return());

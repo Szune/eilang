@@ -40,6 +40,7 @@
         public const string NotEquals = "!=";
         public const string LessThanEquals = "<=";
         public const string GreaterThanEquals = ">=";
+        public const string Arrow = "->";
         #endregion
         
         #region 'pure' tokens

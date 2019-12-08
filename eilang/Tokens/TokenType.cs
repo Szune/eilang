@@ -66,6 +66,7 @@
         Import,
         Tilde,
         Use,
-        While
+        While,
+        Arrow
     }
 }

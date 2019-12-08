@@ -20,6 +20,9 @@ namespace eilang
             new DictionaryAddWillOverwrite<string, Class>();
         public override IDictionary<string, ExportedFunction> ExportedFunctions { get; } = 
             new DictionaryAddWillOverwrite<string, ExportedFunction>();
+
+        public override IDictionary<string, ExtensionFunction> ExtensionFunctions { get; } =
+            new DictionaryAddWillOverwrite<string, ExtensionFunction>();
     }
 
     public class DictionaryAddWillOverwrite<TKey, TValue> : IDictionary<TKey, TValue>

@@ -62,7 +62,7 @@ namespace eilang.OperationCodes
             return new Push(value);
         }
 
-        public Define Define(IValue name)
+        public Define Define(string name)
         {
             return new Define(name);
         }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using eilang.Ast;
@@ -17,6 +16,7 @@ namespace eilang.Parsing
         private bool InLoop => _forDepth > 0;
         private int _forDepth;
         private bool _inClass;
+        private bool _inExtensionFunction;
         private Stack<VariableScope> _scopes = new Stack<VariableScope>();
         private Token _lastConsumed = new Token();
         private bool _inConstructor;
@@ -120,19 +120,8 @@ namespace eilang.Parsing
         {
             Require(TokenType.Constructor);
             var pos = _lastConsumed.Position;
-            Require(TokenType.LeftParenthesis);
-            var args = new List<string>();
-            while (!Match(TokenType.RightParenthesis) && !Match(TokenType.EOF))
-            {
-                var ident = Require(TokenType.Identifier).Text;
-                args.Add(ident);
-                if (Match(TokenType.Comma))
-                    Consume();
-                else
-                    break;
-            }
-
-            Require(TokenType.RightParenthesis);
+            var args = ParseParameterList();
+            
             if (Match(TokenType.Semicolon)) // constructor without code block
             {
                 Consume();
@@ -151,7 +140,7 @@ namespace eilang.Parsing
             var ident = Require(TokenType.Identifier).Text;
             var pos = _lastConsumed.Position;
             Require(TokenType.Colon);
-            var type = GetModuledClassName();
+            var type = GetIdentifierWithModule();
             if (Match(TokenType.Semicolon)) // no initialization
             {
                 Consume();
@@ -186,7 +175,7 @@ namespace eilang.Parsing
             } while (Match(TokenType.Identifier));
 
             Require(TokenType.Colon);
-            var type = GetModuledClassName();
+            var type = GetIdentifierWithModule();
 
             if (Match(TokenType.Semicolon)) // no initialization
             {
@@ -210,23 +199,7 @@ namespace eilang.Parsing
             Require(TokenType.Function);
             var pos = _lastConsumed.Position;
             var ident = Require(TokenType.Identifier).Text;
-            Require(TokenType.LeftParenthesis);
-            var args = new List<string>();
-            while (!Match(TokenType.RightParenthesis) && !Match(TokenType.EOF))
-            {
-                var arg = Require(TokenType.Identifier).Text;
-                args.Add(arg);
-                if (Match(TokenType.Comma))
-                {
-                    Consume();
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            Require(TokenType.RightParenthesis);
+            var args = ParseParameterList();
             var fun = new AstMemberFunction(ident, args, pos);
             // parse code block
             ParseBlock(fun);
@@ -236,14 +209,46 @@ namespace eilang.Parsing
         private void ParseFunction(IHaveFunction ast)
         {
             Require(TokenType.Function);
+            if (_buffer[1].Match(TokenType.DoubleColon) || // moduled, only allow extension methods
+                _buffer[1].Match(TokenType.Arrow))
+            {
+                ParseExtensionFunction(ast);
+                return;
+            }
             var pos = _lastConsumed.Position;
             var ident = Require(TokenType.Identifier).Text;
+            var paramz = ParseParameterList();
+            var fun = new AstFunction(ident, paramz, pos);
+            // parse code block
+            ParseBlock(fun);
+            ast.Functions.Add(fun);
+        }
+
+        private void ParseExtensionFunction(IHaveFunction ast) // TODO: stop doing this and return the function instead 
+        {
+            var pos = _lastConsumed.Position;
+            // the type we're extending
+            _inExtensionFunction = true;
+            var extending = GetIdentifierWithModule();
+            Require(TokenType.Arrow);
+            // the function we're adding
+            var adding = Require(TokenType.Identifier).Text;
+
+            var paramz = ParseParameterList();
+            var fun = new AstExtensionFunction(extending, adding, paramz, pos);
+            ParseBlock(fun);
+            ast.Functions.Add(fun);
+            _inExtensionFunction = false;
+        }
+
+        private List<string> ParseParameterList()
+        {
             Require(TokenType.LeftParenthesis);
-            var args = new List<string>();
+            var paramz = new List<string>();
             while (!Match(TokenType.RightParenthesis) && !Match(TokenType.EOF))
             {
                 var arg = Require(TokenType.Identifier).Text;
-                args.Add(arg);
+                paramz.Add(arg);
                 if (Match(TokenType.Comma))
                 {
                     Consume();
@@ -255,10 +260,7 @@ namespace eilang.Parsing
             }
 
             Require(TokenType.RightParenthesis);
-            var fun = new AstFunction(ident, args, pos);
-            // parse code block
-            ParseBlock(fun);
-            ast.Functions.Add(fun);
+            return paramz;
         }
 
         private void ParseBlock(IHaveExpression fun)
@@ -631,7 +633,7 @@ namespace eilang.Parsing
 
         private AstExpression ParseClassInitialization()
         {
-            var identifiers = GetModuledClassName();
+            var identifiers = GetIdentifierWithModule();
             var pos = _lastConsumed.Position;
             var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
             return new AstClassInitialization(identifiers, args, pos);
@@ -1024,7 +1026,7 @@ namespace eilang.Parsing
                     var doubl = Require(TokenType.Double).Double;
                     return new AstDoubleConstant(doubl, pos);
                 case TokenType.Me:
-                    if (!_inClass)
+                    if (!_inClass && !_inExtensionFunction)
                     {
                         ThrowParserException($"Token '{nameof(TokenType.Me)}' may only live inside classes");
                     }
@@ -1057,7 +1059,7 @@ namespace eilang.Parsing
                     return ParseModuleAccess();
                 case TokenType.At:
                     Consume();
-                    return new AstFunctionPointer(GetModuledClassName(), pos);
+                    return new AstFunctionPointer(GetIdentifierWithModule(), pos);
             }
 
             return ThrowParserException("not implemented");
@@ -1066,7 +1068,7 @@ namespace eilang.Parsing
         private AstExpression ParseModuleAccess()
         {
             var pos = _lastConsumed.Position;
-            var name = GetModuledClassName();
+            var name = GetIdentifierWithModule();
             switch (_buffer[0].Type)
             {
                 case TokenType.LeftBracket:
@@ -1112,7 +1114,7 @@ namespace eilang.Parsing
         }
 
 
-        private string GetModuledClassName()
+        private string GetIdentifierWithModule()
         {
             var name = Require(TokenType.Identifier).Text;
 

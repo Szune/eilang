@@ -6,7 +6,7 @@ namespace eilang.Classes
 {
     public class ListClass : Class
     {
-        public ListClass(IOperationCodeFactory factory) : base(SpecialVariables.List, SpecialVariables.Internal)
+        public ListClass(IOperationCodeFactory factory) : base(SpecialVariables.List, SpecialVariables.Global)
         {
             CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
             CtorForMembersWithValues.Write(factory.Return());

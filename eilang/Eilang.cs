@@ -19,7 +19,7 @@ namespace eilang
     {
         public static IValue RunFunction(IEnvironment compiledEnvironment, string functionName, params object[] arguments)
         {
-            var main = new Function("main", Compiler.GlobalFunctionAndModuleName, new List<string>());
+            var main = new Function("main", SpecialVariables.Global, new List<string>());
             var args = arguments.ToList();
             foreach(var arg in args)
             {
@@ -29,7 +29,7 @@ namespace eilang
             main.Write(compiledEnvironment.OperationCodeFactory.Call(compiledEnvironment.ValueFactory.String(functionName)));
             main.Write(compiledEnvironment.OperationCodeFactory.Return());
             
-            compiledEnvironment.Functions[$"{Compiler.GlobalFunctionAndModuleName}::main"] = main;
+            compiledEnvironment.Functions[$"{SpecialVariables.Global}::main"] = main;
 
             var interpreter = new Interpreter(compiledEnvironment);
             return interpreter.Interpret();
@@ -154,6 +154,10 @@ namespace eilang
                         Console.ForegroundColor = oldColor;
                     }
                     Environment.Exit(e.ExitCode);
+                }
+                catch (ErrorMessageException e)
+                {
+                    Console.WriteLine(e.Message);
                 }
                 catch (Exception e)
                 {

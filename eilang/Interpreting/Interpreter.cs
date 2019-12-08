@@ -75,7 +75,7 @@ namespace eilang.Interpreting
                     }
 
                     throw new InterpreterException(
-                        $"Failure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}\nPrevious bytecode was '{frame.Function[frame.Address - 1]}'",
+                        $"{e.Message}\nFailure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}\nPrevious bytecode was '{frame.Function[frame.Address - 1]}'",
                         e);
                 }
                 else
@@ -88,7 +88,7 @@ namespace eilang.Interpreting
                             $"\nNear code (line {bc.Metadata.Ast.Position.Line}, col {bc.Metadata.Ast.Position.Col}): {current}";
                     }
                     throw new InterpreterException(
-                        $"Failure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}",
+                        $"{e.Message}\nFailure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}",
                         e);
                 }
             }
@@ -153,12 +153,12 @@ namespace eilang.Interpreting
             {
                 ret = m;
             }
-            else if (_scriptEnvironment.Classes.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::app", out var globApp) &&
+            else if (_scriptEnvironment.Classes.TryGetValue($"{SpecialVariables.Global}::app", out var globApp) &&
                      globApp.Functions.TryGetValue(main, out var ma))
             {
                 ret = ma;
             }
-            else if (_scriptEnvironment.Functions.TryGetValue($"{Compiler.GlobalFunctionAndModuleName}::{main}", out var globMain))
+            else if (_scriptEnvironment.Functions.TryGetValue($"{SpecialVariables.Global}::{main}", out var globMain))
             {
                 ret = globMain;
             }
@@ -170,7 +170,7 @@ namespace eilang.Interpreting
             else
             {
                 var func = _scriptEnvironment.Functions[
-                    $"{Compiler.GlobalFunctionAndModuleName}::{Compiler.GlobalFunctionAndModuleName}"];
+                    $"{SpecialVariables.Global}::{SpecialVariables.Global}"];
                 func.Write(_opFactory.Return());
                 return func;
             }

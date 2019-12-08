@@ -2,7 +2,7 @@
 
 namespace eilang.Exceptions
 {
-    public class InvalidValueException : Exception
+    public class InvalidValueException : ErrorMessageException
     {
         public InvalidValueException(string message) : base(message)
         {

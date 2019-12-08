@@ -12,5 +12,6 @@ namespace eilang.Interfaces
         IDictionary<string, Function> Functions { get; }
         IDictionary<string, Class> Classes { get; }
         IDictionary<string, ExportedFunction> ExportedFunctions { get; }
+        IDictionary<string, ExtensionFunction> ExtensionFunctions { get; }
     }
 }

@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace eilang.Exceptions
+﻿namespace eilang.Exceptions
 {
-    public class InvalidArgumentCountException : Exception
+    public class InvalidArgumentCountException : ErrorMessageException
     {
         public InvalidArgumentCountException (string message) : base(message)
         {

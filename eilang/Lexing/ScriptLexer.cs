@@ -209,6 +209,11 @@ namespace eilang.Lexing
                             token = GetToken(TokenType.MinusEquals);
                             _reader.ConsumeChar();
                         }
+                        else if (_reader.Next == TokenValues.GreaterThan)
+                        {
+                            token = GetToken(TokenType.Arrow);
+                            _reader.ConsumeChar();
+                        }
                         else if (_reader.Next == TokenValues.Minus)
                         {
                             token = GetToken(TokenType.MinusMinus);

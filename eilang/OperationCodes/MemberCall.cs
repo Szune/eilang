@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using eilang.Classes;
+using eilang.Compiling;
 using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Values;
@@ -32,11 +33,30 @@ namespace eilang.OperationCodes
                 state.Stack.Push(tmpValues.Pop());
             }
 
-            if (!callingClass.TryGetFunction(_functionName.As<StringValue>().Item, out var membFunc))
+            if (callingClass.TryGetFunction(_functionName.As<StringValue>().Item, out var membFunc))
+            {
+                PushCall(state, mCallArgCount, membFunc, callingInstance);
+            }
+            else if(state.Environment.ExtensionFunctions.TryGetValue(
+            $"{callingClass.FullName}->{_functionName.As<StringValue>().Item}", out var extensionFunc))
+            {
+                PushCall(state, mCallArgCount, extensionFunc, callingInstance);
+            }
+            else
+            {
                 throw new InvalidOperationException(
                     $"Member function '{_functionName.As<StringValue>().Item}' not found in class '{callingClass.FullName}'");
+            }
+        }
+
+        private void PushCall(State state, int mCallArgCount, Function func, Instance callingInstance)
+        {
+            if (func.Arguments.Count != mCallArgCount && !func.VariableAmountOfArguments)
+            {
+                ThrowHelper.InvalidArgumentCount(func, mCallArgCount);
+            }
             state.Stack.Push(state.ValueFactory.Integer(mCallArgCount));
-            state.Frames.Push(new CallFrame(membFunc));
+            state.Frames.Push(new CallFrame(func));
             state.Scopes.Push(new Scope(callingInstance.Scope));
         }
     }

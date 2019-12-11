@@ -1,4 +1,5 @@
 ﻿using System;
+using eilang.Exceptions;
 using eilang.Interpreting;
 using eilang.Values;
 

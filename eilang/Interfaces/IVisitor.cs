@@ -57,5 +57,6 @@ namespace eilang.Interfaces
         void Visit(AstWhile astWhile, Function function, Module mod);
         void Visit(AstNestedExpression nested, Function function, Module mod);
         void Visit(AstIndexerOnReturnedValue indexer, Function function, Module mod);
+        void Visit(AstAnonymousTypeInitialization anon, Function function, Module mod);
     }
 }

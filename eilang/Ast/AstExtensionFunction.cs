@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Parsing;
 using eilang.Tokens;
 
 namespace eilang.Ast
@@ -11,7 +12,7 @@ namespace eilang.Ast
     {
         public string Extending { get; }
 
-        public AstExtensionFunction(string extending, string name, List<string> paramz, Position pos) : base(name, paramz, pos)
+        public AstExtensionFunction(string extending, string name, List<Parameter> paramz, Position pos) : base(name, paramz, pos)
         {
             Extending = extending;
         }

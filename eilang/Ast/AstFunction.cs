@@ -2,20 +2,21 @@
 using System.Linq;
 using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Parsing;
 using eilang.Tokens;
 
 namespace eilang.Ast
 {
     public class AstFunction : IVisitableInModule, IHaveExpression, IAst
     {
-        public AstFunction(string name, List<string> arguments, Position position){
+        public AstFunction(string name, List<Parameter> arguments, Position position){
             Name = name;
             Arguments = arguments;
             Position = position;
         }
 
         public string Name { get; }
-        public List<string> Arguments { get; }
+        public List<Parameter> Arguments { get; }
         public Position Position { get; }
         public List<AstExpression> Expressions {get;} = new List<AstExpression>();
 

@@ -13,5 +13,7 @@
         public const string ArgumentCount = ".argc";
         public const string Internal = ".internal";
         public const string Global = ".global";
+
+        public const string AnyType = "any";
     }
 }

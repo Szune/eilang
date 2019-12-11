@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using eilang.Ast;
 using eilang.Exceptions;
 using eilang.Extensions;
 using eilang.Interfaces;
 using eilang.Lexing;
 using eilang.Tokens;
+using eilang.Values;
 
 namespace eilang.Parsing
 {
@@ -210,6 +212,7 @@ namespace eilang.Parsing
         {
             Require(TokenType.Function);
             if (_buffer[1].Match(TokenType.DoubleColon) || // moduled, only allow extension methods
+                _buffer[0].Match(TokenType.LeftBrace) || // anonymous type, only allow extension methods
                 _buffer[1].Match(TokenType.Arrow))
             {
                 ParseExtensionFunction(ast);
@@ -229,6 +232,11 @@ namespace eilang.Parsing
             var pos = _lastConsumed.Position;
             // the type we're extending
             _inExtensionFunction = true;
+            if (Match(TokenType.LeftBrace))
+            {
+                ParseAnonymousExtensionFunction(ast);
+                return;
+            }
             var extending = GetIdentifierWithModule();
             Require(TokenType.Arrow);
             // the function we're adding
@@ -241,14 +249,87 @@ namespace eilang.Parsing
             _inExtensionFunction = false;
         }
 
-        private List<string> ParseParameterList()
+        private void ParseAnonymousExtensionFunction(IHaveFunction ast)
+        {
+            var pos = _lastConsumed.Position;
+            var extending = ParseAnonymousTypeArgumentName();
+            Require(TokenType.Arrow);
+            // the function we're adding
+            var adding = Require(TokenType.Identifier).Text;
+            var paramz = ParseParameterList();
+            var fun = new AstExtensionFunction(extending, adding, paramz, pos);
+            ParseBlock(fun);
+            ast.Functions.Add(fun);
+            _inExtensionFunction = false;
+        }
+
+        private string ParseAnonymousTypeArgumentName()
+        {
+            var members = new List<string>();
+            Require(TokenType.LeftBrace);
+            while (!Match(TokenType.RightBrace) && !EOF())
+            {
+                var identifier = Require(TokenType.Identifier).Text;
+                members.Add(identifier);
+                if (Match(TokenType.Comma))
+                {
+                    Consume();
+                }
+            }
+
+            Require(TokenType.RightBrace);
+            return GetAnonymousTypeName(members);
+        }
+
+        private List<Parameter> ParseParameterList()
         {
             Require(TokenType.LeftParenthesis);
-            var paramz = new List<string>();
+            var paramz = new List<Parameter>();
             while (!Match(TokenType.RightParenthesis) && !Match(TokenType.EOF))
             {
                 var arg = Require(TokenType.Identifier).Text;
-                paramz.Add(arg);
+                Parameter paramType;
+                if (!Match(TokenType.Colon))
+                {
+                    paramType = new Parameter(arg, new List<ParameterType>
+                    {
+                        new ParameterType(SpecialVariables.AnyType, TypeOfValue.Any)
+                    });
+                }
+                else
+                {
+                    var parameterTypes = new List<ParameterType>();
+                    Consume(); // consume ':'
+                    do
+                    {
+                        var ident = "";
+                        if (Match(TokenType.LeftBrace))
+                        {
+                            ident = ParseAnonymousTypeArgumentName();
+                        }
+                        else
+                        {
+                            ident = GetIdentifierWithModule();
+                        }
+                        var type = Types.GetType(ident);
+                        if (type == TypeOfValue.Class && !ident.Contains("::"))
+                        {
+                            ident = $"{SpecialVariables.Global}::{ident}";
+                        }
+                        parameterTypes.Add(new ParameterType(ident, type));
+                        if (Match(TokenType.Pipe))
+                        {
+                            Consume(); // consume | and continue
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    } while (!EOF());
+                    
+                    paramType = new Parameter(arg, parameterTypes);
+                }
+                paramz.Add(paramType);
                 if (Match(TokenType.Comma))
                 {
                     Consume();
@@ -633,10 +714,46 @@ namespace eilang.Parsing
 
         private AstExpression ParseClassInitialization()
         {
+            if (Match(TokenType.LeftBrace))
+            {
+                return ParseAnonymousTypeInitialization();
+            }
             var identifiers = GetIdentifierWithModule();
             var pos = _lastConsumed.Position;
             var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
             return new AstClassInitialization(identifiers, args, pos);
+        }
+
+        private AstExpression ParseAnonymousTypeInitialization()
+        {
+            var pos = _lastConsumed.Position;
+            var members = new List<MemberInitialization>();
+            Require(TokenType.LeftBrace);
+            while (!Match(TokenType.RightBrace) && !EOF())
+            {
+                var identifier = Require(TokenType.Identifier).Text;
+                Require(TokenType.Equals);
+                var expr = ParseTernaryOperator();
+                members.Add(new MemberInitialization(identifier, expr));
+                if (Match(TokenType.Comma))
+                {
+                    Consume();
+                }
+            }
+            Require(TokenType.RightBrace);
+
+            var name = GetAnonymousTypeName(members.Select(x => x.Name));
+            return new AstAnonymousTypeInitialization(name, members, pos);
+        }
+
+        private string GetAnonymousTypeName(IEnumerable<string> memberNames)
+        {
+            return string.Join("`", memberNames);
+        }
+
+        private bool EOF()
+        {
+            return Match(TokenType.EOF);
         }
 
         private AstFunctionCall ParseFunctionCall(string name)
@@ -1031,6 +1148,10 @@ namespace eilang.Parsing
                         ThrowParserException($"Token '{nameof(TokenType.Me)}' may only live inside classes");
                     }
                     Consume();
+                    if (Match(TokenType.LeftBracket))
+                    {
+                        return ParseIndexerExpression(SpecialVariables.Me);
+                    }
                     return new AstMe(pos);
                 case TokenType.True:
                     Consume();

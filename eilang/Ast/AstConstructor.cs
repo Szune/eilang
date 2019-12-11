@@ -3,13 +3,14 @@ using System.Linq;
 using eilang.Classes;
 using eilang.Compiling;
 using eilang.Interfaces;
+using eilang.Parsing;
 using eilang.Tokens;
 
 namespace eilang.Ast
 {
     public class AstConstructor : AstFunction, IVisitableInClass
     {
-        public AstConstructor (string name, List<string> arguments, Position position) 
+        public AstConstructor (string name, List<Parameter> arguments, Position position) 
             : base(name, arguments, position)
         {
         }

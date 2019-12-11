@@ -61,7 +61,7 @@ namespace eilang.Interpreting
                         ? result
                         : _valueFactory.Void();
             }
-            catch (Exception e) when (!(e is AssertionException) && !(e is ExitException))
+            catch (Exception e) when (!(e is AssertionException) && !(e is ExitException) && !(e is ErrorMessageException))
             {
                 if (frame.Address > 0)
                 {

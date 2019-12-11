@@ -1,4 +1,6 @@
-﻿using eilang.Interfaces;
+﻿using eilang.Compiling;
+using eilang.Interfaces;
+using eilang.Parsing;
 
 namespace eilang.OperationCodes
 {
@@ -6,6 +8,7 @@ namespace eilang.OperationCodes
     {
         Push Push(IValue value);
         Define Define(string name);
+        DefineAndEnsureType DefineAndEnsureType(Parameter parameter, Function function);
         Set Set(IValue name);
         Equals Equals();
         NotEquals NotEquals();

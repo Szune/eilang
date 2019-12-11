@@ -287,6 +287,10 @@ namespace eilang.Lexing
                             token = GetToken(TokenType.Or);
                             _reader.ConsumeChar();
                         }
+                        else
+                        {
+                            token = GetToken(TokenType.Pipe);
+                        }
 
                         break;
                     case TokenValues.LessThan:

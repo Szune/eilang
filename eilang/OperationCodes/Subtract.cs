@@ -1,4 +1,5 @@
-﻿using eilang.Interfaces;
+﻿using eilang.Exceptions;
+using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Values;
 

@@ -1,4 +1,6 @@
-﻿using eilang.Interfaces;
+﻿using eilang.Compiling;
+using eilang.Interfaces;
+using eilang.Parsing;
 
 namespace eilang.OperationCodes
 {
@@ -65,6 +67,11 @@ namespace eilang.OperationCodes
         public Define Define(string name)
         {
             return new Define(name);
+        }
+        
+        public DefineAndEnsureType DefineAndEnsureType(Parameter parameter, Function function)
+        {
+            return new DefineAndEnsureType(parameter, function);
         }
 
         public Set Set(IValue name)

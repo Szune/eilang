@@ -36,7 +36,7 @@ namespace eilang
                     }
                     catch (ErrorMessageException e)
                     {
-                        Console.WriteLine(e.Message);
+                        WithColor(ConsoleColor.Red, () => { Console.WriteLine(e.Message); });
                     }
                 }
                 else if (first == "-E")
@@ -51,7 +51,7 @@ namespace eilang
                     }
                     catch (ErrorMessageException e)
                     {
-                        Console.WriteLine(e.Message);
+                        WithColor(ConsoleColor.Red, () => { Console.WriteLine(e.Message); });
                     }
                 }
                 return;
@@ -77,11 +77,11 @@ namespace eilang
                     }
                     catch (ErrorMessageException e)
                     {
-                        Console.WriteLine(e.Message);
+                        WithColor(ConsoleColor.Red, () => { Console.WriteLine(e.Message); });
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        WithColor(ConsoleColor.Red, () => { Console.WriteLine(e); });
                     }
                 }
 
@@ -90,15 +90,14 @@ namespace eilang
 #endif
 
 #if DEBUG
-            // TODO: -0.8 decide if and how to implement "dynamic analysis" (type checking on arguments when the function call is being made, meh)
+            // TODO: -0.99 implement interfaces
+            // TODO: -0.9. implement maps (dictionaries) - MapClass
             // TODO: finish changing exceptions in operation codes to ErrorMessageException instead of InterpreterException
             // TODO: -0.5 implement try/catch/finally
             // TODO: 0. parser bug: fix variable scope bug (variables inside class functions collide with global variables,
             // scope should simply take the nearest one in this case), allow global variables to have the same names as 
             // class function variables or class variables
-            // TODO: 0.9 implement date/time class(es)
-            // TODO: 1. implement maps (dictionaries) - MapClass
-            // TODO: 2. implement working with processes (starting processes, killing processes)
+            // TODO: 0.9 implement date/time class(es
             // TODO: 3. implement networking
             // TODO: 4. implement reflection-like functionality
             // TODO: 5. implement switch statements
@@ -123,6 +122,14 @@ namespace eilang
             returnValue = Eilang.Eval("ret 12 * 14;");
             Debug.Assert(returnValue.To<int>() == 168);
 #endif
+        }
+
+        public static void WithColor(ConsoleColor color, Action log)
+        {
+            var old = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            log();
+            Console.ForegroundColor = old;
         }
     }
 }

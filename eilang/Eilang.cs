@@ -157,7 +157,7 @@ namespace eilang
                 }
                 catch (ErrorMessageException e)
                 {
-                    Console.WriteLine(e.Message);
+                    Program.WithColor(ConsoleColor.Red, () => { Console.WriteLine(e.Message); });
                 }
                 catch (Exception e)
                 {

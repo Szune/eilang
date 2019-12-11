@@ -67,6 +67,7 @@
         Tilde,
         Use,
         While,
-        Arrow
+        Arrow,
+        Pipe
     }
 }

@@ -99,15 +99,14 @@ namespace eilang.Compiling
             member.InitExpr.Accept(this, clas.CtorForMembersWithValues, mod);
             clas.CtorForMembersWithValues.Write(OpFactory.Define(member.Ident), new Metadata{Ast = member});
         }
-
         public void Visit(AstConstructor ctor, Class clas, Module mod)
         {
             Log($"Compiling ctor for '{clas.Name}'");
-            var newCtor = new MemberFunction(ctor.Name, "", ctor.Arguments, clas);
+            var newCtor = new MemberFunction(ctor.Name, "", ctor.Arguments.Select(a => a.Name).ToList(), clas);
             newCtor.Write(OpFactory.Define(SpecialVariables.Me), new Metadata{Ast = ctor});
             foreach (var arg in ctor.Arguments)
             {
-                newCtor.Write(OpFactory.Define(arg), new Metadata{Ast = ctor});
+                newCtor.Write(OpFactory.DefineAndEnsureType(arg, newCtor), new Metadata{Ast = ctor});
             }
 
             if (ctor.Expressions.Any())
@@ -471,6 +470,37 @@ namespace eilang.Compiling
             }
         }
 
+        public void Visit(AstAnonymousTypeInitialization anon, Function function, Module mod)
+        {
+            var className = $"{SpecialVariables.Global}::{anon.Name}";
+            if (!ScriptEnvironment.Classes.ContainsKey(className))
+            {
+                var clas = new Class(anon.Name, SpecialVariables.Global);
+                clas.CtorForMembersWithValues.Write(OpFactory.Define(SpecialVariables.Me));
+                clas.CtorForMembersWithValues.Write(OpFactory.Return());
+                var ctor = new MemberFunction($".ctor::{className}", 
+                    SpecialVariables.Global, 
+                    anon.Members.Select(m => m.Name).ToList(),
+                    clas);
+                ctor.Write(OpFactory.Define(SpecialVariables.Me));
+                foreach (var member in anon.Members)
+                {
+                    ctor.Write(OpFactory.Define(member.Name));
+                } 
+                ctor.Write(OpFactory.Return());
+                clas.Constructors.Add(ctor);
+                ScriptEnvironment.Classes[className] = clas;
+            }
+
+            foreach (var member in anon.Members)
+            {
+                member.Expr.Accept(this, function, mod);
+            }
+            
+            function.Write(OpFactory.Push(ValueFactory.Integer(anon.Members.Count)), new Metadata {Ast = anon});
+            function.Write(OpFactory.Initialize(ValueFactory.String(className)), new Metadata {Ast = anon});           
+        }
+
         public void Visit(AstForArray forArray, Function function, Module mod)
         {
             ForDepth++;
@@ -553,9 +583,9 @@ namespace eilang.Compiling
             forRange.Range.Begin.Accept(this, function, mod);
             forRange.Range.End.Accept(this, function, mod);
             if (forRange.Reversed)
-                function.Write(OpFactory.LessThan(), new Metadata{Ast = forRange});
+                function.Write(OpFactory.LessThanOrEquals(), new Metadata{Ast = forRange});
             else
-                function.Write(OpFactory.GreaterThan(), new Metadata{Ast = forRange});
+                function.Write(OpFactory.GreaterThanOrEquals(), new Metadata{Ast = forRange});
             function.Write(OpFactory.JumpIfTrue(ValueFactory.Integer(0)), new Metadata{Ast = forRange});
             var addressOfFirstJmpT = function.Code.Count - 1;
             forRange.Range.Begin.Accept(this, function, mod);
@@ -564,9 +594,9 @@ namespace eilang.Compiling
             var addressOfCmp = function.Code.Count - 1;
             forRange.Range.End.Accept(this, function, mod);
             if (forRange.Reversed)
-                function.Write(OpFactory.LessThan(), new Metadata{Ast = forRange});
+                function.Write(OpFactory.LessThanOrEquals(), new Metadata{Ast = forRange});
             else
-                function.Write(OpFactory.GreaterThan(), new Metadata{Ast = forRange});
+                function.Write(OpFactory.GreaterThanOrEquals(), new Metadata{Ast = forRange});
             function.Write(OpFactory.JumpIfTrue(ValueFactory.Integer(0)), new Metadata{Ast = forRange});
             var addressOfJmpT = function.Code.Count - 1;
             forRange.Body.Accept(this, function, mod);
@@ -857,10 +887,10 @@ namespace eilang.Compiling
         public void Visit(AstFunction func, Module mod)
         {
             Log($"Compiling function declaration '{func.Name}'");
-            var newFunc = new Function(func.Name, mod.Name, func.Arguments);
+            var newFunc = new Function(func.Name, mod.Name, func.Arguments.Select(a => a.Name).ToList());
             for (int i = func.Arguments.Count - 1; i > -1; i--)
             {
-                newFunc.Write(OpFactory.Define(func.Arguments[i]), new Metadata{Ast = func});
+                newFunc.Write(OpFactory.DefineAndEnsureType(func.Arguments[i], newFunc), new Metadata{Ast = func});
             }
 
             func.Expressions.Accept(this, newFunc, mod);
@@ -895,13 +925,13 @@ namespace eilang.Compiling
             }
             var func = new ExtensionFunction(memberFunc.Name,
                 extendingModule, 
-                memberFunc.Arguments,
+                memberFunc.Arguments.Select(a => a.Name).ToList(),
                 memberFunc.Extending);
             
             func.Write(OpFactory.Define(SpecialVariables.ArgumentCount), new Metadata{Ast = memberFunc});
             for (int i = memberFunc.Arguments.Count - 1; i > -1; i--)
             {
-                func.Write(OpFactory.Define(memberFunc.Arguments[i]), new Metadata{Ast = memberFunc});
+                func.Write(OpFactory.DefineAndEnsureType(memberFunc.Arguments[i], func), new Metadata{Ast = memberFunc});
             }
 
             memberFunc.Expressions.Accept(this, func, mod);
@@ -920,12 +950,12 @@ namespace eilang.Compiling
         public void Visit(AstMemberFunction memberFunc, Class clas, Module mod)
         {
             Log($"Compiling member function declaration '{memberFunc.Name}'");
-            var func = new MemberFunction(memberFunc.Name, clas.FullName, memberFunc.Arguments, clas);
+            var func = new MemberFunction(memberFunc.Name, clas.FullName, memberFunc.Arguments.Select(a => a.Name).ToList(), clas);
 
             func.Write(OpFactory.Define(SpecialVariables.ArgumentCount), new Metadata{Ast = memberFunc});
             for (int i = memberFunc.Arguments.Count - 1; i > -1; i--)
             {
-                func.Write(OpFactory.Define(memberFunc.Arguments[i]), new Metadata{Ast = memberFunc});
+                func.Write(OpFactory.DefineAndEnsureType(memberFunc.Arguments[i], func), new Metadata{Ast = memberFunc});
             }
 
             memberFunc.Expressions.Accept(this, func, mod);

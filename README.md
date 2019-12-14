@@ -12,12 +12,12 @@ There's a basic **Telegram bot** implementation under [Scripts/telegram.ei](Scri
 ```csharp
 env.AddClassesDerivedFromClassInAssembly<Class>(); // adds classes to eilang,
 // classes can use any OpCode that implements IOperationCode
-env.AddExportedFunctionsFrom(typeof(ExportedFunctions)); // adds functions to eilang,
+env.AddExportedFunctionsFromClass(typeof(ExportedFunctions)); // adds functions to eilang,
 // from a static class
-env.AddExportedFunctionsFrom<ExportedFunctions>(); // adds functions to eilang,
+env.AddExportedFunctionsFromClass<ExportedFunctions>(); // adds functions to eilang,
 // from a non-static class
 ```
-Look at `eilang/Classes/EnvClass.cs` for a simple class
+Look at `eilang/Classes/DisposableClass.cs` for a simple class
 
 Example exported function from `eilang/ExportedFunctions.cs`:
 ```csharp
@@ -40,7 +40,7 @@ println('hello world');
 ###### Reading
 ```eilang
 # 'use' statements close the file handle at the end of the block
-use (var f = io::open_file('file_test.txt')) {
+use (var f = file::open('file_test.txt')) {
     for { 
         if(f.is_eof()) {
             break;
@@ -53,13 +53,13 @@ use (var f = io::open_file('file_test.txt')) {
 ###### Writing
 ```eilang
 # 'use' statements close the file handle at the end of the block
-use (var f = io::open_file('file_test.txt', false)) {
+use (var f = file::open('file_test.txt', false)) {
     f.clear(); # removes all content from the file
     f.writeln("this is writing a line to a file without appending");
     f.write("this is writing without appending a line at the end");
 } # file is closed here
 
-use (var f = io::open_file('file_test.txt', true)) { 
+use (var f = file::open('file_test.txt', true)) { 
     f.writeln("this is appending a line at the end of the file");
     f.write("this is appending at the end of the file without writing a newline");
 }
@@ -100,9 +100,9 @@ fun main() {
 More class functionality:
 ```eilang
 typ point {
-    ctor(x, y); # creates a constructor that sets the member variables 'x' and 'y'
+    ctor(x: int, y: int); # creates a constructor that sets the member variables 'x' and 'y'
 
-    fun idx_get(idx) { # indexer, for no good reason
+    fun idx_get(idx: int) { # indexer, for no good reason
         if(idx == 0) {
             ret x;
         } else if (idx == 1) {

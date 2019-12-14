@@ -1,4 +1,4 @@
-typ wrapper { ctor(has_value, value); }
+typ wrapper { ctor(has_value: bool, value: any); }
 
 typ bot {
     ctor(token, callback);

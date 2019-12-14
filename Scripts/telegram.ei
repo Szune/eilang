@@ -5,7 +5,7 @@ fun handle_msg(bot, msg, chatId) {
     if(!msg.has_value) {
         ret;
     }
-    if(str::trim(msg.value).lower() == "/test") {
+    if(msg.value.trim().lower() == "/test") {
         test_command(bot, chatId);
     }
     ret;

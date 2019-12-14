@@ -6,11 +6,11 @@ using eilang.Values;
 
 namespace eilang.OperationCodes
 {
-    public class ExportedCall : IOperationCode
+    public class CallExported : IOperationCode
     {
         private readonly IValue _functionName;
 
-        public ExportedCall(IValue functionName)
+        public CallExported(IValue functionName)
         {
             _functionName = functionName;
         }

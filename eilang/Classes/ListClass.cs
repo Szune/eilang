@@ -8,7 +8,6 @@ namespace eilang.Classes
     {
         public ListClass(IOperationCodeFactory factory) : base(SpecialVariables.List, SpecialVariables.Global)
         {
-            CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
             CtorForMembersWithValues.Write(factory.Return());
             Functions.Add("len", new MemberFunction("len", Module, new List<string>(), this)
             {

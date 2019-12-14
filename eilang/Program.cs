@@ -91,13 +91,14 @@ namespace eilang
 
 #if DEBUG
             // TODO: -0.99 implement interfaces
-            // TODO: -0.9. implement maps (dictionaries) - MapClass
             // TODO: finish changing exceptions in operation codes to ErrorMessageException instead of InterpreterException
             // TODO: -0.5 implement try/catch/finally
             // TODO: 0. parser bug: fix variable scope bug (variables inside class functions collide with global variables,
             // scope should simply take the nearest one in this case), allow global variables to have the same names as 
             // class function variables or class variables
             // TODO: 0.9 implement date/time class(es
+            // TODO: refactor parser and compiler
+            // TODO: 2. implement Set (i.e. HashSet)
             // TODO: 3. implement networking
             // TODO: 4. implement reflection-like functionality
             // TODO: 5. implement switch statements
@@ -113,7 +114,7 @@ namespace eilang
             // TODO: 11. perform analysis to remove unhandled return values from the stack,
             // currently the stack gets filled with unhandled return values if calling a function that returns a value inside a loop
             // TODO: 12. static analysis of types (i.e. type checking)
-            // TODO: 13. rework stack/value/memory implementation to be more efficient
+            // TODO: 13. rework stack/value/memory implementation to be more efficient, getting rid of unnecessary memory overhead etc
 
             //EilangScript.RunFile(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");
             Eilang.RunFile("test.ei");

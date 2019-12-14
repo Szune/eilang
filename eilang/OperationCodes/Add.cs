@@ -87,6 +87,9 @@ namespace eilang.OperationCodes
                         case TypeOfValue.List:
                             state.Stack.Push(state.ValueFactory.String(left.As<StringValue>().Item + right));
                             break;
+                        case TypeOfValue.Map:
+                            state.Stack.Push(state.ValueFactory.String(left.As<StringValue>().Item + right));
+                            break;
                         default:
                             ThrowHelper.TypeMismatch("+");
                             break;

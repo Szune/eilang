@@ -9,11 +9,11 @@ using eilang.Values;
 
 namespace eilang.OperationCodes
 {
-    public class MemberCall : IOperationCode
+    public class CallMember : IOperationCode
     {
         private readonly IValue _functionName;
 
-        public MemberCall(IValue functionName)
+        public CallMember(IValue functionName)
         {
             _functionName = functionName;
         }

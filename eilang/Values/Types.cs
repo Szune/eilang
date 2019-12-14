@@ -4,7 +4,6 @@ using System.Linq;
 using eilang.Compiling;
 using eilang.Exceptions;
 using eilang.Interfaces;
-using eilang.OperationCodes;
 using eilang.Parsing;
 
 namespace eilang.Values
@@ -21,10 +20,11 @@ namespace eilang.Values
         Instance = 32,
         Void = 64,
         List = 128,
-        FunctionPointer = 256,
+        Map = 256,
         Uninitialized = 512,
         Disposable = 1024,
-        Any = 2048
+        FunctionPointer = 2048,
+        Any  = 4096
     }
     
     public static class Types
@@ -39,6 +39,7 @@ namespace eilang.Values
                 "string" => TypeOfValue.String,
                 "bool" => TypeOfValue.Bool,
                 "list" => TypeOfValue.List,
+                "map" => TypeOfValue.Map,
                 "fp" => TypeOfValue.FunctionPointer,
                 _ => TypeOfValue.Class // while it is likely, there should be a more appropriate check later on
             };
@@ -53,6 +54,27 @@ namespace eilang.Values
         }
 
         public static void Ensure(Function function, string parameterName, IValue value, List<ParameterType> types)
+        {
+            if (types.First().Type == TypeOfValue.Any)
+            {
+                return; // anything's fine
+            }
+
+            if (value is InstanceValue iv &&
+                types.Any(t =>
+                    t.Type == TypeOfValue.Class &&
+                    t.Name == iv.Item.Owner.FullName))
+            {
+                return;
+            }
+
+            if (!types.Any(t => t.Type == value.Type))
+            {
+                ThrowHelper.InvalidArgumentType(function, parameterName, value, types);
+            }
+        }
+        
+        public static void Ensure(string function, string parameterName, IValue value, List<ParameterType> types)
         {
             if (types.First().Type == TypeOfValue.Any)
             {

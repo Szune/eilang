@@ -98,6 +98,13 @@ namespace eilang.Extensions
             throw new InvalidValueException(message);
         }
         
+        public static IValue RequireAnyOf(this IValue value, TypeOfValue typeFlags, string message)
+        {
+            if ((value.Type & typeFlags) != 0) 
+                return value;
+            throw new InvalidValueException(message);
+        }
+        
         public static void OrderAsArguments(this List<IValue> value)
         {
             value.Reverse();

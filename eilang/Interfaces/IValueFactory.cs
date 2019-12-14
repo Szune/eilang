@@ -19,6 +19,7 @@ namespace eilang.Interfaces
         IValue Void();
         IValue Uninitialized();
         IValue List(List<IValue> items = default);
+        IValue Map(Dictionary<IValue, IValue> items = default);
         IValue FunctionPointer(string ident);
         IValue Bool(bool parse);
         IValue DisposableObject(IDisposable obj);

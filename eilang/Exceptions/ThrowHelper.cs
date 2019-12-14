@@ -38,5 +38,12 @@ namespace eilang.Exceptions
             var arguments = string.Join(", ", func.Arguments);
             return $"{func.FullName}({arguments})";
         }
+
+        public static void InvalidArgumentType(string function, string parameterName, IValue value, List<ParameterType> types)
+        {
+            var allowedTypes = string.Join(" | ", types.Select(t => t.Name));
+            var actualType = Types.GetTypeName(value);
+            throw new InvalidArgumentTypeException($"Invalid argument type '{actualType}' for parameter '{parameterName}' in function '{function}', expected {allowedTypes}");
+        }
     }
 }

@@ -8,6 +8,7 @@ using eilang.Exporting;
 using eilang.Extensions;
 using eilang.Interfaces;
 using eilang.Interpreting;
+using eilang.OperationCodes;
 using eilang.Values;
 
 namespace eilang
@@ -35,19 +36,47 @@ namespace eilang
         [ExportFunction("type")]
         public static IValue Type(IValueFactory fac, IValue args)
         {
-            var type = args.Require(TypeOfValue.Instance, "type takes 1 argument: instance value").As<InstanceValue>();
+            var type = args.RequireAnyOf(TypeOfValue.Instance | TypeOfValue.Map | TypeOfValue.List | TypeOfValue.String, "type takes 1 argument: instance | map | list | string value");
+            var typeClass = GetClass(type);
+            var typeScope = GetScope(type);
+            // .As<InstanceValue>();
             var scope = new Scope();
-            scope.DefineVariable("name", fac.String(type.Item.Owner.Name));
-            scope.DefineVariable("module", fac.String(type.Item.Owner.Module));
-            scope.DefineVariable("full_name", fac.String(type.Item.Owner.FullName));
+            scope.DefineVariable("name", fac.String(typeClass.Name));
+            scope.DefineVariable("module", fac.String(typeClass.Module));
+            scope.DefineVariable("full_name", fac.String(typeClass.FullName));
             scope.DefineVariable("variables",
-                fac.List(type.Item.Scope.GetAllVariables().Keys
+                fac.List(typeScope.GetAllVariables().Keys
                     .Where(k => !string.Equals(k, SpecialVariables.Me))
                     .Select(k => fac.String(k)).ToList()));
             scope.DefineVariable("functions",
-                fac.List(type.Item.Owner.Functions.Keys
+                fac.List(typeClass.Functions.Keys
                     .Select(k => fac.String(k)).ToList()));
             return fac.Instance(new Instance(scope, _typeInfoClass.Value));
+        }
+
+        private static Scope GetScope(IValue type)
+        {
+            return type switch
+            {
+                InstanceValue instanceValue => instanceValue.Item.Scope,
+                ListValue _ => new Scope(),
+                MapValue _ => new Scope(),
+                StringValue _ => new Scope(),
+                _ => throw new ArgumentOutOfRangeException(nameof(type))
+            } ;
+        }
+
+        private static Class GetClass(IValue type)
+        {
+            var _ = new OperationCodeFactory();
+            return type switch
+            {
+                InstanceValue instanceValue => instanceValue.Item.Owner,
+                ListValue listValue => new ListClass(_),
+                MapValue mapValue => new MapClass(_),
+                StringValue stringValue => new StringClass(_),
+                _ => throw new ArgumentOutOfRangeException(nameof(type))
+            } ;
         }
 
         [ExportFunction("input")]
@@ -121,6 +150,9 @@ namespace eilang
                         Console.WriteLine(val.ToString());
                         break;
                     case TypeOfValue.List:
+                        Console.WriteLine(val.ToString());
+                        break;
+                    case TypeOfValue.Map:
                         Console.WriteLine(val.ToString());
                         break;
                     case TypeOfValue.Instance:

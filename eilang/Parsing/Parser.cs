@@ -1109,6 +1109,8 @@ namespace eilang.Parsing
             {
                 case TokenType.LeftBracket:
                     return ParseListInit();
+                case TokenType.LeftBrace:
+                    return ParseMapInit();
                 case TokenType.LeftParenthesis:
                     Consume();
                     if (Match(TokenType.RightParenthesis))
@@ -1185,7 +1187,53 @@ namespace eilang.Parsing
 
             return ThrowParserException("not implemented");
         }
-        
+
+        private AstExpression ParseMapInit()
+        {
+            Require(TokenType.LeftBrace);
+            var pos = _lastConsumed.Position;
+            var kvps = new List<KeyValuePair<AstExpression, AstExpression>>();
+            while (!Match(TokenType.RightBrace) && !EOF())
+            {
+                var pair = ParsePair();
+                kvps.Add(pair);
+                if (Match(TokenType.Comma))
+                {
+                    Consume();
+                }
+            }
+
+            Require(TokenType.RightBrace);
+            return new AstNewMap(kvps, pos);
+        }
+
+        private KeyValuePair<AstExpression, AstExpression> ParsePair()
+        {
+            var key = ParseValidMapInitializationKey();
+            Require(TokenType.Colon);
+            var value = ParseTernaryOperator();
+            return new KeyValuePair<AstExpression, AstExpression>(key, value);
+        }
+
+        private AstExpression ParseValidMapInitializationKey()
+        {
+            // for now, when initializing a map either a string or integer constant has to be used as a key
+            // if/when I find it useful to add initializing with e.g. a variable reference that resolves to a string or integer
+            // I will do that, but until then, adding such items will have to be done with the .add() function
+            var pos = _lastConsumed.Position;
+            switch (_buffer[0].Type)
+            {
+                case TokenType.String:
+                    var str = Require(TokenType.String).Text;
+                    return new AstStringConstant(str, pos);
+                case TokenType.Integer:
+                    var inte = Require(TokenType.Integer).Integer;
+                    return new AstIntegerConstant(inte, pos);
+                default:
+                    throw new ErrorMessageException("Invalid token found when parsing a map key.");
+            }
+        }
+
         private AstExpression ParseModuleAccess()
         {
             var pos = _lastConsumed.Position;

@@ -7,8 +7,8 @@ namespace eilang.OperationCodes
     {
         public void Execute(State state)
         {
-            var initCount = state.Stack.Pop();
-            if (initCount.Get<int>() < 1)
+            var initCount = state.Stack.Pop().Get<int>();
+            if (initCount < 1)
             {
                 state.Stack.Push(state.ValueFactory.List());
             }
@@ -16,7 +16,7 @@ namespace eilang.OperationCodes
             {
                 var list = state.ValueFactory.List();
                 var actList = list.As<ListValue>().Item;
-                for (int i = 0; i < initCount.Get<int>(); i++)
+                for (int i = 0; i < initCount; i++)
                 {
                     actList.Add(state.Stack.Pop());
                 }

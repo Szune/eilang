@@ -58,6 +58,16 @@ namespace eilang.OperationCodes
         private readonly FileRead _fileReadChar = new FileRead(false);
         private readonly FileEof _fileEof = new FileEof();
         private readonly FileClear _fileClear = new FileClear();
+        private readonly MapNew _mapNew = new MapNew();
+        private readonly MapLength _mapLength = new MapLength();
+        private readonly MapGetValues _mapGetValues = new MapGetValues();
+        private readonly MapGetKeys _mapGetKeys = new MapGetKeys();
+        private readonly MapGetItems _mapGetItems = new MapGetItems();
+        private readonly MapAdd _mapAdd = new MapAdd();
+        private readonly MapClear _mapClear = new MapClear();
+        private readonly MapRemove _mapRemove = new MapRemove();
+        private readonly MapIndexerGet _mapIndexerGet = new MapIndexerGet();
+        private readonly MapIndexerSet _mapIndexerSet = new MapIndexerSet();
 
         public Push Push(IValue value)
         {
@@ -184,9 +194,9 @@ namespace eilang.OperationCodes
             return new Initialize(className);
         }
 
-        public ExportedCall ExportedCall(IValue functionName)
+        public CallExported CallExported(IValue functionName)
         {
-            return new ExportedCall(functionName);
+            return new CallExported(functionName);
         }
 
         public TypeGet TypeGet()
@@ -194,9 +204,9 @@ namespace eilang.OperationCodes
             return _typeGet;
         }
 
-        public MemberCall MemberCall(IValue functionName)
+        public CallMember CallMember(IValue functionName)
         {
-            return new MemberCall(functionName);
+            return new CallMember(functionName);
         }
 
         public MemberReference MemberReference(IValue memberName)
@@ -406,6 +416,56 @@ namespace eilang.OperationCodes
         public FileClear FileClear()
         {
             return _fileClear;
+        }
+
+        public MapNew MapNew()
+        {
+            return _mapNew;
+        }
+
+        public MapLength MapLength()
+        {
+            return _mapLength;
+        }
+
+        public MapGetItems MapGetItems()
+        {
+            return _mapGetItems;
+        }
+
+        public MapGetKeys MapGetKeys()
+        {
+            return _mapGetKeys;
+        }
+
+        public MapGetValues MapGetValues()
+        {
+            return _mapGetValues;
+        }
+
+        public MapAdd MapAdd()
+        {
+            return _mapAdd;
+        }
+
+        public MapClear MapClear()
+        {
+            return _mapClear;
+        }
+
+        public MapRemove MapRemove()
+        {
+            return _mapRemove;
+        }
+
+        public MapIndexerGet MapIndexerGet()
+        {
+            return _mapIndexerGet;
+        }
+
+        public MapIndexerSet MapIndexerSet()
+        {
+            return _mapIndexerSet;
         }
     }
 }

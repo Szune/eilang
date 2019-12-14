@@ -1,4 +1,6 @@
-﻿namespace eilang.Values
+﻿using System;
+
+namespace eilang.Values
 {
     public class StringValue : ValueBase<string>
     {
@@ -11,6 +13,18 @@
         public override string ToString()
         {
             return Item ?? "{null}";
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is StringValue str))
+                return false;
+            return str.Item.Equals(Item, StringComparison.Ordinal);
+        }
+
+        public override int GetHashCode()
+        {
+            return Item.GetHashCode();
         }
     }
 }

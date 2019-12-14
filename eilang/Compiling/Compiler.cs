@@ -31,7 +31,8 @@ namespace eilang.Compiling
         protected const int Continue = 0xCAB;
         public const int InLoopReturn = 0xCAF0;
 
-        public Compiler(IEnvironment scriptEnvironment, TextWriter logger, IValueFactory valueFactory, IOperationCodeFactory opFactory)
+        public Compiler(IEnvironment scriptEnvironment, TextWriter logger, IValueFactory valueFactory,
+            IOperationCodeFactory opFactory)
         {
             ScriptEnvironment = scriptEnvironment;
             Logger = logger;
@@ -51,7 +52,7 @@ namespace eilang.Compiling
                 opFactory ?? new OperationCodeFactory());
             compiler.Visit(root);
         }
-        
+
         public void Visit(AstRoot root)
         {
             Log("Compiling...");
@@ -65,7 +66,7 @@ namespace eilang.Compiling
             root.Expressions.Accept(this, func, globalMod);
             Log("Compilation finished.");
         }
-        
+
         public void Visit(AstModule module)
         {
             Log($"Compiling module declaration '{module.Name}'");
@@ -82,31 +83,33 @@ namespace eilang.Compiling
                 : $"{SpecialVariables.Global}::{init.Class}";
             Log($"Compiling instance initialization '{fullName}'");
             init.Arguments.Accept(this, function, mod);
-            function.Write(OpFactory.Push(ValueFactory.Integer(init.Arguments.Count)), new Metadata { Ast = init});
+            function.Write(OpFactory.Push(ValueFactory.Integer(init.Arguments.Count)), new Metadata {Ast = init});
             function.Write(OpFactory.Initialize(ValueFactory.String(fullName)), new Metadata {Ast = init});
         }
 
         public void Visit(AstMemberVariableDeclaration member, Class clas, Module mod)
         {
             Log($"Compiling member variable declaration for '{member.Ident}'");
-            clas.CtorForMembersWithValues.Write(OpFactory.Push(ValueFactory.Uninitialized()), new Metadata{Ast = member});
-            clas.CtorForMembersWithValues.Write(OpFactory.Define(member.Ident), new Metadata{Ast = member});
+            clas.CtorForMembersWithValues.Write(OpFactory.Push(ValueFactory.Uninitialized()),
+                new Metadata {Ast = member});
+            clas.CtorForMembersWithValues.Write(OpFactory.Define(member.Ident), new Metadata {Ast = member});
         }
 
         public void Visit(AstMemberVariableDeclarationWithInit member, Class clas, Module mod)
         {
             Log($"Compiling member variable declaration with initial value for '{member.Ident}'");
             member.InitExpr.Accept(this, clas.CtorForMembersWithValues, mod);
-            clas.CtorForMembersWithValues.Write(OpFactory.Define(member.Ident), new Metadata{Ast = member});
+            clas.CtorForMembersWithValues.Write(OpFactory.Define(member.Ident), new Metadata {Ast = member});
         }
+
         public void Visit(AstConstructor ctor, Class clas, Module mod)
         {
             Log($"Compiling ctor for '{clas.Name}'");
             var newCtor = new MemberFunction(ctor.Name, "", ctor.Arguments.Select(a => a.Name).ToList(), clas);
-            newCtor.Write(OpFactory.Define(SpecialVariables.Me), new Metadata{Ast = ctor});
+            newCtor.Write(OpFactory.Define(SpecialVariables.Me), new Metadata {Ast = ctor});
             foreach (var arg in ctor.Arguments)
             {
-                newCtor.Write(OpFactory.DefineAndEnsureType(arg, newCtor), new Metadata{Ast = ctor});
+                newCtor.Write(OpFactory.DefineAndEnsureType(arg, newCtor), new Metadata {Ast = ctor});
             }
 
             if (ctor.Expressions.Any())
@@ -114,7 +117,7 @@ namespace eilang.Compiling
                 ctor.Expressions.Accept(this, newCtor, mod);
             }
 
-            newCtor.Write(OpFactory.Return(), new Metadata{Ast = ctor});
+            newCtor.Write(OpFactory.Return(), new Metadata {Ast = ctor});
             clas.Constructors.Add(newCtor);
         }
 
@@ -126,19 +129,19 @@ namespace eilang.Compiling
             switch (math.Op)
             {
                 case BinaryMath.Plus:
-                    function.Write(OpFactory.Add(), new Metadata{Ast = math});
+                    function.Write(OpFactory.Add(), new Metadata {Ast = math});
                     break;
                 case BinaryMath.Minus:
-                    function.Write(OpFactory.Subtract(), new Metadata{Ast = math});
+                    function.Write(OpFactory.Subtract(), new Metadata {Ast = math});
                     break;
                 case BinaryMath.Times:
-                    function.Write(OpFactory.Multiply(), new Metadata{Ast = math});
+                    function.Write(OpFactory.Multiply(), new Metadata {Ast = math});
                     break;
                 case BinaryMath.Division:
-                    function.Write(OpFactory.Divide(), new Metadata{Ast = math});
+                    function.Write(OpFactory.Divide(), new Metadata {Ast = math});
                     break;
                 case BinaryMath.Modulo:
-                    function.Write(OpFactory.Modulo(), new Metadata{Ast = math});
+                    function.Write(OpFactory.Modulo(), new Metadata {Ast = math});
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -148,13 +151,13 @@ namespace eilang.Compiling
         public void Visit(AstTrue tr, Function function, Module mod)
         {
             Log($"Compiling true");
-            function.Write(OpFactory.Push(ValueFactory.True()), new Metadata{Ast = tr});
+            function.Write(OpFactory.Push(ValueFactory.True()), new Metadata {Ast = tr});
         }
 
         public void Visit(AstFalse fa, Function function, Module mod)
         {
             Log($"Compiling false");
-            function.Write(OpFactory.Push(ValueFactory.False()), new Metadata{Ast = fa});
+            function.Write(OpFactory.Push(ValueFactory.False()), new Metadata {Ast = fa});
         }
 
         public void Visit(AstBlock block, Function function, Module mod)
@@ -167,24 +170,27 @@ namespace eilang.Compiling
         {
             Log($"Compiling compare if statement");
             aIf.Condition.Accept(this, function, mod);
-            function.Write(OpFactory.JumpIfFalse(ValueFactory.Integer(0)), new Metadata{Ast = aIf});
+            function.Write(OpFactory.JumpIfFalse(ValueFactory.Integer(0)), new Metadata {Ast = aIf});
             var jmpfOpCodeIndex = function.Code.Count - 1;
 
             aIf.IfExpr.Accept(this, function, mod);
-            function.Write(OpFactory.Jump(ValueFactory.Integer(0)), new Metadata{Ast = aIf});
+            function.Write(OpFactory.Jump(ValueFactory.Integer(0)), new Metadata {Ast = aIf});
             var jmpOpCodeIndex = function.Code.Count - 1;
             var ifEndIndex = function.Code.Count;
-            function[jmpfOpCodeIndex] = new Bytecode(OpFactory.JumpIfFalse(ValueFactory.Integer(ifEndIndex)), new Metadata{Ast = aIf});
+            function[jmpfOpCodeIndex] = new Bytecode(OpFactory.JumpIfFalse(ValueFactory.Integer(ifEndIndex)),
+                new Metadata {Ast = aIf});
 
             if (aIf.ElseExpr != null)
             {
                 aIf.ElseExpr.Accept(this, function, mod);
                 var elseEndIndex = function.Code.Count;
-                function[jmpOpCodeIndex] = new Bytecode(OpFactory.Jump(ValueFactory.Integer(elseEndIndex)), new Metadata{Ast = aIf});
+                function[jmpOpCodeIndex] = new Bytecode(OpFactory.Jump(ValueFactory.Integer(elseEndIndex)),
+                    new Metadata {Ast = aIf});
             }
             else
             {
-                function[jmpOpCodeIndex] = new Bytecode(OpFactory.Jump(ValueFactory.Integer(ifEndIndex)), new Metadata{Ast = aIf});
+                function[jmpOpCodeIndex] = new Bytecode(OpFactory.Jump(ValueFactory.Integer(ifEndIndex)),
+                    new Metadata {Ast = aIf});
             }
         }
 
@@ -197,28 +203,28 @@ namespace eilang.Compiling
             switch (compare.Comparison)
             {
                 case Compare.Or:
-                    function.Write(OpFactory.Or(), new Metadata{Ast = compare});
+                    function.Write(OpFactory.Or(), new Metadata {Ast = compare});
                     break;
                 case Compare.And:
-                    function.Write(OpFactory.And(), new Metadata{Ast = compare});
+                    function.Write(OpFactory.And(), new Metadata {Ast = compare});
                     break;
                 case Compare.EqualsEquals:
-                    function.Write(OpFactory.Equals(), new Metadata{Ast = compare});
+                    function.Write(OpFactory.Equals(), new Metadata {Ast = compare});
                     break;
                 case Compare.NotEquals:
-                    function.Write(OpFactory.NotEquals(), new Metadata{Ast = compare});
+                    function.Write(OpFactory.NotEquals(), new Metadata {Ast = compare});
                     break;
                 case Compare.LessThan:
-                    function.Write(OpFactory.LessThan(), new Metadata{Ast = compare});
+                    function.Write(OpFactory.LessThan(), new Metadata {Ast = compare});
                     break;
                 case Compare.GreaterThan:
-                    function.Write(OpFactory.GreaterThan(), new Metadata{Ast = compare});
+                    function.Write(OpFactory.GreaterThan(), new Metadata {Ast = compare});
                     break;
                 case Compare.LessThanEquals:
-                    function.Write(OpFactory.LessThanOrEquals(), new Metadata{Ast = compare});
+                    function.Write(OpFactory.LessThanOrEquals(), new Metadata {Ast = compare});
                     break;
                 case Compare.GreaterThanEquals:
-                    function.Write(OpFactory.GreaterThanOrEquals(), new Metadata{Ast = compare});
+                    function.Write(OpFactory.GreaterThanOrEquals(), new Metadata {Ast = compare});
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -233,8 +239,21 @@ namespace eilang.Compiling
                 list.InitialItems[i].Accept(this, function, mod);
             }
 
-            function.Write(OpFactory.Push(ValueFactory.Integer(list.InitialItems.Count)), new Metadata{Ast = list});
-            function.Write(OpFactory.ListNew(), new Metadata{Ast = list});
+            function.Write(OpFactory.Push(ValueFactory.Integer(list.InitialItems.Count)), new Metadata {Ast = list});
+            function.Write(OpFactory.ListNew(), new Metadata {Ast = list});
+        }
+
+        public void Visit(AstNewMap newMap, Function function, Module mod)
+        {
+            foreach (var item in newMap.InitialItems)
+            {
+                item.Key.Accept(this, function, mod);
+                item.Value.Accept(this, function, mod);
+            }
+
+            function.Write(OpFactory.Push(ValueFactory.Integer(newMap.InitialItems.Count)),
+                new Metadata {Ast = newMap});
+            function.Write(OpFactory.MapNew(), new Metadata {Ast = newMap});
         }
 
         public void Visit(AstIndexerReference indexer, Function function, Module mod)
@@ -243,18 +262,18 @@ namespace eilang.Compiling
             if (indexer.IndexExprs.Count == 0)
                 throw new CompilerException(
                     $"Indexer on variable '{indexer.Identifier}' contained no indexer expressions.");
-            function.Write(OpFactory.Reference(ValueFactory.String(indexer.Identifier)), new Metadata{Ast = indexer});
-            function.Write(OpFactory.TypeGet(), new Metadata{Ast = indexer});
+            function.Write(OpFactory.Reference(ValueFactory.String(indexer.Identifier)), new Metadata {Ast = indexer});
+            function.Write(OpFactory.TypeGet(), new Metadata {Ast = indexer});
             indexer.IndexExprs[0].Accept(this, function, mod);
-            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata{Ast = indexer}); // arg count
-            function.Write(OpFactory.MemberCall(ValueFactory.String("idx_get")),
+            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = indexer}); // arg count
+            function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
                 new Metadata {Variable = indexer.Identifier, IndexerDepth = 0, Ast = indexer});
             for (int i = 1; i < indexer.IndexExprs.Count; i++)
             {
-                function.Write(OpFactory.TypeGet(), new Metadata{Ast = indexer});
+                function.Write(OpFactory.TypeGet(), new Metadata {Ast = indexer});
                 indexer.IndexExprs[i].Accept(this, function, mod);
-                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata{Ast = indexer}); // arg count
-                function.Write(OpFactory.MemberCall(ValueFactory.String("idx_get")),
+                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = indexer}); // arg count
+                function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
                     new Metadata {Variable = indexer.Identifier, IndexerDepth = i, Ast = indexer});
             }
         }
@@ -266,7 +285,7 @@ namespace eilang.Compiling
                 ret.RetExpr.Accept(this, function, mod);
             if (ForDepth > 0)
                 AddControlFlowOp(ForDepth, (function.Length, InLoopReturn));
-            function.Write(OpFactory.Return(), new Metadata{Ast = ret});
+            function.Write(OpFactory.Return(), new Metadata {Ast = ret});
         }
 
         public void Visit(AstAssignmentValue assign, Function function, Module mod)
@@ -285,13 +304,15 @@ namespace eilang.Compiling
                     assignment.Set.RequiredReferences.Accept(this, function, mod);
                     for (int i = 0; i < assignment.Set.IndexExprs.Count - 1; i++)
                     {
-                        function.Write(OpFactory.TypeGet(), new Metadata{Ast = assignment});
+                        function.Write(OpFactory.TypeGet(), new Metadata {Ast = assignment});
                         assignment.Set.IndexExprs[i].Accept(this, function, mod);
-                        function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata{Ast = assignment}); // arg count
-                        function.Write(OpFactory.MemberCall(ValueFactory.String("idx_get")), new Metadata{Ast = assignment});
+                        function.Write(OpFactory.Push(ValueFactory.Integer(1)),
+                            new Metadata {Ast = assignment}); // arg count
+                        function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
+                            new Metadata {Ast = assignment});
                     }
 
-                    function.Write(OpFactory.TypeGet(), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.TypeGet(), new Metadata {Ast = assignment});
                     assignment.Set.IndexExprs[^1].Accept(this, function, mod);
                     break;
             }
@@ -303,22 +324,27 @@ namespace eilang.Compiling
                     switch (assignment.Set.Type)
                     {
                         case AssignmentSet.Array:
-                            function.Write(OpFactory.Push(ValueFactory.Integer(2)), new Metadata{Ast = assignment});
-                            function.Write(OpFactory.MemberCall(ValueFactory.String("idx_set")), new Metadata{Ast = assignment});
+                            function.Write(OpFactory.Push(ValueFactory.Integer(2)), new Metadata {Ast = assignment});
+                            function.Write(OpFactory.CallMember(ValueFactory.String("idx_set")),
+                                new Metadata {Ast = assignment});
                             break;
                         case AssignmentSet.Variable:
                             if (assignment.Define)
                             {
-                                function.Write(OpFactory.Define(assignment.Set.OptionalIdentifier), new Metadata{Ast = assignment});
+                                function.Write(OpFactory.Define(assignment.Set.OptionalIdentifier),
+                                    new Metadata {Ast = assignment});
                             }
                             else
                             {
-                                function.Write(OpFactory.Set(ValueFactory.String(assignment.Set.OptionalIdentifier)), new Metadata{Ast = assignment});
+                                function.Write(OpFactory.Set(ValueFactory.String(assignment.Set.OptionalIdentifier)),
+                                    new Metadata {Ast = assignment});
                             }
+
                             break;
                         case AssignmentSet.MemberVariable:
                             function.Write(
-                                OpFactory.MemberSet(ValueFactory.String(assignment.Set.OptionalIdentifier)), new Metadata{Ast = assignment});
+                                OpFactory.MemberSet(ValueFactory.String(assignment.Set.OptionalIdentifier)),
+                                new Metadata {Ast = assignment});
                             break;
                     }
 
@@ -326,43 +352,43 @@ namespace eilang.Compiling
                 case Assignment.DivideEquals:
                     assignment.Reference.Accept(this, function, mod);
                     assignment.Value.Accept(this, function, mod);
-                    function.Write(OpFactory.Divide(), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Divide(), new Metadata {Ast = assignment});
                     break;
                 case Assignment.TimesEquals:
                     assignment.Reference.Accept(this, function, mod);
                     assignment.Value.Accept(this, function, mod);
-                    function.Write(OpFactory.Multiply(), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Multiply(), new Metadata {Ast = assignment});
                     break;
                 case Assignment.ModuloEquals:
                     assignment.Reference.Accept(this, function, mod);
                     assignment.Value.Accept(this, function, mod);
-                    function.Write(OpFactory.Modulo(), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Modulo(), new Metadata {Ast = assignment});
                     break;
                 case Assignment.MinusEquals:
                     assignment.Reference.Accept(this, function, mod);
                     assignment.Value.Accept(this, function, mod);
-                    function.Write(OpFactory.Subtract(), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Subtract(), new Metadata {Ast = assignment});
                     break;
                 case Assignment.PlusEquals:
                     assignment.Reference.Accept(this, function, mod);
                     assignment.Value.Accept(this, function, mod);
-                    function.Write(OpFactory.Add(), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Add(), new Metadata {Ast = assignment});
                     break;
                 case Assignment.Increment:
                     assignment.Reference.Accept(this, function, mod);
-                    function.Write(OpFactory.Increment(), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Increment(), new Metadata {Ast = assignment});
                     break;
                 case Assignment.Decrement:
                     assignment.Reference.Accept(this, function, mod);
-                    function.Write(OpFactory.Decrement(), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Decrement(), new Metadata {Ast = assignment});
                     break;
                 case Assignment.IncrementAndReference:
                     assignment.Reference.Accept(this, function, mod);
-                    function.Write(OpFactory.Increment(), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Increment(), new Metadata {Ast = assignment});
                     break;
                 case Assignment.DecrementAndReference:
                     assignment.Reference.Accept(this, function, mod);
-                    function.Write(OpFactory.Decrement(), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Decrement(), new Metadata {Ast = assignment});
                     break;
                 default:
                     throw new CompilerException($"Unknown assignment type {assignment.Value.Type}");
@@ -371,14 +397,17 @@ namespace eilang.Compiling
             switch (assignment.Set.Type)
             {
                 case AssignmentSet.Array:
-                    function.Write(OpFactory.Push(ValueFactory.Integer(2)), new Metadata{Ast = assignment});
-                    function.Write(OpFactory.MemberCall(ValueFactory.String("idx_set")), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Push(ValueFactory.Integer(2)), new Metadata {Ast = assignment});
+                    function.Write(OpFactory.CallMember(ValueFactory.String("idx_set")),
+                        new Metadata {Ast = assignment});
                     break;
                 case AssignmentSet.Variable:
-                    function.Write(OpFactory.Set(ValueFactory.String(assignment.Set.OptionalIdentifier)), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.Set(ValueFactory.String(assignment.Set.OptionalIdentifier)),
+                        new Metadata {Ast = assignment});
                     break;
                 case AssignmentSet.MemberVariable:
-                    function.Write(OpFactory.MemberSet(ValueFactory.String(assignment.Set.OptionalIdentifier)), new Metadata{Ast = assignment});
+                    function.Write(OpFactory.MemberSet(ValueFactory.String(assignment.Set.OptionalIdentifier)),
+                        new Metadata {Ast = assignment});
                     break;
             }
 
@@ -398,25 +427,25 @@ namespace eilang.Compiling
 
         public void Visit(AstIdentifier identifier, Function function, Module mod)
         {
-            function.Write(OpFactory.Reference(ValueFactory.String(identifier.Ident)), new Metadata{Ast = identifier});
+            function.Write(OpFactory.Reference(ValueFactory.String(identifier.Ident)), new Metadata {Ast = identifier});
         }
 
         public void Visit(AstIx ix, Function function, Module mod)
         {
-            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata{Ast = ix});
+            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata {Ast = ix});
         }
 
         public void Visit(AstBreak astBreak, Function function, Module mod)
         {
             AddControlFlowOp(ForDepth, (function.Length, Break));
-            function.Write(OpFactory.Jump(ValueFactory.Integer(-1)), new Metadata{Ast = astBreak});
+            function.Write(OpFactory.Jump(ValueFactory.Integer(-1)), new Metadata {Ast = astBreak});
         }
 
 
         public void Visit(AstContinue astContinue, Function function, Module mod)
         {
             AddControlFlowOp(ForDepth, (function.Length, Continue));
-            function.Write(OpFactory.Jump(ValueFactory.Integer(-1)), new Metadata{Ast = astContinue});
+            function.Write(OpFactory.Jump(ValueFactory.Integer(-1)), new Metadata {Ast = astContinue});
         }
 
 
@@ -438,16 +467,17 @@ namespace eilang.Compiling
         public void Visit(AstWhile astWhile, Function function, Module mod)
         {
             ForDepth++;
-            function.Write(OpFactory.ScopeNew(), new Metadata{Ast = astWhile});
+            function.Write(OpFactory.ScopeNew(), new Metadata {Ast = astWhile});
             var addressOfCmp = function.Code.Count;
             astWhile.Condition.Accept(this, function, mod);
-            function.Write(OpFactory.JumpIfFalse(ValueFactory.Integer(0)), new Metadata{Ast = astWhile});
+            function.Write(OpFactory.JumpIfFalse(ValueFactory.Integer(0)), new Metadata {Ast = astWhile});
             var addressOfJmpF = function.Code.Count - 1;
             astWhile.Body.Accept(this, function, mod);
-            function.Write(OpFactory.Jump(ValueFactory.Integer(addressOfCmp)), new Metadata{Ast = astWhile});
+            function.Write(OpFactory.Jump(ValueFactory.Integer(addressOfCmp)), new Metadata {Ast = astWhile});
             var endOfLoop = function.Length;
-            function.Write(OpFactory.ScopePop(), new Metadata{Ast = astWhile});
-            function[addressOfJmpF] = new Bytecode(OpFactory.JumpIfFalse(ValueFactory.Integer(endOfLoop)), new Metadata{Ast = astWhile});
+            function.Write(OpFactory.ScopePop(), new Metadata {Ast = astWhile});
+            function[addressOfJmpF] = new Bytecode(OpFactory.JumpIfFalse(ValueFactory.Integer(endOfLoop)),
+                new Metadata {Ast = astWhile});
             AssignLoopControlFlowJumps(astWhile, function, ForDepth, addressOfCmp, endOfLoop);
             ForDepth--;
         }
@@ -460,13 +490,13 @@ namespace eilang.Compiling
 
         public void Visit(AstIndexerOnReturnedValue indexer, Function function, Module mod)
         {
-            for(int i = 0; i < indexer.IndexExprs.Count; i++)
+            for (int i = 0; i < indexer.IndexExprs.Count; i++)
             {
-                function.Write(OpFactory.TypeGet(), new Metadata{Ast = indexer});
+                function.Write(OpFactory.TypeGet(), new Metadata {Ast = indexer});
                 indexer.IndexExprs[i].Accept(this, function, mod);
-                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata{Ast = indexer}); // arg count
-                function.Write(OpFactory.MemberCall(ValueFactory.String("idx_get")),
-                    new Metadata { IndexerDepth = i, Ast = indexer});
+                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = indexer}); // arg count
+                function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
+                    new Metadata {IndexerDepth = i, Ast = indexer});
             }
         }
 
@@ -478,15 +508,16 @@ namespace eilang.Compiling
                 var clas = new Class(anon.Name, SpecialVariables.Global);
                 clas.CtorForMembersWithValues.Write(OpFactory.Define(SpecialVariables.Me));
                 clas.CtorForMembersWithValues.Write(OpFactory.Return());
-                var ctor = new MemberFunction($".ctor::{className}", 
-                    SpecialVariables.Global, 
+                var ctor = new MemberFunction($".ctor::{className}",
+                    SpecialVariables.Global,
                     anon.Members.Select(m => m.Name).ToList(),
                     clas);
                 ctor.Write(OpFactory.Define(SpecialVariables.Me));
                 foreach (var member in anon.Members)
                 {
                     ctor.Write(OpFactory.Define(member.Name));
-                } 
+                }
+
                 ctor.Write(OpFactory.Return());
                 clas.Constructors.Add(ctor);
                 ScriptEnvironment.Classes[className] = clas;
@@ -496,81 +527,91 @@ namespace eilang.Compiling
             {
                 member.Expr.Accept(this, function, mod);
             }
-            
+
             function.Write(OpFactory.Push(ValueFactory.Integer(anon.Members.Count)), new Metadata {Ast = anon});
-            function.Write(OpFactory.Initialize(ValueFactory.String(className)), new Metadata {Ast = anon});           
+            function.Write(OpFactory.Initialize(ValueFactory.String(className)), new Metadata {Ast = anon});
         }
+
 
         public void Visit(AstForArray forArray, Function function, Module mod)
         {
             ForDepth++;
-            function.Write(OpFactory.ScopeNew(), new Metadata{Ast = forArray});
+            function.Write(OpFactory.ScopeNew(), new Metadata {Ast = forArray});
             forArray.Array.Accept(this, function, mod);
             // save array to a temporary faster lookup location
-            function.Write(OpFactory.TemporarySet(ValueFactory.String($".aval{ForDepth}")), new Metadata{Ast = forArray});
-            function.Write(OpFactory.TemporaryReference(ValueFactory.String($".aval{ForDepth}")), new Metadata{Ast = forArray});
-            function.Write(OpFactory.TypeGet(), new Metadata{Ast = forArray});
-            function.Write(OpFactory.Push(ValueFactory.Integer(0)), new Metadata{Ast = forArray});
-            function.Write(OpFactory.MemberCall(ValueFactory.String("len")), new Metadata{Ast = forArray});
-            function.Write(OpFactory.TemporarySet(ValueFactory.String($".alen{ForDepth}")), new Metadata{Ast = forArray});
-            function.Write(OpFactory.TemporaryReference(ValueFactory.String($".alen{ForDepth}")), new Metadata{Ast = forArray});
-            function.Write(OpFactory.JumpIfZero(ValueFactory.Integer(0)), new Metadata{Ast = forArray});
+            function.Write(OpFactory.TemporarySet(ValueFactory.String($".aval{ForDepth}")),
+                new Metadata {Ast = forArray});
+            function.Write(OpFactory.TemporaryReference(ValueFactory.String($".aval{ForDepth}")),
+                new Metadata {Ast = forArray});
+            function.Write(OpFactory.TypeGet(), new Metadata {Ast = forArray});
+            function.Write(OpFactory.Push(ValueFactory.Integer(0)), new Metadata {Ast = forArray});
+            function.Write(OpFactory.CallMember(ValueFactory.String("len")), new Metadata {Ast = forArray});
+            function.Write(OpFactory.TemporarySet(ValueFactory.String($".alen{ForDepth}")),
+                new Metadata {Ast = forArray});
+            function.Write(OpFactory.TemporaryReference(ValueFactory.String($".alen{ForDepth}")),
+                new Metadata {Ast = forArray});
+            function.Write(OpFactory.JumpIfZero(ValueFactory.Integer(0)), new Metadata {Ast = forArray});
             var addressOfFirstJmpZ = function.Code.Count - 1;
             if (!forArray.Reversed)
             {
                 // start loop with index set to 0
-                function.Write(OpFactory.Push(ValueFactory.Integer(0)), new Metadata{Ast = forArray});
+                function.Write(OpFactory.Push(ValueFactory.Integer(0)), new Metadata {Ast = forArray});
             }
             else
             {
                 // or index set to last item if reversed
-                function.Write(OpFactory.TemporaryReference(ValueFactory.String($".alen{ForDepth}")), new Metadata{Ast = forArray});
-                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata{Ast = forArray});
-                function.Write(OpFactory.Subtract(), new Metadata{Ast = forArray});
+                function.Write(OpFactory.TemporaryReference(ValueFactory.String($".alen{ForDepth}")),
+                    new Metadata {Ast = forArray});
+                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = forArray});
+                function.Write(OpFactory.Subtract(), new Metadata {Ast = forArray});
             }
 
-            function.Write(OpFactory.Define($".ix{ForDepth}"), new Metadata{Ast = forArray});
+            function.Write(OpFactory.Define($".ix{ForDepth}"), new Metadata {Ast = forArray});
             // define 'it' variable
-            function.Write(OpFactory.Push(ValueFactory.Uninitialized()), new Metadata{Ast = forArray});
-            function.Write(OpFactory.Define($".it{ForDepth}"), new Metadata{Ast = forArray});
-            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata{Ast = forArray});
+            function.Write(OpFactory.Push(ValueFactory.Uninitialized()), new Metadata {Ast = forArray});
+            function.Write(OpFactory.Define($".it{ForDepth}"), new Metadata {Ast = forArray});
+            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata {Ast = forArray});
             var addressOfCmp = function.Code.Count - 1;
             // loop for the length of the array
             if (!forArray.Reversed)
             {
-                function.Write(OpFactory.TemporaryReference(ValueFactory.String($".alen{ForDepth}")), new Metadata{Ast = forArray});
-                function.Write(OpFactory.GreaterThanOrEquals(), new Metadata{Ast = forArray});
+                function.Write(OpFactory.TemporaryReference(ValueFactory.String($".alen{ForDepth}")),
+                    new Metadata {Ast = forArray});
+                function.Write(OpFactory.GreaterThanOrEquals(), new Metadata {Ast = forArray});
             }
             else
             {
-                function.Write(OpFactory.Push(ValueFactory.Integer(0)), new Metadata{Ast = forArray});
-                function.Write(OpFactory.LessThan(), new Metadata{Ast = forArray});
+                function.Write(OpFactory.Push(ValueFactory.Integer(0)), new Metadata {Ast = forArray});
+                function.Write(OpFactory.LessThan(), new Metadata {Ast = forArray});
             }
 
-            function.Write(OpFactory.JumpIfTrue(ValueFactory.Integer(0)), new Metadata{Ast = forArray});
+            function.Write(OpFactory.JumpIfTrue(ValueFactory.Integer(0)), new Metadata {Ast = forArray});
             var addressOfJmpT = function.Code.Count - 1;
             // set 'it' to the value of array at current index 
-            function.Write(OpFactory.TemporaryReference(ValueFactory.String($".aval{ForDepth}")), new Metadata{Ast = forArray});
-            function.Write(OpFactory.TypeGet(), new Metadata{Ast = forArray});
-            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata{Ast = forArray});
-            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata{Ast = forArray});
-            function.Write(OpFactory.MemberCall(ValueFactory.String("idx_get")), new Metadata{Ast = forArray});
-            function.Write(OpFactory.Set(ValueFactory.String($".it{ForDepth}")), new Metadata{Ast = forArray});
+            function.Write(OpFactory.TemporaryReference(ValueFactory.String($".aval{ForDepth}")),
+                new Metadata {Ast = forArray});
+            function.Write(OpFactory.TypeGet(), new Metadata {Ast = forArray});
+            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata {Ast = forArray});
+            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = forArray});
+            function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")), new Metadata {Ast = forArray});
+            function.Write(OpFactory.Set(ValueFactory.String($".it{ForDepth}")), new Metadata {Ast = forArray});
             forArray.Body.Accept(this, function, mod);
             var addressOfLoopStep = function.Length;
-            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata{Ast = forArray});
-            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata{Ast = forArray});
+            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata {Ast = forArray});
+            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = forArray});
             // increment or decrement index variable
             if (forArray.Reversed)
-                function.Write(OpFactory.Subtract(), new Metadata{Ast = forArray});
+                function.Write(OpFactory.Subtract(), new Metadata {Ast = forArray});
             else
-                function.Write(OpFactory.Add(), new Metadata{Ast = forArray});
-            function.Write(OpFactory.Set(ValueFactory.String($".ix{ForDepth}")), new Metadata{Ast = forArray});
-            function.Write(OpFactory.Jump(ValueFactory.Integer(addressOfCmp)), new Metadata{Ast = forArray});
+                function.Write(OpFactory.Add(), new Metadata {Ast = forArray});
+            function.Write(OpFactory.Set(ValueFactory.String($".ix{ForDepth}")), new Metadata {Ast = forArray});
+            function.Write(OpFactory.Jump(ValueFactory.Integer(addressOfCmp)), new Metadata {Ast = forArray});
             var endOfLoop = function.Code.Count;
-            function.Write(OpFactory.ScopePop(), new Metadata{Ast = forArray});
-            function[addressOfJmpT] = new Bytecode(OpFactory.JumpIfTrue(ValueFactory.Integer(endOfLoop)), new Metadata{Ast = forArray});
-            function[addressOfFirstJmpZ] = new Bytecode(OpFactory.JumpIfZero(ValueFactory.Integer(endOfLoop)), new Metadata{Ast = forArray});
+            function.Write(OpFactory.ScopePop(), new Metadata {Ast = forArray});
+            function[addressOfJmpT] = new Bytecode(OpFactory.JumpIfTrue(ValueFactory.Integer(endOfLoop)),
+                new Metadata {Ast = forArray});
+            function[addressOfFirstJmpZ] = new Bytecode(OpFactory.JumpIfZero(ValueFactory.Integer(endOfLoop)),
+                new Metadata {Ast = forArray});
             AssignLoopControlFlowJumps(forArray, function, ForDepth, addressOfLoopStep, endOfLoop);
             ForDepth--;
         }
@@ -579,40 +620,42 @@ namespace eilang.Compiling
         public void Visit(AstForRange forRange, Function function, Module mod)
         {
             ForDepth++;
-            function.Write(OpFactory.ScopeNew(), new Metadata{Ast = forRange});
+            function.Write(OpFactory.ScopeNew(), new Metadata {Ast = forRange});
             forRange.Range.Begin.Accept(this, function, mod);
             forRange.Range.End.Accept(this, function, mod);
             if (forRange.Reversed)
-                function.Write(OpFactory.LessThanOrEquals(), new Metadata{Ast = forRange});
+                function.Write(OpFactory.LessThanOrEquals(), new Metadata {Ast = forRange});
             else
-                function.Write(OpFactory.GreaterThanOrEquals(), new Metadata{Ast = forRange});
-            function.Write(OpFactory.JumpIfTrue(ValueFactory.Integer(0)), new Metadata{Ast = forRange});
+                function.Write(OpFactory.GreaterThanOrEquals(), new Metadata {Ast = forRange});
+            function.Write(OpFactory.JumpIfTrue(ValueFactory.Integer(0)), new Metadata {Ast = forRange});
             var addressOfFirstJmpT = function.Code.Count - 1;
             forRange.Range.Begin.Accept(this, function, mod);
-            function.Write(OpFactory.Define($".ix{ForDepth}"), new Metadata{Ast = forRange});
-            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata{Ast = forRange});
+            function.Write(OpFactory.Define($".ix{ForDepth}"), new Metadata {Ast = forRange});
+            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata {Ast = forRange});
             var addressOfCmp = function.Code.Count - 1;
             forRange.Range.End.Accept(this, function, mod);
             if (forRange.Reversed)
-                function.Write(OpFactory.LessThanOrEquals(), new Metadata{Ast = forRange});
+                function.Write(OpFactory.LessThanOrEquals(), new Metadata {Ast = forRange});
             else
-                function.Write(OpFactory.GreaterThanOrEquals(), new Metadata{Ast = forRange});
-            function.Write(OpFactory.JumpIfTrue(ValueFactory.Integer(0)), new Metadata{Ast = forRange});
+                function.Write(OpFactory.GreaterThanOrEquals(), new Metadata {Ast = forRange});
+            function.Write(OpFactory.JumpIfTrue(ValueFactory.Integer(0)), new Metadata {Ast = forRange});
             var addressOfJmpT = function.Code.Count - 1;
             forRange.Body.Accept(this, function, mod);
             var addressOfLoopStep = function.Length;
-            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata{Ast = forRange});
-            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata{Ast = forRange});
+            function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata {Ast = forRange});
+            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = forRange});
             if (forRange.Reversed)
-                function.Write(OpFactory.Subtract(), new Metadata{Ast = forRange});
+                function.Write(OpFactory.Subtract(), new Metadata {Ast = forRange});
             else
-                function.Write(OpFactory.Add(), new Metadata{Ast = forRange});
-            function.Write(OpFactory.Set(ValueFactory.String($".ix{ForDepth}")), new Metadata{Ast = forRange});
-            function.Write(OpFactory.Jump(ValueFactory.Integer(addressOfCmp)), new Metadata{Ast = forRange});
+                function.Write(OpFactory.Add(), new Metadata {Ast = forRange});
+            function.Write(OpFactory.Set(ValueFactory.String($".ix{ForDepth}")), new Metadata {Ast = forRange});
+            function.Write(OpFactory.Jump(ValueFactory.Integer(addressOfCmp)), new Metadata {Ast = forRange});
             var endOfLoop = function.Length;
-            function.Write(OpFactory.ScopePop(), new Metadata{Ast = forRange});
-            function[addressOfJmpT] = new Bytecode(OpFactory.JumpIfTrue(ValueFactory.Integer(endOfLoop)), new Metadata{Ast = forRange});
-            function[addressOfFirstJmpT] = new Bytecode(OpFactory.JumpIfTrue(ValueFactory.Integer(endOfLoop)), new Metadata{Ast = forRange});
+            function.Write(OpFactory.ScopePop(), new Metadata {Ast = forRange});
+            function[addressOfJmpT] = new Bytecode(OpFactory.JumpIfTrue(ValueFactory.Integer(endOfLoop)),
+                new Metadata {Ast = forRange});
+            function[addressOfFirstJmpT] = new Bytecode(OpFactory.JumpIfTrue(ValueFactory.Integer(endOfLoop)),
+                new Metadata {Ast = forRange});
             AssignLoopControlFlowJumps(forRange, function, ForDepth, addressOfLoopStep, endOfLoop);
             ForDepth--;
         }
@@ -620,12 +663,12 @@ namespace eilang.Compiling
         public void Visit(AstForInfinite forInfinite, Function function, Module mod)
         {
             ForDepth++;
-            function.Write(OpFactory.ScopeNew(), new Metadata{Ast = forInfinite});
+            function.Write(OpFactory.ScopeNew(), new Metadata {Ast = forInfinite});
             var addressOfLoopStart = function.Length;
             forInfinite.Body.Accept(this, function, mod);
-            function.Write(OpFactory.Jump(ValueFactory.Integer(addressOfLoopStart)), new Metadata{Ast = forInfinite});
+            function.Write(OpFactory.Jump(ValueFactory.Integer(addressOfLoopStart)), new Metadata {Ast = forInfinite});
             var endOfLoop = function.Length;
-            function.Write(OpFactory.ScopePop(), new Metadata{Ast = forInfinite});
+            function.Write(OpFactory.ScopePop(), new Metadata {Ast = forInfinite});
             AssignLoopControlFlowJumps(forInfinite, function, ForDepth, addressOfLoopStart, endOfLoop);
             ForDepth--;
         }
@@ -637,30 +680,33 @@ namespace eilang.Compiling
 
         public void Visit(AstMe me, Function function, Module mod)
         {
-            function.Write(OpFactory.Reference(ValueFactory.String(SpecialVariables.Me)), new Metadata{Ast = me});
+            function.Write(OpFactory.Reference(ValueFactory.String(SpecialVariables.Me)), new Metadata {Ast = me});
         }
 
         public void Visit(AstTernary ternary, Function function, Module mod)
         {
             Log($"Compiling ternary operator");
             ternary.Condition.Accept(this, function, mod);
-            function.Write(OpFactory.JumpIfFalse(ValueFactory.Integer(0)), new Metadata{Ast = ternary});
+            function.Write(OpFactory.JumpIfFalse(ValueFactory.Integer(0)), new Metadata {Ast = ternary});
             var jmpfOpCodeIndex = function.Code.Count - 1;
 
             ternary.TrueExpr.Accept(this, function, mod);
-            function.Write(OpFactory.Jump(ValueFactory.Integer(0)), new Metadata{Ast = ternary});
+            function.Write(OpFactory.Jump(ValueFactory.Integer(0)), new Metadata {Ast = ternary});
             var jmpOpCodeIndex = function.Code.Count - 1;
             var trueEndIndex = function.Code.Count;
-            function[jmpfOpCodeIndex] = new Bytecode(OpFactory.JumpIfFalse(ValueFactory.Integer(trueEndIndex)), new Metadata{Ast = ternary});
+            function[jmpfOpCodeIndex] = new Bytecode(OpFactory.JumpIfFalse(ValueFactory.Integer(trueEndIndex)),
+                new Metadata {Ast = ternary});
 
             ternary.FalseExpr.Accept(this, function, mod);
             var falseEndIndex = function.Code.Count;
-            function[jmpOpCodeIndex] = new Bytecode(OpFactory.Jump(ValueFactory.Integer(falseEndIndex)), new Metadata{Ast = ternary});
+            function[jmpOpCodeIndex] = new Bytecode(OpFactory.Jump(ValueFactory.Integer(falseEndIndex)),
+                new Metadata {Ast = ternary});
         }
 
         public void Visit(AstFunctionPointer funcPointer, Function function, Module mod)
         {
-            function.Write(OpFactory.Push(ValueFactory.FunctionPointer(funcPointer.Ident)), new Metadata{Ast = funcPointer});
+            function.Write(OpFactory.Push(ValueFactory.FunctionPointer(funcPointer.Ident)),
+                new Metadata {Ast = funcPointer});
         }
 
         public void Visit(AstParenthesized parenthesized, Function function, Module mod)
@@ -670,7 +716,7 @@ namespace eilang.Compiling
 
         public void Visit(AstUninitialized uninit, Function function, Module mod)
         {
-            function.Write(OpFactory.Push(ValueFactory.Uninitialized()), new Metadata{Ast = uninit});
+            function.Write(OpFactory.Push(ValueFactory.Uninitialized()), new Metadata {Ast = uninit});
         }
 
         public void Visit(AstUse astUse, Function function, Module mod)
@@ -693,13 +739,15 @@ namespace eilang.Compiling
                 switch (flow.Type)
                 {
                     case Break:
-                        function.Code[flow.Index] = new Bytecode(OpFactory.Jump(ValueFactory.Integer(loopEnd)), new Metadata{Ast = ast});
+                        function.Code[flow.Index] = new Bytecode(OpFactory.Jump(ValueFactory.Integer(loopEnd)),
+                            new Metadata {Ast = ast});
                         break;
                     case Continue:
-                        function.Code[flow.Index] = new Bytecode(OpFactory.Jump(ValueFactory.Integer(loopStep)), new Metadata{Ast = ast});
+                        function.Code[flow.Index] = new Bytecode(OpFactory.Jump(ValueFactory.Integer(loopStep)),
+                            new Metadata {Ast = ast});
                         break;
                     case InLoopReturn:
-                        function.Code[flow.Index] = new Bytecode(OpFactory.Return(forDepth), new Metadata{Ast = ast});
+                        function.Code[flow.Index] = new Bytecode(OpFactory.Return(forDepth), new Metadata {Ast = ast});
                         break;
                     default:
                         throw new CompilerException("Unknown control flow type of value " + flow.Type);
@@ -709,7 +757,7 @@ namespace eilang.Compiling
 
         public void Visit(AstIt it, Function function, Module mod)
         {
-            function.Write(OpFactory.Reference(ValueFactory.String($".it{ForDepth}")), new Metadata{Ast = it});
+            function.Write(OpFactory.Reference(ValueFactory.String($".it{ForDepth}")), new Metadata {Ast = it});
         }
 
         public void Visit(AstUnaryMathOperation unary, Function function, Module mod)
@@ -718,10 +766,10 @@ namespace eilang.Compiling
             switch (unary.Op)
             {
                 case UnaryMath.Minus:
-                    function.Write(OpFactory.Negate(), new Metadata{Ast = unary});
+                    function.Write(OpFactory.Negate(), new Metadata {Ast = unary});
                     break;
                 case UnaryMath.Not:
-                    function.Write(OpFactory.Not(), new Metadata{Ast = unary});
+                    function.Write(OpFactory.Not(), new Metadata {Ast = unary});
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -730,7 +778,8 @@ namespace eilang.Compiling
 
         public void Visit(AstMemberReference memberReference, Function function, Module mod)
         {
-            function.Write(OpFactory.MemberReference(ValueFactory.String(memberReference.Ident)), new Metadata{Ast = memberReference});
+            function.Write(OpFactory.MemberReference(ValueFactory.String(memberReference.Ident)),
+                new Metadata {Ast = memberReference});
         }
 
         public void Visit(AstMultiReference memberFunc, Function function, Module mod)
@@ -741,26 +790,28 @@ namespace eilang.Compiling
 
         public void Visit(AstMemberFunctionCall memberFuncCall, Function function, Module mod)
         {
-            function.Write(OpFactory.TypeGet(), new Metadata{Ast = memberFuncCall});
+            function.Write(OpFactory.TypeGet(), new Metadata {Ast = memberFuncCall});
             memberFuncCall.Arguments.Accept(this, function, mod);
-            function.Write(OpFactory.Push(ValueFactory.Integer(memberFuncCall.Arguments.Count)), new Metadata{Ast = memberFuncCall});
-            function.Write(OpFactory.MemberCall(ValueFactory.String(memberFuncCall.Ident)), new Metadata{Ast = memberFuncCall});
+            function.Write(OpFactory.Push(ValueFactory.Integer(memberFuncCall.Arguments.Count)),
+                new Metadata {Ast = memberFuncCall});
+            function.Write(OpFactory.CallMember(ValueFactory.String(memberFuncCall.Ident)),
+                new Metadata {Ast = memberFuncCall});
         }
 
         public void Visit(AstMemberIndexerRef indexer, Function function, Module mod)
         {
-            function.Write(OpFactory.MemberReference(ValueFactory.String(indexer.Ident)), new Metadata{Ast = indexer});
-            function.Write(OpFactory.TypeGet(), new Metadata{Ast = indexer});
+            function.Write(OpFactory.MemberReference(ValueFactory.String(indexer.Ident)), new Metadata {Ast = indexer});
+            function.Write(OpFactory.TypeGet(), new Metadata {Ast = indexer});
             indexer.IndexExprs[0].Accept(this, function, mod);
-            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata{Ast = indexer}); // arg count
-            function.Write(OpFactory.MemberCall(ValueFactory.String("idx_get")),
+            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = indexer}); // arg count
+            function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
                 new Metadata {Variable = indexer.Ident, IndexerDepth = 0, Ast = indexer});
             for (int i = 1; i < indexer.IndexExprs.Count; i++)
             {
-                function.Write(OpFactory.TypeGet(), new Metadata{Ast = indexer});
+                function.Write(OpFactory.TypeGet(), new Metadata {Ast = indexer});
                 indexer.IndexExprs[i].Accept(this, function, mod);
-                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata{Ast = indexer}); // arg count
-                function.Write(OpFactory.MemberCall(ValueFactory.String("idx_get")),
+                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = indexer}); // arg count
+                function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
                     new Metadata {Variable = indexer.Ident, IndexerDepth = i, Ast = indexer});
             }
         }
@@ -770,9 +821,9 @@ namespace eilang.Compiling
         {
             Log($"Compiling class declaration '{clas.Name}'");
             var newClass = new Class(clas.Name, mod.Name);
-            newClass.CtorForMembersWithValues.Write(OpFactory.Define(SpecialVariables.Me), new Metadata{Ast = clas});
+            newClass.CtorForMembersWithValues.Write(OpFactory.Define(SpecialVariables.Me), new Metadata {Ast = clas});
             clas.Variables.Accept(this, newClass, mod);
-            newClass.CtorForMembersWithValues.Write(OpFactory.Return(), new Metadata{Ast = clas});
+            newClass.CtorForMembersWithValues.Write(OpFactory.Return(), new Metadata {Ast = clas});
             clas.Functions.Accept(this, newClass, mod);
             clas.Constructors.Accept(this, newClass, mod);
             InsertMemberValueInitializationInConstructors(newClass, clas);
@@ -784,18 +835,21 @@ namespace eilang.Compiling
             foreach (var ctor in clas.Constructors)
             {
                 if (ConstructorInitializesAllMembers(ctor.Arguments, ast.Variables))
-                { 
+                {
                     // skip constructors that already initialize all member variables
                     continue;
                 }
+
                 // figure out which member variables still need to be initialized and find the code that initializes them
                 // and inject it into the start of the current constructor
                 var notYetInitialized = GetMembersNotInConstructor(ctor.Arguments, ast.Variables);
-                foreach(var uninitialized in notYetInitialized)
+                foreach (var uninitialized in notYetInitialized)
                 {
-                    var initializationStartIndex = GetIndexOfInitializationStart(uninitialized, clas.CtorForMembersWithValues);
-                    if(initializationStartIndex == -1)
-                        throw new CompilerException($"Could not find start of initialization of '{uninitialized}' in main initialization constructor of class {clas.FullName}");
+                    var initializationStartIndex =
+                        GetIndexOfInitializationStart(uninitialized, clas.CtorForMembersWithValues);
+                    if (initializationStartIndex == -1)
+                        throw new CompilerException(
+                            $"Could not find start of initialization of '{uninitialized}' in main initialization constructor of class {clas.FullName}");
                     for (int i = initializationStartIndex; i < clas.CtorForMembersWithValues.Length; i++)
                     {
                         ctor.Code.Insert(i - initializationStartIndex, clas.CtorForMembersWithValues[i]);
@@ -822,7 +876,8 @@ namespace eilang.Compiling
                         start = i + 1;
                         if (start > ctorForMembersWithValues.Length - 1)
                         {
-                            throw new CompilerException($"Could not find start of initialization of '{uninitialized}' in main initialization constructor of class {ctorForMembersWithValues.Owner.FullName}");
+                            throw new CompilerException(
+                                $"Could not find start of initialization of '{uninitialized}' in main initialization constructor of class {ctorForMembersWithValues.Owner.FullName}");
                         }
                     }
                 }
@@ -831,12 +886,14 @@ namespace eilang.Compiling
             return -1;
         }
 
-        private List<string> GetMembersNotInConstructor(List<string> constructorArguments, List<AstMemberVariableDeclaration> memberVariables)
+        private List<string> GetMembersNotInConstructor(List<string> constructorArguments,
+            List<AstMemberVariableDeclaration> memberVariables)
         {
             return memberVariables.Where(v => !constructorArguments.Contains(v.Ident)).Select(s => s.Ident).ToList();
         }
 
-        private bool ConstructorInitializesAllMembers(List<string> constructorArguments, List<AstMemberVariableDeclaration> memberVariables)
+        private bool ConstructorInitializesAllMembers(List<string> constructorArguments,
+            List<AstMemberVariableDeclaration> memberVariables)
         {
             // if constructorArguments contains all the members in memberVariables, we don't need to initialize any more variables,
             // because they will have been initialized by the constructor anyway, which would overwrite any pre-initialized value
@@ -848,40 +905,42 @@ namespace eilang.Compiling
         {
             Log($"Compiling variable declaration assignment '{assignment.Ident}'");
             assignment.Value.Accept(this, function, mod);
-            function.Write(OpFactory.Define(assignment.Ident), new Metadata{Ast = assignment});
+            function.Write(OpFactory.Define(assignment.Ident), new Metadata {Ast = assignment});
         }
 
         public void Visit(AstFunctionCall funcCall, Function function, Module mod)
         {
             Log($"Compiling function call '{funcCall.Name}'");
             funcCall.Arguments.Accept(this, function, mod);
-            function.Write(OpFactory.Push(ValueFactory.Integer(funcCall.Arguments.Count)), new Metadata{Ast = funcCall});
+            function.Write(OpFactory.Push(ValueFactory.Integer(funcCall.Arguments.Count)),
+                new Metadata {Ast = funcCall});
             if (ScriptEnvironment.ExportedFunctions.ContainsKey(funcCall.Name))
             {
-                function.Write(OpFactory.ExportedCall(ValueFactory.String(funcCall.Name)), new Metadata{Ast = funcCall});
+                function.Write(OpFactory.CallExported(ValueFactory.String(funcCall.Name)),
+                    new Metadata {Ast = funcCall});
             }
             else
             {
-                function.Write(OpFactory.Call(ValueFactory.String(funcCall.Name)), new Metadata{Ast = funcCall});
+                function.Write(OpFactory.Call(ValueFactory.String(funcCall.Name)), new Metadata {Ast = funcCall});
             }
         }
 
         public void Visit(AstStringConstant constant, Function function, Module mod)
         {
             Log($"Compiling string constant '{constant.String}'");
-            function.Write(OpFactory.Push(ValueFactory.String(constant.String)), new Metadata{Ast = constant});
+            function.Write(OpFactory.Push(ValueFactory.String(constant.String)), new Metadata {Ast = constant});
         }
 
         public void Visit(AstIntegerConstant constant, Function function, Module mod)
         {
             Log($"Compiling integer constant '{constant.Integer}'");
-            function.Write(OpFactory.Push(ValueFactory.Integer(constant.Integer)), new Metadata{Ast = constant});
+            function.Write(OpFactory.Push(ValueFactory.Integer(constant.Integer)), new Metadata {Ast = constant});
         }
 
         public void Visit(AstDoubleConstant constant, Function function, Module mod)
         {
             Log($"Compiling double constant '{constant.Double}'");
-            function.Write(OpFactory.Push(ValueFactory.Double(constant.Double)), new Metadata{Ast = constant});
+            function.Write(OpFactory.Push(ValueFactory.Double(constant.Double)), new Metadata {Ast = constant});
         }
 
         public void Visit(AstFunction func, Module mod)
@@ -890,17 +949,17 @@ namespace eilang.Compiling
             var newFunc = new Function(func.Name, mod.Name, func.Arguments.Select(a => a.Name).ToList());
             for (int i = func.Arguments.Count - 1; i > -1; i--)
             {
-                newFunc.Write(OpFactory.DefineAndEnsureType(func.Arguments[i], newFunc), new Metadata{Ast = func});
+                newFunc.Write(OpFactory.DefineAndEnsureType(func.Arguments[i], newFunc), new Metadata {Ast = func});
             }
 
             func.Expressions.Accept(this, newFunc, mod);
             if (newFunc.Length < 1)
             {
-                newFunc.Write(OpFactory.Return(), new Metadata{Ast = func});
+                newFunc.Write(OpFactory.Return(), new Metadata {Ast = func});
             }
             else if (newFunc[^1].Op != OpFactory.Return())
             {
-                newFunc.Write(OpFactory.Return(), new Metadata{Ast = func});
+                newFunc.Write(OpFactory.Return(), new Metadata {Ast = func});
             }
 
 //            if (ScriptEnvironment.Functions.ContainsKey(newFunc.FullName))
@@ -923,26 +982,29 @@ namespace eilang.Compiling
             {
                 extendingFullName = $"{extendingModule}::{memberFunc.Extending}";
             }
+
             var func = new ExtensionFunction(memberFunc.Name,
-                extendingModule, 
+                extendingModule,
                 memberFunc.Arguments.Select(a => a.Name).ToList(),
                 memberFunc.Extending);
-            
-            func.Write(OpFactory.Define(SpecialVariables.ArgumentCount), new Metadata{Ast = memberFunc});
+
+            func.Write(OpFactory.Define(SpecialVariables.ArgumentCount), new Metadata {Ast = memberFunc});
             for (int i = memberFunc.Arguments.Count - 1; i > -1; i--)
             {
-                func.Write(OpFactory.DefineAndEnsureType(memberFunc.Arguments[i], func), new Metadata{Ast = memberFunc});
+                func.Write(OpFactory.DefineAndEnsureType(memberFunc.Arguments[i], func),
+                    new Metadata {Ast = memberFunc});
             }
 
             memberFunc.Expressions.Accept(this, func, mod);
             if (func.Length < 1)
             {
-                func.Write(OpFactory.Return(), new Metadata{Ast = memberFunc});
+                func.Write(OpFactory.Return(), new Metadata {Ast = memberFunc});
             }
             else if (func[^1].Op.GetType().Name != OpFactory.Return().GetType().Name)
             {
-                func.Write(OpFactory.Return(), new Metadata{Ast = memberFunc});
+                func.Write(OpFactory.Return(), new Metadata {Ast = memberFunc});
             }
+
             ScriptEnvironment.ExtensionFunctions.Add($"{extendingFullName}->{memberFunc.Name}", func);
         }
 
@@ -950,26 +1012,27 @@ namespace eilang.Compiling
         public void Visit(AstMemberFunction memberFunc, Class clas, Module mod)
         {
             Log($"Compiling member function declaration '{memberFunc.Name}'");
-            var func = new MemberFunction(memberFunc.Name, clas.FullName, memberFunc.Arguments.Select(a => a.Name).ToList(), clas);
+            var func = new MemberFunction(memberFunc.Name, clas.FullName,
+                memberFunc.Arguments.Select(a => a.Name).ToList(), clas);
 
-            func.Write(OpFactory.Define(SpecialVariables.ArgumentCount), new Metadata{Ast = memberFunc});
+            func.Write(OpFactory.Define(SpecialVariables.ArgumentCount), new Metadata {Ast = memberFunc});
             for (int i = memberFunc.Arguments.Count - 1; i > -1; i--)
             {
-                func.Write(OpFactory.DefineAndEnsureType(memberFunc.Arguments[i], func), new Metadata{Ast = memberFunc});
+                func.Write(OpFactory.DefineAndEnsureType(memberFunc.Arguments[i], func),
+                    new Metadata {Ast = memberFunc});
             }
 
             memberFunc.Expressions.Accept(this, func, mod);
             if (func.Length < 1)
             {
-                func.Write(OpFactory.Return(), new Metadata{Ast = memberFunc});
+                func.Write(OpFactory.Return(), new Metadata {Ast = memberFunc});
             }
             else if (func[^1].Op.GetType().Name != OpFactory.Return().GetType().Name)
             {
-                func.Write(OpFactory.Return(), new Metadata{Ast = memberFunc});
+                func.Write(OpFactory.Return(), new Metadata {Ast = memberFunc});
             }
 
             clas.Functions.Add(func.Name, func);
         }
-
     }
 }

@@ -31,9 +31,9 @@ namespace eilang.OperationCodes
         Return Return();
         Return Return(int loopDepth);
         Initialize Initialize(IValue className);
-        ExportedCall ExportedCall(IValue functionName);
+        CallExported CallExported(IValue functionName);
         TypeGet TypeGet();
-        MemberCall MemberCall(IValue functionName);
+        CallMember CallMember(IValue functionName);
         MemberReference MemberReference(IValue memberName);
         MemberSet MemberSet(IValue memberName);
         And And();
@@ -74,5 +74,15 @@ namespace eilang.OperationCodes
         FileRead FileRead(bool entireLine = false);
         FileEof FileEOF();
         FileClear FileClear();
+        MapNew MapNew();
+        MapLength MapLength();
+        MapGetItems MapGetItems();
+        MapGetKeys MapGetKeys();
+        MapGetValues MapGetValues();
+        MapAdd MapAdd();
+        MapClear MapClear();
+        MapRemove MapRemove();
+        MapIndexerGet MapIndexerGet();
+        MapIndexerSet MapIndexerSet();
     }
 }

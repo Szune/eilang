@@ -245,10 +245,10 @@ namespace eilang.Compiling
 
         public void Visit(AstNewMap newMap, Function function, Module mod)
         {
-            foreach (var item in newMap.InitialItems)
+            for (int i = newMap.InitialItems.Count - 1; i > -1; i--)
             {
-                item.Key.Accept(this, function, mod);
-                item.Value.Accept(this, function, mod);
+                newMap.InitialItems[i].Key.Accept(this, function, mod);
+                newMap.InitialItems[i].Value.Accept(this, function, mod);
             }
 
             function.Write(OpFactory.Push(ValueFactory.Integer(newMap.InitialItems.Count)),

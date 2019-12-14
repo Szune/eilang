@@ -34,6 +34,15 @@ namespace eilang.Classes
                     new Bytecode(factory.Return())
                 }
             });
+            Functions.Add("contains", new MemberFunction("contains", Module,  new List<string>{"key"}, this)
+            {
+                Code =
+                {
+                    new Bytecode(factory.Pop()),
+                    new Bytecode(factory.MapContains()),
+                    new Bytecode(factory.Return())
+                }
+            });
             Functions.Add("items", new MemberFunction("items", Module,  new List<string>(), this)
             {
                 Code =

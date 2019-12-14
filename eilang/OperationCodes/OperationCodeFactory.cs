@@ -68,6 +68,7 @@ namespace eilang.OperationCodes
         private readonly MapRemove _mapRemove = new MapRemove();
         private readonly MapIndexerGet _mapIndexerGet = new MapIndexerGet();
         private readonly MapIndexerSet _mapIndexerSet = new MapIndexerSet();
+        private readonly MapContains _mapContains = new MapContains();
 
         public Push Push(IValue value)
         {
@@ -466,6 +467,11 @@ namespace eilang.OperationCodes
         public MapIndexerSet MapIndexerSet()
         {
             return _mapIndexerSet;
+        }
+
+        public MapContains MapContains()
+        {
+            return _mapContains;
         }
     }
 }

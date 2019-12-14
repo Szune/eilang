@@ -90,6 +90,7 @@ namespace eilang
 #endif
 
 #if DEBUG
+            // TODO: add a contains(key) function to MapClass
             // TODO: -0.99 implement interfaces
             // TODO: finish changing exceptions in operation codes to ErrorMessageException instead of InterpreterException
             // TODO: -0.5 implement try/catch/finally

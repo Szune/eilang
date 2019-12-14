@@ -84,5 +84,6 @@ namespace eilang.OperationCodes
         MapRemove MapRemove();
         MapIndexerGet MapIndexerGet();
         MapIndexerSet MapIndexerSet();
+        MapContains MapContains();
     }
 }

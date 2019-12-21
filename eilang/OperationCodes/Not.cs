@@ -12,7 +12,7 @@ namespace eilang.OperationCodes
             var val = state.Stack.Pop();
             switch (val.Type)
             {
-                case TypeOfValue.Bool:
+                case EilangType.Bool:
                     state.Stack.Push(!val.Get<bool>()
                         ? state.ValueFactory.True()
                         : state.ValueFactory.False());

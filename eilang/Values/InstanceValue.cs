@@ -4,7 +4,7 @@ namespace eilang.Values
  {
      public class InstanceValue : ValueBase<Instance>
      {
-         public InstanceValue(Instance value, TypeOfValue type = TypeOfValue.Instance) : base(type, value)
+         public InstanceValue(Instance value, EilangType eilangType = EilangType.Instance) : base(eilangType, value)
          {
          }
  

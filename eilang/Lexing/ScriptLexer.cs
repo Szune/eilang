@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -17,10 +18,10 @@ namespace eilang.Lexing
 
         static ScriptLexer()
         {
-            //char x = (char) 65255;
             Keywords = new Dictionary<string, TokenType>
             {
                 {TokenValues.If, TokenType.If},
+                {TokenValues.Switch, TokenType.Switch},
                 {TokenValues.Else, TokenType.Else},
                 {TokenValues.Return, TokenType.Return},
                 {TokenValues.Class, TokenType.Class},
@@ -37,7 +38,8 @@ namespace eilang.Lexing
                 {TokenValues.Me, TokenType.Me},
                 {TokenValues.Continue, TokenType.Continue},
                 {TokenValues.Break, TokenType.Break},
-                {TokenValues.Use, TokenType.Use}
+                {TokenValues.Use, TokenType.Use},
+                {TokenValues.TypeOf, TokenType.TypeOf}
             };
         }
 
@@ -79,9 +81,9 @@ namespace eilang.Lexing
                     case '\t':
                         break;
                     case '#': // comments
-                        if (_reader.Next == '+')
+                        if (_reader.Next == '[') // block comment
                         {
-                            while (_reader.Current != '-' || _reader.Next != '#' && !_reader.IsEOF)
+                            while (_reader.Current != ']' || _reader.Next != '#' && !_reader.IsEOF)
                             {
                                 _reader.ConsumeChar();
                             }
@@ -378,7 +380,28 @@ namespace eilang.Lexing
             if (decimalPoint)
                 return new Token(TokenType.Double, _reader.Line, _reader.Col, doubl: double.Parse(sb.ToString(), NumberFormatInfo.InvariantInfo));
             else
-                return new Token(TokenType.Integer, _reader.Line, _reader.Col, integer: int.Parse(sb.ToString()));
+            {
+                if (_reader.Current == 'L' || _reader.Current == 'l')
+                {
+                    _reader.ConsumeChar();
+                    return new Token(TokenType.Long, _reader.Line, _reader.Col, longValue: long.Parse(sb.ToString()));
+                }
+                else
+                {
+                    if (int.TryParse(sb.ToString(), out var integer))
+                    {
+                        return new Token(TokenType.Integer, _reader.Line, _reader.Col, integer: integer);
+                    }
+                    else if (long.TryParse(sb.ToString(), out var longValue))
+                    {
+                        return new Token(TokenType.Long, _reader.Line, _reader.Col, longValue: longValue);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Could not parse number '{sb}' as either int or long.");
+                    }
+                }
+            }
         }
 
         private bool IsNumber(char chr)

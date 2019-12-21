@@ -2,7 +2,7 @@
 {
     public class BoolValue : ValueBase<bool>
     {
-        public BoolValue(bool value) : base(TypeOfValue.Bool, value)
+        public BoolValue(bool value) : base(EilangType.Bool, value)
         {
         }
     }

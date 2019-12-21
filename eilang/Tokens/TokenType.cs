@@ -68,6 +68,9 @@
         Use,
         While,
         Arrow,
-        Pipe
+        Pipe,
+        Switch,
+        TypeOf,
+        Long
     }
 }

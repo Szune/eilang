@@ -13,17 +13,20 @@ namespace eilang.OperationCodes
             var left = state.Stack.Pop();
             switch (left.Type)
             {
-                case TypeOfValue.Integer:
+                case EilangType.Integer:
                     switch (right.Type)
                     {
-                        case TypeOfValue.Integer:
+                        case EilangType.Integer:
                             state.Stack.Push(state.ValueFactory.Integer(left.Get<int>() + right.Get<int>()));
                             break;
-                        case TypeOfValue.Double:
+                        case EilangType.Double:
                             state.Stack.Push(state.ValueFactory.Double(left.Get<int>() + right.Get<double>()));
                             break;
-                        case TypeOfValue.String:
+                        case EilangType.String:
                             state.Stack.Push(state.ValueFactory.String(left.Get<int>() + right.As<StringValue>().Item));
+                            break;
+                        case EilangType.Long:
+                            state.Stack.Push(state.ValueFactory.Long(left.Get<int>() + right.Get<long>()));
                             break;
                         default:
                             ThrowHelper.TypeMismatch("+");
@@ -31,16 +34,40 @@ namespace eilang.OperationCodes
                     }
 
                     break;
-                case TypeOfValue.Double:
+                case EilangType.Long:
                     switch (right.Type)
                     {
-                        case TypeOfValue.Integer:
+                        case EilangType.Integer:
+                            state.Stack.Push(state.ValueFactory.Long(left.Get<long>() + right.Get<int>()));
+                            break;
+                        case EilangType.Double:
+                            state.Stack.Push(state.ValueFactory.Double(left.Get<long>() + right.Get<double>()));
+                            break;
+                        case EilangType.String:
+                            state.Stack.Push(state.ValueFactory.String(left.Get<long>() + right.As<StringValue>().Item));
+                            break;
+                        case EilangType.Long:
+                            state.Stack.Push(state.ValueFactory.Long(left.Get<long>() + right.Get<long>()));
+                            break;
+                        default:
+                            ThrowHelper.TypeMismatch("+");
+                            break;
+                    }
+
+                    break;
+                case EilangType.Double:
+                    switch (right.Type)
+                    {
+                        case EilangType.Integer:
                             state.Stack.Push(state.ValueFactory.Double(left.Get<double>() + right.Get<int>()));
                             break;
-                        case TypeOfValue.Double:
+                        case EilangType.Long:
+                            state.Stack.Push(state.ValueFactory.Double(left.Get<double>() + right.Get<long>()));
+                            break;
+                        case EilangType.Double:
                             state.Stack.Push(state.ValueFactory.Double(left.Get<double>() + right.Get<double>()));
                             break;
-                        case TypeOfValue.String:
+                        case EilangType.String:
                             state.Stack.Push(
                                 state.ValueFactory.String(left.Get<double>() + right.As<StringValue>().Item));
                             break;
@@ -50,10 +77,10 @@ namespace eilang.OperationCodes
                     }
 
                     break;
-                case TypeOfValue.Bool:
+                case EilangType.Bool:
                     switch (right.Type)
                     {
-                        case TypeOfValue.String:
+                        case EilangType.String:
                             state.Stack.Push(
                                 state.ValueFactory.String(left.Get<bool>() + right.As<StringValue>().Item));
                             break;
@@ -63,31 +90,34 @@ namespace eilang.OperationCodes
                     }
 
                     break;
-                case TypeOfValue.String:
+                case EilangType.String:
                     switch (right.Type)
                     {
-                        case TypeOfValue.String:
+                        case EilangType.String:
                             state.Stack.Push(
                                 state.ValueFactory.String(left.As<StringValue>().Item + right.As<StringValue>().Item));
                             break;
-                        case TypeOfValue.Uninitialized:
+                        case EilangType.Uninitialized:
                             state.Stack.Push(left);
                             break;
-                        case TypeOfValue.Integer:
+                        case EilangType.Integer:
                             state.Stack.Push(state.ValueFactory.String(left.As<StringValue>().Item + right.Get<int>()));
                             break;
-                        case TypeOfValue.Double:
+                        case EilangType.Long:
+                            state.Stack.Push(state.ValueFactory.String(left.As<StringValue>().Item + right.Get<long>()));
+                            break;
+                        case EilangType.Double:
                             state.Stack.Push(
                                 state.ValueFactory.String(left.As<StringValue>().Item + right.Get<double>()));
                             break;
-                        case TypeOfValue.Bool:
+                        case EilangType.Bool:
                             state.Stack.Push(
                                 state.ValueFactory.String(left.As<StringValue>().Item + right.Get<bool>()));
                             break;
-                        case TypeOfValue.List:
+                        case EilangType.List:
                             state.Stack.Push(state.ValueFactory.String(left.As<StringValue>().Item + right));
                             break;
-                        case TypeOfValue.Map:
+                        case EilangType.Map:
                             state.Stack.Push(state.ValueFactory.String(left.As<StringValue>().Item + right));
                             break;
                         default:
@@ -96,10 +126,10 @@ namespace eilang.OperationCodes
                     }
 
                     break;
-                case TypeOfValue.Uninitialized:
+                case EilangType.Uninitialized:
                     switch (right.Type)
                     {
-                        case TypeOfValue.String:
+                        case EilangType.String:
                             state.Stack.Push(right);
                             break;
                     }

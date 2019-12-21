@@ -59,5 +59,7 @@ namespace eilang.Interfaces
         void Visit(AstIndexerOnReturnedValue indexer, Function function, Module mod);
         void Visit(AstAnonymousTypeInitialization anon, Function function, Module mod);
         void Visit(AstNewMap newMap, Function function, Module mod);
+        void Visit(AstTypeConstant typeConstant, Function function, Module mod);
+        void Visit(AstLongConstant longConstant, Function function, Module mod);
     }
 }

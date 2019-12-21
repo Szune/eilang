@@ -2,7 +2,7 @@
 {
     public class VoidValue : ValueBase<string>
     {
-        public VoidValue() : base(TypeOfValue.Void, "Void")
+        public VoidValue() : base(EilangType.Void, "Void")
         {
         }
     }

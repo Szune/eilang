@@ -22,7 +22,7 @@ namespace eilang.Modules
         public static IValue MakeFile(IValueFactory fac, IValue args)
         {
             var name = args
-                .Require(TypeOfValue.String, "mkfile takes 1 argument: string fileName")
+                .Require(EilangType.String, "mkfile takes 1 argument: string fileName")
                 .To<string>();
             try
             {
@@ -42,7 +42,7 @@ Console.WriteLine(ex.ToString());
         [ExportFunction("open")]
         public static IValue OpenFile(IValueFactory fac, IValue args)
         {
-            if (args.Type == TypeOfValue.List)
+            if (args.Type == EilangType.List)
             {
                 var list = args.As<ListValue>()
                     .RequireCount(2, "open_file takes 1 or 2 arguments: string fileName, [bool append]")
@@ -57,10 +57,10 @@ Console.WriteLine(ex.ToString());
         private static IValue OpenFileInner(IValueFactory fac, IValue fileName, IValue append = null)
         {
             var name = fileName
-                .Require(TypeOfValue.String, "open_file requires that parameter 'fileName' is a string.")
+                .Require(EilangType.String, "open_file requires that parameter 'fileName' is a string.")
                 .To<string>();
             var shouldAppend = append?
-                .Require(TypeOfValue.Bool, "open_file requires that parameter 'append' is a bool.")
+                .Require(EilangType.Bool, "open_file requires that parameter 'append' is a bool.")
                 .To<bool>() ?? false;
 
             // TODO: add encoding options

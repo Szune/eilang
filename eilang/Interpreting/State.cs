@@ -29,7 +29,7 @@ namespace eilang.Interpreting
 
         public void PushIfNonVoidValue(IValue result)
         {
-            if (result.Type != TypeOfValue.Void)
+            if (result.Type != EilangType.Void)
             {
                 Stack.Push(result);
             }

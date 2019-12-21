@@ -17,13 +17,13 @@ namespace eilang.Parsing
 
     public class ParameterType
     {
-        public ParameterType(string name, TypeOfValue type)
+        public ParameterType(string name, EilangType type)
         {
             Name = name;
             Type = type;
         }
 
         public string Name { get; }
-        public TypeOfValue Type { get; }
+        public EilangType Type { get; }
     }
 }

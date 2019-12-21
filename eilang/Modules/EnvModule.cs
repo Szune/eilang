@@ -39,7 +39,7 @@ namespace eilang.Modules
         public static IValue SetWorkingDirectory(IValueFactory fac, IValue args)
         {
             var dir = args
-                .Require(TypeOfValue.String, "set_current_dir takes 1 argument: string directory")
+                .Require(EilangType.String, "set_current_dir takes 1 argument: string directory")
                 .To<string>();
             PathHelper.SetWorkingDirectory(dir);
             return fac.Void();

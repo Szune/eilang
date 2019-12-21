@@ -5,6 +5,7 @@ namespace eilang.Tokens
     public class Token
     {
         public TokenType Type { get; }
+        public long Long { get; }
         public Position Position { get; }
         public string Text { get; }
         public int Integer { get; }
@@ -15,9 +16,11 @@ namespace eilang.Tokens
             Type = TokenType.None;
             Position = new Position(-1, -1);
         }
-        public Token(TokenType type, int line, int col, string text = default, int integer = default, double doubl = default)
+        public Token(TokenType type, int line, int col, long longValue = default, string text = default, int integer = default,
+            double doubl = default)
         {
             Type = type;
+            Long = longValue;
             Position = new Position(line, col);
             Text = text;
             Integer = integer;

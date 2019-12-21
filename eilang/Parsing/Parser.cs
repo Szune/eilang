@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -293,7 +294,7 @@ namespace eilang.Parsing
                 {
                     paramType = new Parameter(arg, new List<ParameterType>
                     {
-                        new ParameterType(SpecialVariables.AnyType, TypeOfValue.Any)
+                        new ParameterType(SpecialVariables.AnyType, EilangType.Any)
                     });
                 }
                 else
@@ -312,7 +313,7 @@ namespace eilang.Parsing
                             ident = GetIdentifierWithModule();
                         }
                         var type = Types.GetType(ident);
-                        if (type == TypeOfValue.Class && !ident.Contains("::"))
+                        if (type == EilangType.Class && !ident.Contains("::"))
                         {
                             ident = $"{SpecialVariables.Global}::{ident}";
                         }
@@ -366,6 +367,9 @@ namespace eilang.Parsing
                 case TokenType.If:
                     ParseIf(ast);
                     return;
+                case TokenType.Switch:
+                    ParseSwitch(ast);
+                    return;
                 case TokenType.Use:
                     ParseUse(ast);
                     return;
@@ -395,6 +399,35 @@ namespace eilang.Parsing
                     Require(TokenType.Semicolon);
                     return;
             }
+        }
+
+        private void ParseSwitch(IHaveExpression ast)
+        {
+            throw new NotImplementedException();
+            /*
+             * switch int_thing {
+             *    0 -> x,
+             *    1 -> y,
+             *    _ -> z # default
+             * }
+             * switch str_thing {
+             *    "one" -> x,
+             *    "two" -> y,
+             *     _ -> z # default
+             * }
+             * switch str_thing_multi_same_branch {
+             *    "one","three","four" -> x,
+             *    "two" -> y,
+             *     _ -> z # default
+             * }
+             * switch str_thing_block_case {
+             *    case "one": 
+             *         m = 1;
+             *         n = 2;
+             *         break;
+             *    case "two" -> y,
+             * }
+             */
         }
 
         private void ParseUse(IHaveExpression ast)
@@ -1135,12 +1168,21 @@ namespace eilang.Parsing
                     }
                     Consume();
                     return new AstBreak(pos);
+                case TokenType.TypeOf:
+                    Consume();
+                    Require(TokenType.LeftParenthesis);
+                    var type = GetIdentifierWithModule();
+                    Require(TokenType.RightParenthesis);
+                    return new AstTypeConstant(type, pos);
                 case TokenType.String:
                     var str = Require(TokenType.String).Text;
                     return new AstStringConstant(str, pos);
                 case TokenType.Integer:
                     var inte = Require(TokenType.Integer).Integer;
                     return new AstIntegerConstant(inte, pos);
+                case TokenType.Long:
+                    var longValue = Require(TokenType.Long).Long;
+                    return new AstLongConstant(longValue, pos);
                 case TokenType.Double:
                     var doubl = Require(TokenType.Double).Double;
                     return new AstDoubleConstant(doubl, pos);

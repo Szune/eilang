@@ -15,18 +15,18 @@ namespace eilang.Modules
         {
             const string moveError = " takes 2 arguments: string currentName, string newName";
             var argList = args
-                .Require(TypeOfValue.List, func + moveError)
+                .Require(EilangType.List, func + moveError)
                 .As<ListValue>()
                 .RequireCount(2, func + moveError)
                 .Item;
             argList.OrderAsArguments();
             
             var currentName = argList[0]
-                .Require(TypeOfValue.String, "currentName has to be a string")
+                .Require(EilangType.String, "currentName has to be a string")
                 .To<string>();
             
             var newName = argList[1]
-                .Require(TypeOfValue.String, "newName has to be a string")
+                .Require(EilangType.String, "newName has to be a string")
                 .To<string>();
             try
             {
@@ -53,7 +53,7 @@ Console.WriteLine(ex.ToString());
         public static IValue IsFile(IValueFactory fac, IValue args)
         {
             var fileName = args
-                .Require(TypeOfValue.String, "is_file takes 1 argument: string fileName")
+                .Require(EilangType.String, "is_file takes 1 argument: string fileName")
                 .To<string>();
             return fac.Bool(File.Exists(fileName));
         }
@@ -62,7 +62,7 @@ Console.WriteLine(ex.ToString());
         public static IValue IsDirectory(IValueFactory fac, IValue args)
         {
             var dirName = args
-                .Require(TypeOfValue.String, "is_dir takes 1 argument: string directory")
+                .Require(EilangType.String, "is_dir takes 1 argument: string directory")
                 .To<string>();
             return fac.Bool(Directory.Exists(dirName));
         }
@@ -71,7 +71,7 @@ Console.WriteLine(ex.ToString());
         public static IValue GetItems(IValueFactory fac, IValue args)
         {
             var dirName = args
-                .Require(TypeOfValue.String, "get_items takes 1 argument: string directory")
+                .Require(EilangType.String, "get_items takes 1 argument: string directory")
                 .To<string>();
             
             var dir = new DirectoryInfo(dirName);
@@ -83,7 +83,7 @@ Console.WriteLine(ex.ToString());
         public static IValue GetDirectories(IValueFactory fac, IValue args)
         {
             var dirName = args
-                .Require(TypeOfValue.String, "get_dirs takes 1 argument: string directory")
+                .Require(EilangType.String, "get_dirs takes 1 argument: string directory")
                 .To<string>();
             
             var dir = new DirectoryInfo(dirName);
@@ -94,7 +94,7 @@ Console.WriteLine(ex.ToString());
         public static IValue GetFiles(IValueFactory fac, IValue args)
         {
             var dirName = args
-                .Require(TypeOfValue.String, "get_files takes 1 argument: string directory")
+                .Require(EilangType.String, "get_files takes 1 argument: string directory")
                 .To<string>();
             
             var dir = new DirectoryInfo(dirName);

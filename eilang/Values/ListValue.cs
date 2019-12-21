@@ -7,7 +7,7 @@ namespace eilang.Values
 {
     public class ListValue : ValueBase<List<IValue>>
     {
-        public ListValue(Instance value) : base(TypeOfValue.List, value)
+        public ListValue(Instance value) : base(EilangType.List, value)
         {
         }
 

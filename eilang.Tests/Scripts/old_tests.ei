@@ -138,9 +138,9 @@ fun main() {
 	    println(parsed[ix].arg);
 	}
 	
-    #+
+    #[
         block comment
-    -#
+    ]#
     # for loopers
     for(0..-1)
     {

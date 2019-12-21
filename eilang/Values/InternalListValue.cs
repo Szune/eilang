@@ -5,7 +5,7 @@ namespace eilang.Values
 {
     public class InternalListValue : ValueBase<List<IValue>>
     {
-        public InternalListValue(List<IValue> items) : base(TypeOfValue.List, items)
+        public InternalListValue(List<IValue> items) : base(EilangType.List, items)
         {
         }
     }

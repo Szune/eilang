@@ -4,7 +4,7 @@ namespace eilang.Values
 {
     public class StringValue : ValueBase<string>
     {
-        public StringValue(Instance value) : base(TypeOfValue.String, value)
+        public StringValue(Instance value) : base(EilangType.String, value)
         {
         }
 

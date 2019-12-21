@@ -2,7 +2,7 @@
 {
     public class IntegerValue : ValueBase<int>
     {
-        public IntegerValue(int value) : base(TypeOfValue.Integer, value)
+        public IntegerValue(int value) : base(EilangType.Integer, value)
         {
         }
 

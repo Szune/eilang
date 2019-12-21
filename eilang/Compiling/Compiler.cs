@@ -256,6 +256,16 @@ namespace eilang.Compiling
             function.Write(OpFactory.MapNew(), new Metadata {Ast = newMap});
         }
 
+        public void Visit(AstTypeConstant typeConstant, Function function, Module mod)
+        {
+            function.Write(OpFactory.Push(ValueFactory.Type(typeConstant.Type)));
+        }
+
+        public void Visit(AstLongConstant longConstant, Function function, Module mod)
+        {
+            function.Write(OpFactory.Push(ValueFactory.Long(longConstant.Long)));
+        }
+
         public void Visit(AstIndexerReference indexer, Function function, Module mod)
         {
             Log($"Compiling indexer reference for variable '{indexer.Identifier}'");

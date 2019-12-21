@@ -4,6 +4,7 @@
     {
         #region keywords
         public const string If = "if";
+        public const string Switch = "switch";
         public const string Else = "else";
         public const string Class = "typ";
         public const string Module = "modu";
@@ -22,6 +23,7 @@
         public const string Break = "break";
         public const string Import = "import";
         public const string Use = "use";
+        public const string TypeOf = "typeof";
         #endregion
         
         #region multichar tokens
@@ -67,5 +69,6 @@
         public const char Percent = '%';
         public const char Tilde = '~';
         #endregion
+
     }
 }

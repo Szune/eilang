@@ -6,7 +6,7 @@ namespace eilang.Values
 {
     public class MapValue : ValueBase<Dictionary<IValue,IValue>>
     {
-        public MapValue(Instance value) : base(TypeOfValue.Map, value)
+        public MapValue(Instance value) : base(EilangType.Map, value)
         {
         }
 

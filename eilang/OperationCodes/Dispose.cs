@@ -9,7 +9,7 @@ namespace eilang.OperationCodes
         public void Execute(State state)
         {
             var obj = state.Stack.Pop();
-            if (obj.Type != TypeOfValue.Disposable)
+            if (obj.Type != EilangType.Disposable)
             {
                 Console.WriteLine($"WARNING: object on top of stack is not a disposable object: {obj}");
             }

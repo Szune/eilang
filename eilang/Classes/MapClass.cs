@@ -10,8 +10,9 @@ namespace eilang.Classes
     {
         public static readonly List<ParameterType> ValidKeyTypes = new List<ParameterType>
         {
-            new ParameterType("string", TypeOfValue.String),
-            new ParameterType("int", TypeOfValue.Integer)
+            new ParameterType("string", EilangType.String),
+            new ParameterType("int", EilangType.Integer),
+            new ParameterType("long", EilangType.Long)
         };
         public MapClass(IOperationCodeFactory factory) : base(SpecialVariables.Map, SpecialVariables.Global)
         {

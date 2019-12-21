@@ -2,7 +2,7 @@
 {
     public class FunctionPointerValue : ValueBase<string>
     {
-        public FunctionPointerValue(Instance value) : base(TypeOfValue.FunctionPointer, value)
+        public FunctionPointerValue(Instance value) : base(EilangType.FunctionPointer, value)
         {
         }
         

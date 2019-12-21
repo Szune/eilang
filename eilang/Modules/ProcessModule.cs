@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using eilang.Exporting;
 using eilang.Extensions;
@@ -13,7 +15,7 @@ namespace eilang.Modules
         [ExportFunction("start")]
         public static IValue StartProcess(IValueFactory fac, IValue args)
         {
-            if (args.Type == TypeOfValue.List)
+            if (args.Type == EilangType.List)
             {
                 var list = args
                     .As<ListValue>()
@@ -26,11 +28,11 @@ namespace eilang.Modules
 
             return StartInner(fac, args);
         }
-        
+
         private static IValue StartInner(IValueFactory fac, IValue processName, IValue args = null)
         {
             var fileName = processName
-                .Require(TypeOfValue.String, "start requires that parameter 'processName' is a string.")
+                .Require(EilangType.String, "start requires that parameter 'processName' is a string.")
                 .To<string>();
 
             if (args == null)
@@ -40,7 +42,7 @@ namespace eilang.Modules
             else
             {
                 var argsString = args
-                    .Require(TypeOfValue.String, "start requires that parameter 'args' is a string.")
+                    .Require(EilangType.String, "start requires that parameter 'args' is a string.")
                     .To<string>();
                 Process.Start(fileName, argsString);
             }
@@ -57,9 +59,10 @@ namespace eilang.Modules
             {
                 proc.Kill();
             }
+
             return fac.Void();
         }
-        
+
         [ExportFunction("kill_wait")]
         public static IValue KillProcessAndWaitForExit(IValueFactory fac, IValue args)
         {
@@ -70,17 +73,24 @@ namespace eilang.Modules
                 proc.Kill();
                 proc.WaitForExit(60_000);
             }
+
             return fac.Void();
         }
-        
+
         [ExportFunction("get")]
         public static IValue GetProcesses(IValueFactory fac, IValue args)
         {
             var name = args.GetStringArgument("get takes 1 argument: string processName");
             var processes = Process.GetProcessesByName(name);
-            return fac.List(processes.Select(s => fac.Integer(s.Id)).ToList());
+            return fac.List(
+                processes.Select(p => fac.Map(new Dictionary<IValue, IValue>
+                {
+                    {fac.String("id"), fac.Integer(p.Id)},
+                    {fac.String("name"), fac.String(p.ProcessName)},
+                    {fac.String("hwnd"), fac.IntPtr(p.MainWindowHandle)}
+                })).ToList());
         }
-        
+
         // TODO: add the following functions to the module
         // TODO: add functionality to allow for waiting for a started process to exit
 //            Functions.Add("kill_pid", new MemberFunction("kill_pid", Module, new List<string>{"pid"}, this)
@@ -97,6 +107,5 @@ namespace eilang.Modules
 //                    new Bytecode(factory.GPPROC)
 //                }
 //            });
-        
     }
 }

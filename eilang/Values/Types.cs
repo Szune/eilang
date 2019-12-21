@@ -9,39 +9,46 @@ using eilang.Parsing;
 namespace eilang.Values
 {
     [Flags]
-    public enum TypeOfValue
+    public enum EilangType
     {
         None = 0,
         String = 1,
         Integer = 2,
-        Double = 4,
-        Bool = 8,
-        Class = 16,
-        Instance = 32,
-        Void = 64,
-        List = 128,
-        Map = 256,
-        Uninitialized = 512,
-        Disposable = 1024,
-        FunctionPointer = 2048,
-        Any  = 4096
+        Long = 4,
+        Double = 8,
+        Bool = 16,
+        Class = 32,
+        Instance = 64,
+        Void = 128,
+        List = 256,
+        Map = 512,
+        Uninitialized = 1024,
+        Disposable = 2048,
+        FunctionPointer = 4096,
+        IntPtr = 8192,
+        Any = 16384,
+        Type = 32768
     }
     
     public static class Types
     {
-        public static TypeOfValue GetType(string type)
+        public static EilangType GetType(string type)
         {
             return type switch
             {
-                "any" => TypeOfValue.Any,
-                "int" => TypeOfValue.Integer,
-                "double" => TypeOfValue.Double,
-                "string" => TypeOfValue.String,
-                "bool" => TypeOfValue.Bool,
-                "list" => TypeOfValue.List,
-                "map" => TypeOfValue.Map,
-                "fp" => TypeOfValue.FunctionPointer,
-                _ => TypeOfValue.Class // while it is likely, there should be a more appropriate check later on
+                "any" => EilangType.Any,
+                "int" => EilangType.Integer,
+                "long" => EilangType.Long,
+                "double" => EilangType.Double,
+                "string" => EilangType.String,
+                "bool" => EilangType.Bool,
+                "list" => EilangType.List,
+                "map" => EilangType.Map,
+                "fp" => EilangType.FunctionPointer,
+                "ptr" => EilangType.IntPtr,
+                "type" => EilangType.Type,
+                "()" => EilangType.Uninitialized,
+                _ => EilangType.Class // while it is likely, there should be a more appropriate check later on
             };
         }
 
@@ -55,14 +62,14 @@ namespace eilang.Values
 
         public static void Ensure(Function function, string parameterName, IValue value, List<ParameterType> types)
         {
-            if (types.First().Type == TypeOfValue.Any)
+            if (types.First().Type == EilangType.Any)
             {
                 return; // anything's fine
             }
 
             if (value is InstanceValue iv &&
                 types.Any(t =>
-                    t.Type == TypeOfValue.Class &&
+                    t.Type == EilangType.Class &&
                     t.Name == iv.Item.Owner.FullName))
             {
                 return;
@@ -76,14 +83,14 @@ namespace eilang.Values
         
         public static void Ensure(string function, string parameterName, IValue value, List<ParameterType> types)
         {
-            if (types.First().Type == TypeOfValue.Any)
+            if (types.First().Type == EilangType.Any)
             {
                 return; // anything's fine
             }
 
             if (value is InstanceValue iv &&
                 types.Any(t =>
-                    t.Type == TypeOfValue.Class &&
+                    t.Type == EilangType.Class &&
                     t.Name == iv.Item.Owner.FullName))
             {
                 return;

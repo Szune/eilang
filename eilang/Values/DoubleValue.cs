@@ -2,7 +2,7 @@
 {
     public class DoubleValue : ValueBase<double>
     {
-        public DoubleValue(double value) : base(TypeOfValue.Double, value)
+        public DoubleValue(double value) : base(EilangType.Double, value)
         {
         }
     }

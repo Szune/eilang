@@ -12,15 +12,20 @@ namespace eilang.OperationCodes
             var left = state.Stack.Pop();
             switch (left.Type)
             {
-                case TypeOfValue.Integer:
+                case EilangType.Integer:
                     switch (right.Type)
                     {
-                        case TypeOfValue.Integer:
+                        case EilangType.Integer:
                             state.Stack.Push(left.Get<int>() <= right.Get<int>()
                                 ? state.ValueFactory.True()
                                 : state.ValueFactory.False());
                             break;
-                        case TypeOfValue.Double:
+                        case EilangType.Long:
+                            state.Stack.Push(left.Get<int>() <= right.Get<long>()
+                                ? state.ValueFactory.True()
+                                : state.ValueFactory.False());
+                            break;
+                        case EilangType.Double:
                             state.Stack.Push(left.Get<int>() <= right.Get<double>()
                                 ? state.ValueFactory.True()
                                 : state.ValueFactory.False());
@@ -28,16 +33,42 @@ namespace eilang.OperationCodes
                     }
 
                     break;
-                case TypeOfValue.Double:
+                case EilangType.Long:
                     switch (right.Type)
                     {
-                        case TypeOfValue.Double:
+                        case EilangType.Integer:
+                            state.Stack.Push(left.Get<long>() <= right.Get<int>()
+                                ? state.ValueFactory.True()
+                                : state.ValueFactory.False());
+                            break;
+                        case EilangType.Long:
+                            state.Stack.Push(left.Get<long>() <= right.Get<long>()
+                                ? state.ValueFactory.True()
+                                : state.ValueFactory.False());
+                            break;
+                        case EilangType.Double:
+                            state.Stack.Push(left.Get<long>() <= right.Get<double>()
+                                ? state.ValueFactory.True()
+                                : state.ValueFactory.False());
+                            break;
+                    }
+
+                    break;
+                case EilangType.Double:
+                    switch (right.Type)
+                    {
+                        case EilangType.Double:
                             state.Stack.Push(left.Get<double>() <= right.Get<double>()
                                 ? state.ValueFactory.True()
                                 : state.ValueFactory.False());
                             break;
-                        case TypeOfValue.Integer:
+                        case EilangType.Integer:
                             state.Stack.Push(left.Get<double>() <= right.Get<int>()
+                                ? state.ValueFactory.True()
+                                : state.ValueFactory.False());
+                            break;
+                        case EilangType.Long:
+                            state.Stack.Push(left.Get<double>() <= right.Get<long>()
                                 ? state.ValueFactory.True()
                                 : state.ValueFactory.False());
                             break;

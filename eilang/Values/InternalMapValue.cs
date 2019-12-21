@@ -5,7 +5,7 @@ namespace eilang.Values
 {
     public class InternalMapValue : ValueBase<Dictionary<IValue,IValue>>
     {
-        public InternalMapValue(Dictionary<IValue,IValue> items) : base(TypeOfValue.Map, items)
+        public InternalMapValue(Dictionary<IValue,IValue> items) : base(EilangType.Map, items)
         {
         }
     }

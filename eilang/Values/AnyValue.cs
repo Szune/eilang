@@ -7,9 +7,9 @@ namespace eilang.Values
         public AnyValue(object obj)
         {
             Value = obj;
-            Type = TypeOfValue.Any;
+            Type = EilangType.Any;
         }
-        public TypeOfValue Type { get; }
+        public EilangType Type { get; }
         public T Get<T>()
         {
             return (T) Value;

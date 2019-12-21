@@ -117,6 +117,15 @@ namespace eilang.Classes
                     new Bytecode(factory.Return())
                 }
             });
+            Functions.Add("long", new MemberFunction("long", Module, new List<string>{}, this)
+            {
+                Code = 
+                {
+                    new Bytecode(factory.Pop()),
+                    new Bytecode(factory.StringToLong()),
+                    new Bytecode(factory.Return())
+                }
+            });
             Functions.Add("double", new MemberFunction("double", Module, new List<string>{}, this)
             {
                 Code = 

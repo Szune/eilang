@@ -12,10 +12,10 @@ namespace eilang.OperationCodes
             var left = state.Stack.Pop();
             switch (left.Type)
             {
-                case TypeOfValue.Uninitialized:
+                case EilangType.Uninitialized:
                     switch (right.Type)
                     {
-                        case TypeOfValue.Uninitialized:
+                        case EilangType.Uninitialized:
                             state.Stack.Push(state.ValueFactory.True());
                             break;
                         default:
@@ -24,10 +24,10 @@ namespace eilang.OperationCodes
                     }
 
                     break;
-                case TypeOfValue.Bool:
+                case EilangType.Bool:
                     switch (right.Type)
                     {
-                        case TypeOfValue.Bool:
+                        case EilangType.Bool:
                             state.Stack.Push(state.ValueFactory.Bool(left.Get<bool>() == right.Get<bool>()));
                             break;
                         default:
@@ -36,15 +36,20 @@ namespace eilang.OperationCodes
                     }
 
                     break;
-                case TypeOfValue.Integer:
+                case EilangType.Integer:
                     switch (right.Type)
                     {
-                        case TypeOfValue.Integer:
+                        case EilangType.Integer:
                             state.Stack.Push(left.Get<int>() == right.Get<int>()
                                 ? state.ValueFactory.True()
                                 : state.ValueFactory.False());
                             break;
-                        case TypeOfValue.Double:
+                        case EilangType.Long:
+                            state.Stack.Push(left.Get<int>() == right.Get<long>()
+                                ? state.ValueFactory.True()
+                                : state.ValueFactory.False());
+                            break;
+                        case EilangType.Double:
                             // int has precedence in any int-double comparisons
                             state.Stack.Push(
                                 state.ValueFactory.Bool(left.As<IntegerValue>().Item ==
@@ -56,10 +61,35 @@ namespace eilang.OperationCodes
                     }
 
                     break;
-                case TypeOfValue.String:
+                case EilangType.Long:
                     switch (right.Type)
                     {
-                        case TypeOfValue.String:
+                        case EilangType.Integer:
+                            state.Stack.Push(left.Get<long>() == right.Get<int>()
+                                ? state.ValueFactory.True()
+                                : state.ValueFactory.False());
+                            break;
+                        case EilangType.Long:
+                            state.Stack.Push(left.Get<long>() == right.Get<long>()
+                                ? state.ValueFactory.True()
+                                : state.ValueFactory.False());
+                            break;
+                        case EilangType.Double:
+                            // int has precedence in any int-double comparisons
+                            state.Stack.Push(
+                                state.ValueFactory.Bool(left.As<LongValue>().Item ==
+                                                        (long) right.As<DoubleValue>().Item));
+                            break;
+                        default:
+                            state.Stack.Push(state.ValueFactory.False());
+                            break;
+                    }
+
+                    break;
+                case EilangType.String:
+                    switch (right.Type)
+                    {
+                        case EilangType.String:
                             state.Stack.Push(left.As<StringValue>().Item == right.As<StringValue>().Item
                                 ? state.ValueFactory.True()
                                 : state.ValueFactory.False());
@@ -70,21 +100,26 @@ namespace eilang.OperationCodes
                     }
 
                     break;
-                case TypeOfValue.Double:
+                case EilangType.Double:
                 {
                     switch (right.Type)
                     {
-                        case TypeOfValue.Double:
+                        case EilangType.Double:
                             // yes, this is a bad comparison for doubles, but a decision needs to be made here,
                             // I'm not sure if I like eilang making predictions on what accuracy is fine for the user
                             // so for now, I'm leaving it up to the user to make such checks
                             state.Stack.Push(
-                                state.ValueFactory.Bool(left.As<DoubleValue>().Item == right.As<DoubleValue>().Item));
+                                state.ValueFactory.Bool((long)left.As<DoubleValue>().Item == (long)right.As<DoubleValue>().Item));
                             break;
-                        case TypeOfValue.Integer:
+                        case EilangType.Integer:
                             state.Stack.Push(
                                 state.ValueFactory.Bool((int) left.As<DoubleValue>().Item ==
                                                         right.As<IntegerValue>().Item));
+                            break;
+                        case EilangType.Long:
+                            state.Stack.Push(
+                                state.ValueFactory.Bool((long) left.Get<double>() ==
+                                                        right.Get<long>()));
                             break;
                         default:
                             state.Stack.Push(state.ValueFactory.False());
@@ -92,10 +127,10 @@ namespace eilang.OperationCodes
                     }
                 }
                     break;
-                case TypeOfValue.FunctionPointer:
+                case EilangType.FunctionPointer:
                     switch (right.Type)
                     {
-                        case TypeOfValue.FunctionPointer:
+                        case EilangType.FunctionPointer:
                             state.Stack.Push(state.ValueFactory.Bool(
                                 left.As<FunctionPointerValue>().Item == right.As<FunctionPointerValue>().Item));
                             break;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using eilang.Classes;
@@ -24,9 +25,9 @@ namespace eilang
         {
             switch (args.Type)
             {
-                case TypeOfValue.String:
+                case EilangType.String:
                     throw new ExitException(args.To<string>());
-                case TypeOfValue.Integer:
+                case EilangType.Integer:
                     throw new ExitException(args.To<int>());
                 default:
                     throw new ExitException();
@@ -36,7 +37,8 @@ namespace eilang
         [ExportFunction("type")]
         public static IValue Type(IValueFactory fac, IValue args)
         {
-            var type = args.RequireAnyOf(TypeOfValue.Instance | TypeOfValue.Map | TypeOfValue.List | TypeOfValue.String, "type takes 1 argument: instance | map | list | string value");
+            var type = args.RequireAnyOf(EilangType.Instance | EilangType.Map | EilangType.List | EilangType.String,
+                $"type takes 1 argument: instance | map | list | string value, received {args.Type}");
             var typeClass = GetClass(type);
             var typeScope = GetScope(type);
             // .As<InstanceValue>();
@@ -53,7 +55,7 @@ namespace eilang
                     .Select(k => fac.String(k)).ToList()));
             return fac.Instance(new Instance(scope, _typeInfoClass.Value));
         }
-
+        
         private static Scope GetScope(IValue type)
         {
             return type switch
@@ -63,7 +65,7 @@ namespace eilang
                 MapValue _ => new Scope(),
                 StringValue _ => new Scope(),
                 _ => throw new ArgumentOutOfRangeException(nameof(type))
-            } ;
+            };
         }
 
         private static Class GetClass(IValue type)
@@ -76,7 +78,7 @@ namespace eilang
                 MapValue mapValue => new MapClass(_),
                 StringValue stringValue => new StringClass(_),
                 _ => throw new ArgumentOutOfRangeException(nameof(type))
-            } ;
+            };
         }
 
         [ExportFunction("input")]
@@ -101,7 +103,7 @@ namespace eilang
         [ExportFunction("assert")]
         public static IValue Assert(IValueFactory fac, IValue args)
         {
-            if (args.Type == TypeOfValue.List)
+            if (args.Type == EilangType.List)
             {
                 var list = args.As<ListValue>().Item;
                 if (list.Count != 2)
@@ -119,61 +121,51 @@ namespace eilang
         [ExportFunction("println")]
         public static IValue PrintLine(IValueFactory fac, IValue value)
         {
-            var ind = '.';
-            PrintLineInner(value);
+            var printValue = GetPrintValue(value);
+            Console.WriteLine(printValue);
 
-            void PrintLineInner(IValue val, int indent = 0)
-            {
-                Console.Write(new string(ind, indent * 2));
-                switch (val.Type)
-                {
-                    case TypeOfValue.String:
-                        Console.WriteLine(val.Get<Instance>().GetVariable(SpecialVariables.String).Get<string>());
-                        break;
-                    case TypeOfValue.FunctionPointer:
-                        Console.WriteLine(val.Get<Instance>().GetVariable(SpecialVariables.Function).Get<Instance>()
-                            .GetVariable(SpecialVariables.String).Get<string>());
-                        break;
-                    case TypeOfValue.Double:
-                        Console.WriteLine(val.Get<double>());
-                        break;
-                    case TypeOfValue.Uninitialized:
-                        Console.WriteLine(val.Get<string>());
-                        break;
-                    case TypeOfValue.Integer:
-                        Console.WriteLine(val.Get<int>());
-                        break;
-                    case TypeOfValue.Bool:
-                        Console.WriteLine(val.Get<bool>());
-                        break;
-                    case TypeOfValue.Void:
-                        Console.WriteLine(val.ToString());
-                        break;
-                    case TypeOfValue.List:
-                        Console.WriteLine(val.ToString());
-                        break;
-                    case TypeOfValue.Map:
-                        Console.WriteLine(val.ToString());
-                        break;
-                    case TypeOfValue.Instance:
-                        Console.WriteLine(val.ToString());
-                        break;
-                    default:
-                        throw new InvalidOperationException("println does not work with " + val.Type);
-                }
-            }
+            return fac.Void();
+        }
+        
+        [ExportFunction("print")]
+        public static IValue Print(IValueFactory fac, IValue value)
+        {
+            var printValue = GetPrintValue(value);
+            Console.Write(printValue);
 
             return fac.Void();
         }
 
+        private static string GetPrintValue(IValue val)
+        {
+            return val.Type switch
+            {
+                EilangType.String => val.As<StringValue>().ToString(),
+                EilangType.FunctionPointer => val.As<FunctionPointerValue>().ToString(),
+                EilangType.Double => val.Get<double>().ToString(NumberFormatInfo.InvariantInfo),
+                EilangType.Uninitialized => val.Get<string>(),
+                EilangType.Integer => val.Get<int>().ToString(),
+                EilangType.Long => val.Get<long>().ToString(),
+                EilangType.Bool => val.Get<bool>().ToString(),
+                EilangType.Void => val.ToString(),
+                EilangType.List => val.ToString(),
+                EilangType.Map => val.ToString(),
+                EilangType.Instance => val.ToString(),
+                EilangType.IntPtr => val.Get<IntPtr>().ToString(),
+                EilangType.Type => val.As<TypeValue>().TypeOf.ToString(),
+                _ =>
+                throw new InvalidOperationException("println does not work with " + val.Type),
+            };
+        }
+
         private static IValue AssertInner(IValueFactory fac, IValue assert, IValue message = null)
         {
-            if (assert.Type != TypeOfValue.Bool)
+            if (assert.Type != EilangType.Bool)
             {
                 throw new InvalidOperationException("Can only assert bool values");
             }
 
-            if (message != null && message.Type != TypeOfValue.String)
+            if (message != null && message.Type != EilangType.String)
                 throw new InvalidOperationException("Message can only be of type string");
             if (assert.Get<bool>())
                 return fac.Void();

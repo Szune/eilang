@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace eilang.Exceptions
 {
     [Serializable]
-    public class ExitException : Exception
+    public class ExitException : ErrorMessageException
     {
         public int ExitCode { get; }
 

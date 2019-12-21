@@ -53,8 +53,8 @@ namespace eilang.Interpreting
                     if (bc.Op is Return && frame.Function.FullName == startFunc.FullName)
                     {
                         state.Frames.Pop(); // keep the scope for next read, so variables aren't reset
-                        var type = _stack.TryPeek(out var t) ? t.Type : TypeOfValue.Void;
-                        if (type != TypeOfValue.Void)
+                        var type = _stack.TryPeek(out var t) ? t.Type : EilangType.Void;
+                        if (type != EilangType.Void)
                         {
                             return _stack.TryPop(out var result)
                                 ? result

@@ -2,7 +2,7 @@
 {
     public class UninitializedValue : ValueBase<string>
     {
-        public UninitializedValue() : base(TypeOfValue.Uninitialized, "Uninitialized")
+        public UninitializedValue() : base(EilangType.Uninitialized, "Uninitialized")
         {
         }
     }

@@ -12,10 +12,13 @@ namespace eilang.OperationCodes
             var val = state.Stack.Pop();
             switch (val.Type)
             {
-                case TypeOfValue.Integer:
+                case EilangType.Integer:
                     state.Stack.Push(state.ValueFactory.Integer(val.Get<int>() + 1));
                     break;
-                case TypeOfValue.Double:
+                case EilangType.Long:
+                    state.Stack.Push(state.ValueFactory.Long(val.Get<long>() + 1));
+                    break;
+                case EilangType.Double:
                     state.Stack.Push(state.ValueFactory.Double(val.Get<double>() + 1));
                     break;
                 default:

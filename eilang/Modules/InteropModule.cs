@@ -1,0 +1,71 @@
+﻿using System.Linq;
+using System.Runtime.InteropServices;
+using eilang.Exporting;
+using eilang.Extensions;
+using eilang.Helpers;
+using eilang.Interfaces;
+using eilang.Values;
+
+namespace eilang.Modules
+{
+    [ExportModule("interop")]
+    public static class InteropModule
+    {
+        // TODO: wrap the library in a disposable that frees the library upon exit
+        [ExportFunction("load_lib")]
+        public static IValue Load(IValueFactory fac, IValue args)
+        {
+            var libName = args.Require(EilangType.String, "lib::load(string libPath) expected string.").To<string>();
+            return fac.IntPtr(NativeLibrary.Load(libName));
+        }
+
+        [ExportFunction("free_lib")]
+        public static IValue Free(IValueFactory fac, IValue args)
+        {
+            var ptr = args.Require(EilangType.IntPtr, "lib::free(ptr lib) expected ptr.").As<IntPtrValue>().Item;
+            NativeLibrary.Free(ptr);
+            return fac.Void();
+        }
+
+        [ExportFunction("get_export")]
+        public static IValue GetExport(IValueFactory fac, IValue args)
+        {
+            const string expectedListMsg = "lib::get_export(ptr lib, string name) expected two arguments.";
+            var argList = args.Require(EilangType.List, expectedListMsg)
+                .As<ListValue>()
+                .RequireCount(2, expectedListMsg)
+                .Item;
+            argList.OrderAsArguments();
+            var handle = argList[0].Require(EilangType.IntPtr,
+                    "lib::get_export(ptr lib, string name) expected first argument to be a ptr.")
+                .As<IntPtrValue>().Item;
+            var name = argList[1].Require(EilangType.String,
+                    "lib::get_export(ptr lib, string name) expected second argument to be a string.")
+                .As<StringValue>().Item;
+            var symbol = NativeLibrary.GetExport(handle, name);
+
+            return fac.IntPtr(symbol);
+        }
+
+        [ExportFunction("invoke_func")]
+        public static IValue InvokeLibrary(IValueFactory fac, IValue args)
+        {
+            const string expectedListMsg =
+                "lib::invoke_func(ptr function, type returnType, ...) expected at least 2 arguments.";
+            var argList = args.Require(EilangType.List, expectedListMsg)
+                .As<ListValue>()
+                .RequireAtLeast(2, expectedListMsg)
+                .Item;
+            argList.OrderAsArguments();
+            var funcHandle = argList[0]
+                .Require<IntPtrValue>(
+                    "lib::invoke_func(ptr function, type returnType, ...) expected first argument to be a ptr to the native function.")
+                .Item;
+            var returnType = argList[1]
+                .Require<TypeValue>(
+                    "lib::invoke_func(ptr function, type returnType, ...) expected second argument to be the return type of the native function.");
+
+            return InteropHelper.Invoke(funcHandle, returnType, argList.Skip(2).ToList(), fac);
+        }
+    }
+}

@@ -16,9 +16,14 @@ namespace eilang.Values
         private static readonly IOperationCodeFactory _operationCodeFactory = new OperationCodeFactory();
         private static readonly IValue _uninitialized = new UninitializedValue();
 
-        public IValue Double(double doub)
+        public IValue Long(long value)
         {
-            return new DoubleValue(doub);
+            return new LongValue(value);
+        }
+
+        public IValue Double(double value)
+        {
+            return new DoubleValue(value);
         }
 
         public IValue True()
@@ -31,9 +36,9 @@ namespace eilang.Values
             return _false;
         }
 
-        public IValue Integer(int inte)
+        public IValue Integer(int value)
         {
-            return new IntegerValue(inte);
+            return new IntegerValue(value);
         }
         
         public IValue InternalString(string str)
@@ -79,12 +84,30 @@ namespace eilang.Values
             return new FileHandleValue(new Instance(scope, new FileHandleClass(_operationCodeFactory, this)));
         }
 
+        public IValue IntPtr(IntPtr ptr)
+        {
+            return new IntPtrValue(ptr);
+        }
+
+        public IValue Any(object? result)
+        {
+            if (result == null)
+                return _uninitialized;
+            return new AnyValue(result);
+        }
+
         public IValue Class(Class clas)
         {
             return new ClassValue(clas);
         }
 
-        public IValue Instance(Instance instance, TypeOfValue type = TypeOfValue.Instance)
+        public IValue Type(string type)
+        {
+            var eilangType = Types.GetType(type);
+            return new TypeValue(type, eilangType);
+        }
+
+        public IValue Instance(Instance instance, EilangType type = EilangType.Instance)
         {
             return new InstanceValue(instance, type);
         }

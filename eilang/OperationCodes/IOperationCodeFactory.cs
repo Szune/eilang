@@ -67,6 +67,7 @@ namespace eilang.OperationCodes
         StringToLower StringToLower();
         StringSplit StringSplit();
         StringToInt StringToInt();
+        StringToLong StringToLong();
         StringToDouble StringToDouble();
         StringToBool StringToBool();
         Dispose Dispose();

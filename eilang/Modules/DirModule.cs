@@ -22,7 +22,7 @@ namespace eilang.Modules
         public static IValue MakeDirectory(IValueFactory fac, IValue args)
         {
                 var name = args
-                    .Require(TypeOfValue.String, "mkdir takes 1 argument: string directoryName")
+                    .Require(EilangType.String, "mkdir takes 1 argument: string directoryName")
                     .To<string>();
                 try
                 {

@@ -4,7 +4,7 @@ namespace eilang.Values
 {
     public class DisposableObjectValue : ValueBase<IDisposable>
     {
-        public DisposableObjectValue(Instance value) : base(TypeOfValue.Disposable, value)
+        public DisposableObjectValue(Instance value) : base(EilangType.Disposable, value)
         {
         }
         

@@ -69,6 +69,7 @@ namespace eilang.OperationCodes
         private readonly MapIndexerGet _mapIndexerGet = new MapIndexerGet();
         private readonly MapIndexerSet _mapIndexerSet = new MapIndexerSet();
         private readonly MapContains _mapContains = new MapContains();
+        private readonly StringToLong _stringToLong = new StringToLong();
 
         public Push Push(IValue value)
         {
@@ -373,6 +374,11 @@ namespace eilang.OperationCodes
         public StringToInt StringToInt()
         {
             return _stringToInt;
+        }
+
+        public StringToLong StringToLong()
+        {
+            return _stringToLong;
         }
 
         public StringToDouble StringToDouble()

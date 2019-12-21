@@ -90,7 +90,7 @@ namespace eilang
 #endif
 
 #if DEBUG
-            // TODO: add a contains(key) function to MapClass
+            // TODO: -10. implement native interop with structs
             // TODO: -0.99 implement interfaces
             // TODO: finish changing exceptions in operation codes to ErrorMessageException instead of InterpreterException
             // TODO: -0.5 implement try/catch/finally
@@ -111,7 +111,6 @@ namespace eilang
             // var x = *p(); x.s = 1; x.t = 2; x.u = 3; // load x into a register and read from that register,
             // instead of re-referencing x (gets more useful the more deeply nested stuff is)
             // look for more optimizations
-            // TODO: 10. implement calling external libraries, dlls and such
             // TODO: 11. perform analysis to remove unhandled return values from the stack,
             // currently the stack gets filled with unhandled return values if calling a function that returns a value inside a loop
             // TODO: 12. static analysis of types (i.e. type checking)

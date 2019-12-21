@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using eilang.Classes;
-using eilang.Compiling;
 using eilang.Exceptions;
 using eilang.Interfaces;
 using eilang.Interpreting;
@@ -26,10 +25,14 @@ namespace eilang.Extensions
                     return factory.String((string) obj);
                 case var _ when type == typeof(int):
                     return factory.Integer((int) obj);
+                case var _ when type == typeof(long):
+                    return factory.Long((long) obj);
                 case var _ when type == typeof(double):
                     return factory.Double((double) obj);
                 case var _ when type == typeof(bool):
                     return factory.Bool((bool) obj);
+                case var _ when type == typeof(IntPtr):
+                    return factory.IntPtr((IntPtr) obj);
                 case var _ when !type.IsAbstract && !type.IsPrimitive: // probably going to need more guards here
                     return ConvertToEilangInstance(type, obj, factory);
                 default:
@@ -62,8 +65,12 @@ namespace eilang.Extensions
             {
                 case var _ when type == typeof(string):
                     return Convert.ChangeType(value.As<StringValue>().Item, type);
+                case var _ when type == typeof(IntPtr):
+                    return Convert.ChangeType(value.As<IntPtrValue>().Item, type);
                 case var _ when type == typeof(int):
                     return Convert.ChangeType(value.As<IntegerValue>().Item, type);
+                case var _ when type == typeof(long):
+                    return Convert.ChangeType(value.As<LongValue>().Item, type);
                 case var _ when type == typeof(double):
                     return Convert.ChangeType(value.As<DoubleValue>().Item, type);
                 case var _ when type == typeof(bool):
@@ -91,14 +98,21 @@ namespace eilang.Extensions
         }
 
 
-        public static IValue Require(this IValue value, TypeOfValue type, string message)
+        public static IValue Require(this IValue value, EilangType type, string message)
         {
             if (value.Type == type) 
                 return value;
             throw new InvalidValueException(message);
         }
         
-        public static IValue RequireAnyOf(this IValue value, TypeOfValue typeFlags, string message)
+        public static T Require<T>(this IValue value, string message)
+        {
+            if (value is T ret) 
+                return ret;
+            throw new InvalidValueException(message);
+        }
+        
+        public static IValue RequireAnyOf(this IValue value, EilangType typeFlags, string message)
         {
             if ((value.Type & typeFlags) != 0) 
                 return value;
@@ -116,11 +130,18 @@ namespace eilang.Extensions
                 return value;
             throw new InvalidArgumentCountException(message);
         }
+        
+        public static ListValue RequireAtLeast(this ListValue value, int count, string message)
+        {
+            if (value.Item.Count >= count) 
+                return value;
+            throw new InvalidArgumentCountException(message);
+        }
 
         public static string GetStringArgument(this IValue value, string errorMessage)
         {
             return value
-                .Require(TypeOfValue.String, errorMessage)
+                .Require(EilangType.String, errorMessage)
                 .To<string>();
         }
         

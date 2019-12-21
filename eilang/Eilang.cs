@@ -139,7 +139,7 @@ namespace eilang
                     Compiler.Compile(environment, ast);
 
                     var eval = interpreter.Interpret(environment);
-                    if (eval.Type != TypeOfValue.Void)
+                    if (eval.Type != EilangType.Void)
                     {
                         ExportedFunctions.PrintLine(new ValueFactory(), eval);
                     }

@@ -2,7 +2,7 @@
 {
     public class InternalStringValue : ValueBase<string>
     {
-        public InternalStringValue(string value) : base(TypeOfValue.String, value)
+        public InternalStringValue(string value) : base(EilangType.String, value)
         {
         }
     }

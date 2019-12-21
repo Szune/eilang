@@ -5,13 +5,13 @@ namespace eilang.Values
 {
     public abstract class ValueBase<TValue> : IValue
     {
-        protected ValueBase(TypeOfValue type, object value)
+        protected ValueBase(EilangType type, object value)
         {
             Type = type;
             Value = value;
         }
 
-        public TypeOfValue Type { get; }
+        public EilangType Type { get; }
         public object Value { get; }
         public virtual TValue Item => (TValue) Value;
         

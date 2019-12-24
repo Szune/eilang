@@ -62,6 +62,7 @@ namespace eilang.Compiling
             ScriptEnvironment.Functions.Add(func.FullName, func);
             root.Modules.Accept(this);
             root.Classes.Accept(this, globalMod);
+            root.Structs.Accept(this, globalMod);
             root.Functions.Accept(this, globalMod);
             root.Expressions.Accept(this, func, globalMod);
             Log("Compilation finished.");
@@ -72,6 +73,7 @@ namespace eilang.Compiling
             Log($"Compiling module declaration '{module.Name}'");
             var mod = new Module(module.Name);
             module.Classes.Accept(this, mod);
+            module.Structs.Accept(this, mod);
             module.Functions.Accept(this, mod);
             //_env.Modules.Add(mod.Name, mod);
         }
@@ -264,6 +266,16 @@ namespace eilang.Compiling
         public void Visit(AstLongConstant longConstant, Function function, Module mod)
         {
             function.Write(OpFactory.Push(ValueFactory.Long(longConstant.Long)));
+        }
+
+        public void Visit(AstStructDeclaration astStructDeclaration, Module function)
+        {
+            ScriptEnvironment.Structs.Add(astStructDeclaration.Identifier, new Struct(astStructDeclaration.Identifier, astStructDeclaration.Fields));
+        }
+
+        public void Visit(AstStructInitialization astStructInit, Function function, Module mod)
+        {
+            function.Write(OpFactory.InitializeStruct(astStructInit.StructName));
         }
 
         public void Visit(AstIndexerReference indexer, Function function, Module mod)

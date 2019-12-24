@@ -2,6 +2,7 @@
 using eilang.Extensions;
 using eilang.Helpers;
 using eilang.Interfaces;
+using eilang.Interpreting;
 using eilang.Values;
 
 namespace eilang.Modules
@@ -10,7 +11,7 @@ namespace eilang.Modules
     public static class HttpModule
     {
         [ExportFunction("get")]
-        public static IValue Get(IValueFactory fac, IValue args)
+        public static IValue Get(State state, IValue args)
         {
             const string expectedArguments = "get takes 2 arguments: string url, string headers";
             var argList = args
@@ -25,11 +26,11 @@ namespace eilang.Modules
             var headers = argList[1]
                 .Require(EilangType.String, "get requires that parameter 'headers' is a string.")
                 .To<string>();
-            return HttpHelper.Get(fac, url, headers);
+            return HttpHelper.Get(state, url, headers);
         }
         
         [ExportFunction("post")]
-        public static IValue Post(IValueFactory fac, IValue args)
+        public static IValue Post(State state, IValue args)
         {
             const string expectedArguments = "post takes 3 arguments: string url, string headers, string content";
             var argList = args
@@ -47,7 +48,7 @@ namespace eilang.Modules
             var content = argList[2]
                 .Require(EilangType.String, "post requires that parameter 'content' is a string.")
                 .To<string>();
-            return HttpHelper.Post(fac, url, headers, content);
+            return HttpHelper.Post(state, url, headers, content);
         }
     }
 }

@@ -141,7 +141,7 @@ namespace eilang
                     var eval = interpreter.Interpret(environment);
                     if (eval.Type != EilangType.Void)
                     {
-                        ExportedFunctions.PrintLine(new ValueFactory(), eval);
+                        ExportedFunctions.PrintLine(new State(environment, null, null, null, null, new ValueFactory()), eval);
                     }
                 }
                 catch (ExitException e)

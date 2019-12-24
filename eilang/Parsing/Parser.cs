@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using eilang.Ast;
+using eilang.Compiling;
 using eilang.Exceptions;
 using eilang.Extensions;
 using eilang.Interfaces;
@@ -45,6 +46,9 @@ namespace eilang.Parsing
                     case TokenType.Class:
                         ParseClass(root);
                         break;
+                    case TokenType.Struct:
+                        ParseStruct(root);
+                        break;
                     case TokenType.Function:
                         ParseFunction(root);
                         break;
@@ -56,6 +60,7 @@ namespace eilang.Parsing
 
             return root;
         }
+
 
         private void ParseModule(AstRoot root, string outerModule = "")
         {
@@ -71,6 +76,9 @@ namespace eilang.Parsing
                 {
                     case TokenType.Class:
                         ParseClass(module);
+                        break;
+                    case TokenType.Struct:
+                        ParseStruct(module);
                         break;
                     case TokenType.Function:
                         ParseFunction(module);
@@ -117,6 +125,54 @@ namespace eilang.Parsing
             Require(TokenType.RightBrace);
             _inClass = false;
             ast.Classes.Add(clas);
+        }
+        
+        private void ParseStruct(IHaveStruct root)
+        {
+            Require(TokenType.Struct);
+            var ident = Require(TokenType.Identifier).Text;
+            var strucc = new AstStructDeclaration(ident, _lastConsumed.Position);
+            Require(TokenType.LeftBrace);
+            while (!Match(TokenType.RightBrace) && !Match(TokenType.EOF))
+            {
+                var fieldName = Require(TokenType.Identifier).Text;
+                if (Match(TokenType.Comma))
+                {
+                    var names = new List<string> {fieldName};
+                    while (Match(TokenType.Comma))
+                    {
+                        Consume();
+                        var name = Require(TokenType.Identifier).Text;
+                        names.Add(name);
+                    }
+                    Require(TokenType.Colon);
+                    var type = GetIdentifierWithModule();
+                    Require(TokenType.LeftParenthesis);
+                    var byteCount = Require(TokenType.Integer).Integer;
+                    Require(TokenType.RightParenthesis);
+                    for (int i = 0; i < names.Count; i++)
+                    {
+                        strucc.AddField(new StructField(names[i], type, byteCount, strucc.Fields.Count));
+                    }
+                }
+                else
+                {
+                    Require(TokenType.Colon);
+                    var type = GetIdentifierWithModule();
+                    Require(TokenType.LeftParenthesis);
+                    var byteCount = Require(TokenType.Integer).Integer;
+                    Require(TokenType.RightParenthesis);
+                    strucc.AddField(new StructField(fieldName, type, byteCount, strucc.Fields.Count));
+                }
+
+                if (Match(TokenType.Comma))
+                {
+                    Consume();
+                }
+            }
+
+            Require(TokenType.RightBrace);
+            root.Structs.Add(strucc);
         }
 
         private void ParseConstructor(AstClass clas)
@@ -745,7 +801,7 @@ namespace eilang.Parsing
         }
 
 
-        private AstExpression ParseClassInitialization()
+        private AstExpression ParseClassOrStructInitialization()
         {
             if (Match(TokenType.LeftBrace))
             {
@@ -753,8 +809,20 @@ namespace eilang.Parsing
             }
             var identifiers = GetIdentifierWithModule();
             var pos = _lastConsumed.Position;
-            var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
-            return new AstClassInitialization(identifiers, args, pos);
+            if (Match(TokenType.LeftParenthesis))
+            {
+                var args = ParseArgumentList(TokenType.LeftParenthesis, TokenType.RightParenthesis);
+                return new AstClassInitialization(identifiers, args, pos);
+            } else if (Match(TokenType.LeftBrace))
+            {
+                Consume();
+                Require(TokenType.RightBrace);
+                return new AstStructInitialization(identifiers, pos);
+            }
+            else
+            {
+                return ThrowParserException("Failed to parse class or struct initialization");
+            }
         }
 
         private AstExpression ParseAnonymousTypeInitialization()
@@ -1213,7 +1281,7 @@ namespace eilang.Parsing
                     return new AstUnaryMathOperation(UnaryMath.Not, notExpr, pos);
                 case TokenType.Asterisk:
                     Consume();
-                    return ParseClassInitialization();
+                    return ParseClassOrStructInitialization();
                 case TokenType.It:
                     Consume();
                     return new AstIt(pos);

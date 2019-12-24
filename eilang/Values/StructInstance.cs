@@ -1,15 +1,14 @@
-using eilang.Classes;
+﻿using eilang.Compiling;
 using eilang.Interfaces;
 using eilang.Interpreting;
 
 namespace eilang.Values
 {
-    public class Instance : IScope
+    public class StructInstance : IScope
     {
-        public Scope Scope { get; }
-        public Class Owner { get; }
-
-        public Instance(Scope scope, Class owner)
+        public Struct Owner { get; }
+        public StructScope Scope { get; }
+        public StructInstance(StructScope  scope, Struct owner)
         {
             Scope = scope;
             Owner = owner;

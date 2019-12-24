@@ -25,6 +25,7 @@ namespace eilang.Lexing
                 {TokenValues.Else, TokenType.Else},
                 {TokenValues.Return, TokenType.Return},
                 {TokenValues.Class, TokenType.Class},
+                {TokenValues.Struct, TokenType.Struct},
                 {TokenValues.Module, TokenType.Module},
                 {TokenValues.Function, TokenType.Function},
                 {TokenValues.For, TokenType.For},

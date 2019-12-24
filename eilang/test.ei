@@ -1,6 +1,19 @@
 ﻿import 'str';
 import 'cmd';
 
+ struct SYSTEMTIME {
+ 	wYear: int(2), # can be set individually or if they're all the same, only on the last element
+ 	wMonth,
+ 	wDayOfWeek,
+ 	wDay,
+ 	wHour,
+ 	wMinute,
+ 	wSecond,
+ 	wMilliseconds
+ 	: int(2) # actually short, convert to int
+ }
+ 
+#[
 typ map_thing {
     ctor(val1: int);
 }
@@ -12,8 +25,18 @@ fun string->get() {
 fun string->test() {
     println(me.get() + " is a string");
 }
+]#
 
 fun main() {
+
+ var sys = *SYSTEMTIME{};
+ var lib = interop::load_lib("Kernel32.dll");
+ var func = interop::get_export(lib, "GetSystemTime");
+ var result = interop::invoke_func(func, typeof(int), sys);
+ println(sys.wYear);
+ println(sys);
+ ret;
+#[
     var int_map = {"hello": *map_thing(0), 1: *map_thing(1)};
     println(int_map.len() + ": " + int_map);
     int_map.add(23, *map_thing(159));
@@ -33,6 +56,7 @@ fun main() {
     println(type({}));
     println(type([]));
     println(type("string"));
+    ]#
 #    var int_set = {0, 1, 2}; # TODO 1
 #    var string_set = {"one", "two", "three"}; # TODO 2
 #    var obj_set = {*map_thing(1), *map_thing(2)}; # TODO 3

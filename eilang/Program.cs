@@ -90,7 +90,10 @@ namespace eilang
 #endif
 
 #if DEBUG
-            // TODO: -10. implement native interop with structs
+            // TODO: -1503. let struct identifiers be affected by being inside a module
+            // TODO: -119. implement native interop with strings as struct fields
+            // TODO: -109. implement native interop with structs as struct fields
+            // TODO: implement type hinting for function return types, syntax: fun doThing(i: int) -> string { ret $"id: {i}"; }
             // TODO: -0.99 implement interfaces
             // TODO: finish changing exceptions in operation codes to ErrorMessageException instead of InterpreterException
             // TODO: -0.5 implement try/catch/finally

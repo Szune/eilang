@@ -5,6 +5,7 @@ using System.Linq;
 using eilang.Exporting;
 using eilang.Extensions;
 using eilang.Interfaces;
+using eilang.Interpreting;
 using eilang.Values;
 
 namespace eilang.Modules
@@ -13,7 +14,7 @@ namespace eilang.Modules
     public class ProcessModule
     {
         [ExportFunction("start")]
-        public static IValue StartProcess(IValueFactory fac, IValue args)
+        public static IValue StartProcess(State state, IValue args)
         {
             if (args.Type == EilangType.List)
             {
@@ -23,13 +24,13 @@ namespace eilang.Modules
                     .Item;
                 list.OrderAsArguments();
 
-                return StartInner(fac, list[0], list[1]);
+                return StartInner(state, list[0], list[1]);
             }
 
-            return StartInner(fac, args);
+            return StartInner(state, args);
         }
 
-        private static IValue StartInner(IValueFactory fac, IValue processName, IValue args = null)
+        private static IValue StartInner(State state, IValue processName, IValue args = null)
         {
             var fileName = processName
                 .Require(EilangType.String, "start requires that parameter 'processName' is a string.")
@@ -47,11 +48,11 @@ namespace eilang.Modules
                 Process.Start(fileName, argsString);
             }
 
-            return fac.Void();
+            return state.ValueFactory.Void();
         }
 
         [ExportFunction("kill")]
-        public static IValue KillProcess(IValueFactory fac, IValue args)
+        public static IValue KillProcess(State state, IValue args)
         {
             var name = args.GetStringArgument("kill takes 1 argument: string processName");
             var processes = Process.GetProcessesByName(name);
@@ -60,11 +61,11 @@ namespace eilang.Modules
                 proc.Kill();
             }
 
-            return fac.Void();
+            return state.ValueFactory.Void();
         }
 
         [ExportFunction("kill_wait")]
-        public static IValue KillProcessAndWaitForExit(IValueFactory fac, IValue args)
+        public static IValue KillProcessAndWaitForExit(State state, IValue args)
         {
             var name = args.GetStringArgument("kill_wait takes 1 argument: string processName");
             var processes = Process.GetProcessesByName(name);
@@ -74,14 +75,15 @@ namespace eilang.Modules
                 proc.WaitForExit(60_000);
             }
 
-            return fac.Void();
+            return state.ValueFactory.Void();
         }
 
         [ExportFunction("get")]
-        public static IValue GetProcesses(IValueFactory fac, IValue args)
+        public static IValue GetProcesses(State state, IValue args)
         {
             var name = args.GetStringArgument("get takes 1 argument: string processName");
             var processes = Process.GetProcessesByName(name);
+            var fac = state.ValueFactory; // needs to be captured for the lambda
             return fac.List(
                 processes.Select(p => fac.Map(new Dictionary<IValue, IValue>
                 {

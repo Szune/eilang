@@ -25,6 +25,7 @@
         LessThanEquals,
         GreaterThanEquals,
         Class,
+        Struct,
         Module,
         Function,
         Var,
@@ -71,6 +72,6 @@
         Pipe,
         Switch,
         TypeOf,
-        Long
+        Long,
     }
 }

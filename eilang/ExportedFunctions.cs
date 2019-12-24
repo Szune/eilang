@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using eilang.Classes;
-using eilang.Compiling;
 using eilang.Exceptions;
 using eilang.Exporting;
 using eilang.Extensions;
@@ -21,7 +20,7 @@ namespace eilang
                 LazyThreadSafetyMode.ExecutionAndPublication);
 
         [ExportFunction("exit")]
-        public static IValue Exit(IValueFactory fac, IValue args)
+        public static IValue Exit(State state, IValue args)
         {
             switch (args.Type)
             {
@@ -35,13 +34,14 @@ namespace eilang
         }
 
         [ExportFunction("type")]
-        public static IValue Type(IValueFactory fac, IValue args)
+        public static IValue Type(State state, IValue args)
         {
             var type = args.RequireAnyOf(EilangType.Instance | EilangType.Map | EilangType.List | EilangType.String,
                 $"type takes 1 argument: instance | map | list | string value, received {args.Type}");
             var typeClass = GetClass(type);
             var typeScope = GetScope(type);
             // .As<InstanceValue>();
+            var fac = state.ValueFactory;
             var scope = new Scope();
             scope.DefineVariable("name", fac.String(typeClass.Name));
             scope.DefineVariable("module", fac.String(typeClass.Module));
@@ -82,26 +82,26 @@ namespace eilang
         }
 
         [ExportFunction("input")]
-        public static IValue Input(IValueFactory fac, IValue code)
+        public static IValue Input(State state, IValue code)
         {
-            return fac.String(Console.ReadLine() ?? "");
+            return state.ValueFactory.String(Console.ReadLine() ?? "");
         }
 
         [ExportFunction("eval")]
-        public static IValue Eval(IValueFactory fac, IValue code)
+        public static IValue Eval(State state, IValue code)
         {
             return Eilang.Eval(code.To<string>());
         }
 
         [ExportFunction("sleep")]
-        public static IValue Sleep(IValueFactory fac, IValue milliseconds)
+        public static IValue Sleep(State state, IValue milliseconds)
         {
             System.Threading.Thread.Sleep(milliseconds.To<int>());
-            return fac.Void();
+            return state.ValueFactory.Void();
         }
 
         [ExportFunction("assert")]
-        public static IValue Assert(IValueFactory fac, IValue args)
+        public static IValue Assert(State state, IValue args)
         {
             if (args.Type == EilangType.List)
             {
@@ -112,28 +112,28 @@ namespace eilang
                         "Assert takes 1 or 2 arguments: bool assert, [string message]");
                 }
 
-                return AssertInner(fac, list[1], list[0]);
+                return AssertInner(state, list[1], list[0]);
             }
 
-            return AssertInner(fac, args);
+            return AssertInner(state, args);
         }
 
         [ExportFunction("println")]
-        public static IValue PrintLine(IValueFactory fac, IValue value)
+        public static IValue PrintLine(State state, IValue value)
         {
             var printValue = GetPrintValue(value);
             Console.WriteLine(printValue);
 
-            return fac.Void();
+            return state.ValueFactory.Void();
         }
         
         [ExportFunction("print")]
-        public static IValue Print(IValueFactory fac, IValue value)
+        public static IValue Print(State state, IValue value)
         {
             var printValue = GetPrintValue(value);
             Console.Write(printValue);
 
-            return fac.Void();
+            return state.ValueFactory.Void();
         }
 
         private static string GetPrintValue(IValue val)
@@ -158,7 +158,7 @@ namespace eilang
             };
         }
 
-        private static IValue AssertInner(IValueFactory fac, IValue assert, IValue message = null)
+        private static IValue AssertInner(State state, IValue assert, IValue message = null)
         {
             if (assert.Type != EilangType.Bool)
             {
@@ -168,7 +168,7 @@ namespace eilang
             if (message != null && message.Type != EilangType.String)
                 throw new InvalidOperationException("Message can only be of type string");
             if (assert.Get<bool>())
-                return fac.Void();
+                return state.ValueFactory.Void();
             throw new AssertionException("Assertion was false" + (message != null ? ": " + message.To<string>() : "."));
         }
     }

@@ -479,5 +479,10 @@ namespace eilang.OperationCodes
         {
             return _mapContains;
         }
+
+        public InitializeStruct InitializeStruct(string structName)
+        {
+            return new InitializeStruct(structName);
+        }
     }
 }

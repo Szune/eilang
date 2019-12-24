@@ -16,8 +16,8 @@ namespace eilang.OperationCodes
         public void Execute(State state)
         {
             var value = state.Stack.Pop();
-            var instance = state.Stack.Pop().Get<Instance>();
-            instance.Scope.SetVariable(_memberName.As<StringValue>().Item, value);
+            var scope = state.Stack.Pop().Get<IScope>();
+            scope.SetVariable(_memberName.As<StringValue>().Item, value);
         }
     }
 }

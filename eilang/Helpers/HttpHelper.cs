@@ -9,25 +9,25 @@ namespace eilang.Helpers
 {
     public static class HttpHelper
     {
-        private static readonly HttpClient HttpClient = new HttpClient();
+        private static readonly HttpClient HttpClient = new HttpClient(); // allow renewing the HttpClient inside a script
 
-        public static IValue Get(IValueFactory fac, string url, string headers)
+        public static IValue Get(State state, string url, string headers)
         {
             var parsedHeaders = ParseHeaders(headers);
             SetHeaders(parsedHeaders);
             var result = HttpClient.GetAsync(url).Result;
             var content = result.Content.ReadAsStringAsync().Result;
-            return fac.String(content);
+            return state.ValueFactory.String(content);
         }
 
-        public static IValue Post(IValueFactory fac, string url, string headers, string postContent)
+        public static IValue Post(State state, string url, string headers, string postContent)
         {
             var parsedHeaders = ParseHeaders(headers);
             SetHeaders(parsedHeaders);
             var result = HttpClient.PostAsync(url, new StringContent(postContent, Encoding.UTF8, "application/json"))
                 .Result;
             var content = result.Content.ReadAsStringAsync().Result;
-            return fac.String(content);
+            return state.ValueFactory.String(content);
         }
         
         private static void SetHeaders(IEnumerable<Header> parsedHeaders)

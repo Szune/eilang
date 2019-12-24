@@ -19,6 +19,11 @@ namespace eilang.Interpreting
             _variables[name] = value;
         }
 
+        public void DefineVariable(string name, IValue value)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public void Clear()
         {
             _variables.Clear();

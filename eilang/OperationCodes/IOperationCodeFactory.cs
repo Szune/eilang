@@ -86,5 +86,6 @@ namespace eilang.OperationCodes
         MapIndexerGet MapIndexerGet();
         MapIndexerSet MapIndexerSet();
         MapContains MapContains();
+        InitializeStruct InitializeStruct(string structName);
     }
 }

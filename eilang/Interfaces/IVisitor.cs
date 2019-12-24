@@ -61,5 +61,7 @@ namespace eilang.Interfaces
         void Visit(AstNewMap newMap, Function function, Module mod);
         void Visit(AstTypeConstant typeConstant, Function function, Module mod);
         void Visit(AstLongConstant longConstant, Function function, Module mod);
+        void Visit(AstStructDeclaration astStructDeclaration, Module mod);
+        void Visit(AstStructInitialization astStructInit, Function function, Module mod);
     }
 }

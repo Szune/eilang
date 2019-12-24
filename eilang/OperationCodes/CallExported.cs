@@ -20,13 +20,13 @@ namespace eilang.OperationCodes
             var argLength = state.Stack.Pop().Get<int>();
             if (argLength == 0)
             {
-                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state.ValueFactory, state.ValueFactory.Void());
+                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state, state.ValueFactory.Void());
                 state.PushIfNonVoidValue(result);
             }
             else if (argLength == 1)
             {
                 var val = state.Stack.Pop();
-                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state.ValueFactory, val);
+                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state, val);
                 state.PushIfNonVoidValue(result);
             }
             else
@@ -38,7 +38,7 @@ namespace eilang.OperationCodes
                 }
 
                 var list = state.ValueFactory.List(values);
-                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state.ValueFactory, list);
+                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state, list);
                 state.PushIfNonVoidValue(result);
             }
         }

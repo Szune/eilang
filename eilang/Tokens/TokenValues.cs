@@ -7,6 +7,7 @@
         public const string Switch = "switch";
         public const string Else = "else";
         public const string Class = "typ";
+        public const string Struct = "struct";
         public const string Module = "modu";
         public const string Function = "fun";
         public const string Var = "var";

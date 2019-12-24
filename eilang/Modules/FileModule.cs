@@ -3,6 +3,7 @@ using System.IO;
 using eilang.Exporting;
 using eilang.Extensions;
 using eilang.Interfaces;
+using eilang.Interpreting;
 using eilang.Values;
 
 namespace eilang.Modules
@@ -12,14 +13,14 @@ namespace eilang.Modules
     {
         [ExportFunction("rename")]
         [ExportFunction("move")]
-        public static IValue RenameFile(IValueFactory fac, IValue args)
+        public static IValue RenameFile(State state, IValue args)
         {
-            return IoModule.Move("rename_file", fac, args, 
+            return IoModule.Move("rename_file", state, args, 
                 (cName, nName) => File.Move(cName, nName));
         }
         
         [ExportFunction("make")]
-        public static IValue MakeFile(IValueFactory fac, IValue args)
+        public static IValue MakeFile(State state, IValue args)
         {
             var name = args
                 .Require(EilangType.String, "mkfile takes 1 argument: string fileName")
@@ -27,20 +28,20 @@ namespace eilang.Modules
             try
             {
                 File.Create(name).Dispose(); // dispose the returned FileStream
-                return fac.True();
+                return state.ValueFactory.True();
             }
             catch(Exception ex)
             {
 #if DEBUG
 Console.WriteLine(ex.ToString());
 #endif
-                return fac.False();
+                return state.ValueFactory.False();
             }
         }
         
         
         [ExportFunction("open")]
-        public static IValue OpenFile(IValueFactory fac, IValue args)
+        public static IValue OpenFile(State state, IValue args)
         {
             if (args.Type == EilangType.List)
             {
@@ -48,13 +49,13 @@ Console.WriteLine(ex.ToString());
                     .RequireCount(2, "open_file takes 1 or 2 arguments: string fileName, [bool append]")
                     .Item;
                 list.OrderAsArguments();
-                return OpenFileInner(fac, list[0], list[1]);
+                return OpenFileInner(state, list[0], list[1]);
             }
 
-            return OpenFileInner(fac, args);
+            return OpenFileInner(state, args);
         }
 
-        private static IValue OpenFileInner(IValueFactory fac, IValue fileName, IValue append = null)
+        private static IValue OpenFileInner(State state, IValue fileName, IValue append = null)
         {
             var name = fileName
                 .Require(EilangType.String, "open_file requires that parameter 'fileName' is a string.")
@@ -78,7 +79,7 @@ Console.WriteLine(ex.ToString());
             }
             
             var writer = new StreamWriter(fileStream);
-            return fac.FileHandle(fileStream, reader, writer);
+            return state.ValueFactory.FileHandle(fileStream, reader, writer);
         }
     }
 }

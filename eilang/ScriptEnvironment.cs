@@ -10,7 +10,6 @@ using eilang.OperationCodes;
 
 namespace eilang
 {
-    public delegate IValue ExportedFunction(IValueFactory valueFactory, IValue args);
 
     public class ScriptEnvironment : IEnvironment
     {
@@ -30,6 +29,7 @@ namespace eilang
             new Dictionary<string, ExportedFunction>();
 
         public virtual IDictionary<string, ExtensionFunction> ExtensionFunctions { get; } = new Dictionary<string, ExtensionFunction>();
+        public virtual IDictionary<string, Struct> Structs { get; } = new Dictionary<string, Struct>();
 
         #region Exporting classes
         

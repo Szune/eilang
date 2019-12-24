@@ -27,12 +27,14 @@ namespace eilang.Values
         FunctionPointer = 4096,
         IntPtr = 8192,
         Any = 16384,
-        Type = 32768
+        Type = 32768,
+        Struct = 65536,
+        ClassOrStruct = 131072,
     }
     
     public static class Types
     {
-        public static EilangType GetType(string type)
+        public static EilangType GetType(string type, IEnvironment environment = default)
         {
             return type switch
             {
@@ -48,14 +50,33 @@ namespace eilang.Values
                 "ptr" => EilangType.IntPtr,
                 "type" => EilangType.Type,
                 "()" => EilangType.Uninitialized,
-                _ => EilangType.Class // while it is likely, there should be a more appropriate check later on
+                _ => GetClassOrStruct(type, environment)
             };
+        }
+
+        private static EilangType GetClassOrStruct(string type, IEnvironment environment)
+        {
+            if (environment == null)
+                return EilangType.ClassOrStruct;
+            
+            if (environment.Structs.ContainsKey(type))
+            {
+                return EilangType.Struct;
+            }
+            else if (environment.Classes.ContainsKey(type))
+            {
+                return EilangType.Class;
+            }
+
+            return EilangType.ClassOrStruct;
         }
 
         public static string GetTypeName(IValue value)
         {
             if (value is InstanceValue iv)
                 return iv.Item.Owner.FullName;
+            else if (value is StructInstanceValue siv)
+                return siv.Item.Owner.Name;
             else
                 return value.Type.ToString().ToLowerInvariant();
         }
@@ -67,10 +88,7 @@ namespace eilang.Values
                 return; // anything's fine
             }
 
-            if (value is InstanceValue iv &&
-                types.Any(t =>
-                    t.Type == EilangType.Class &&
-                    t.Name == iv.Item.Owner.FullName))
+            if (IsInstanceOfAValidType(value, types))
             {
                 return;
             }
@@ -80,7 +98,19 @@ namespace eilang.Values
                 ThrowHelper.InvalidArgumentType(function, parameterName, value, types);
             }
         }
-        
+
+        private static bool IsInstanceOfAValidType(IValue value, List<ParameterType> types)
+        {
+            return (value is InstanceValue iv &&
+                    types.Any(t =>
+                        (t.Type == EilangType.Class && t.Name == iv.Item.Owner.FullName) ||
+                        (t.Type == EilangType.ClassOrStruct && t.Name == iv.Item.Owner.FullName))) ||
+                   (value is StructInstanceValue siv &&
+                    types.Any(t => 
+                        (t.Type == EilangType.Struct && t.Name == siv.Item.Owner.Name) ||
+                        (t.Type == EilangType.ClassOrStruct && t.Name == siv.Item.Owner.Name)));
+        }
+
         public static void Ensure(string function, string parameterName, IValue value, List<ParameterType> types)
         {
             if (types.First().Type == EilangType.Any)
@@ -88,10 +118,7 @@ namespace eilang.Values
                 return; // anything's fine
             }
 
-            if (value is InstanceValue iv &&
-                types.Any(t =>
-                    t.Type == EilangType.Class &&
-                    t.Name == iv.Item.Owner.FullName))
+            if (IsInstanceOfAValidType(value, types))
             {
                 return;
             }
@@ -101,5 +128,6 @@ namespace eilang.Values
                 ThrowHelper.InvalidArgumentType(function, parameterName, value, types);
             }
         }
+
     }
 }

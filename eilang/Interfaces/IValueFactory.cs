@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using eilang.Classes;
+using eilang.Compiling;
 using eilang.Values;
 
 namespace eilang.Interfaces
@@ -28,5 +29,6 @@ namespace eilang.Interfaces
         IValue FileHandle(FileStream stream, TextReader reader, StreamWriter writer);
         IValue IntPtr(IntPtr ptr);
         IValue Any(object? result);
+        IValue Struct(Struct strut);
     }
 }

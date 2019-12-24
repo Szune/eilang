@@ -10,7 +10,8 @@ namespace eilang.Values
  
          public override string ToString()
          {
-             return "<" + Get<Instance>().Owner.FullName + ">{" + string.Join(", ", Get<Instance>().Scope
+             return "<" + Get<Instance>().Owner.FullName + ">{" + string.Join(", ",
+                        Get<Instance>().Scope
                         .GetAllVariables().Where(i => i.Key != SpecialVariables.Me)
                         .Select(item => $"{item.Key}: {item.Value}"))
                     + "}";

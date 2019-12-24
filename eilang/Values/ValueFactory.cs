@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using eilang.Classes;
+using eilang.Compiling;
 using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.OperationCodes;
@@ -94,6 +95,16 @@ namespace eilang.Values
             if (result == null)
                 return _uninitialized;
             return new AnyValue(result);
+        }
+
+        public IValue Struct(Struct strut)
+        {
+            var scope = new StructScope();
+            foreach (var field in strut.Fields) // initialize all fields with ()
+            {
+                scope.DefineVariable(field.Name, _uninitialized);
+            }
+            return new StructInstanceValue(new StructInstance(scope, strut));
         }
 
         public IValue Class(Class clas)

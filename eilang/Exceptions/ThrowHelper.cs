@@ -19,6 +19,11 @@ namespace eilang.Exceptions
             throw new InterpreterException($"Variable not found: {variable}");
         }
         
+        public static void StructNotFound(string strut)
+        {
+            throw new InterpreterException($"Struct not found: {strut}");
+        }
+        
         public static void InvalidArgumentCount(Function func, int argumentCount)
         {
             throw new InvalidArgumentCountException(
@@ -44,6 +49,16 @@ namespace eilang.Exceptions
             var allowedTypes = string.Join(" | ", types.Select(t => t.Name));
             var actualType = Types.GetTypeName(value);
             throw new InvalidArgumentTypeException($"Invalid argument type '{actualType}' for parameter '{parameterName}' in function '{function}', expected {allowedTypes}");
+        }
+
+        public static void InteropStructFieldSize(StructField field)
+        {
+            throw new InvalidStructFieldSizeException($"{field.Name}: {field.Type}({field.ByteCount}), {field.ByteCount} is not a known size for the specified type.");
+        }
+
+        public static void InteropStructFieldType(StructField field)
+        {
+            throw new InvalidStructFieldTypeException($"{field.Name}: {field.Type}({field.ByteCount}), {field.Type} is not a known type for struct fields.");
         }
     }
 }

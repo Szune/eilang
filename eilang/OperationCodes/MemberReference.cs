@@ -15,7 +15,7 @@ namespace eilang.OperationCodes
         }
         public void Execute(State state)
         {
-            var instance = state.Stack.Pop().Get<Instance>();
+            var instance = state.Stack.Pop().Get<IScope>();
             var member = instance.GetVariable(_memberName.As<StringValue>().Item);
             if (member == null)
                 ThrowHelper.VariableNotFound(_memberName.As<StringValue>().Item);

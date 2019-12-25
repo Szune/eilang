@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using eilang.Interfaces;
-using eilang.Interpreting;
+﻿using eilang.Interpreting;
 using eilang.Values;
 
 namespace eilang.OperationCodes

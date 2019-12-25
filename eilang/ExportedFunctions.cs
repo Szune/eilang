@@ -144,6 +144,7 @@ namespace eilang
                 EilangType.FunctionPointer => val.As<FunctionPointerValue>().ToString(),
                 EilangType.Double => val.Get<double>().ToString(NumberFormatInfo.InvariantInfo),
                 EilangType.Uninitialized => val.Get<string>(),
+                EilangType.Byte => val.Get<byte>().ToString(),
                 EilangType.Integer => val.Get<int>().ToString(),
                 EilangType.Long => val.Get<long>().ToString(),
                 EilangType.Bool => val.Get<bool>().ToString(),

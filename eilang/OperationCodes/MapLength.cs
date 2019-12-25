@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using eilang.Interfaces;
-using eilang.Interpreting;
+﻿using eilang.Interpreting;
 using eilang.Values;
 
 namespace eilang.OperationCodes

@@ -1,6 +1,4 @@
-﻿using eilang.Extensions;
-using eilang.Interfaces;
-using eilang.Interpreting;
+﻿using eilang.Interpreting;
 
 namespace eilang.OperationCodes
 {

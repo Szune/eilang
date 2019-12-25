@@ -1,5 +1,4 @@
-﻿using System;
-using eilang.Exceptions;
+﻿using eilang.Exceptions;
 using eilang.Interpreting;
 using eilang.Values;
 
@@ -18,7 +17,7 @@ namespace eilang.OperationCodes
                         : state.ValueFactory.False());
                     break;
                 default:
-                    ThrowHelper.TypeMismatch("!");
+                    ThrowHelper.TypeMismatch("!", val.Type);
                     break;
             }
         }

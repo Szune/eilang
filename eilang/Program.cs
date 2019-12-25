@@ -90,7 +90,6 @@ namespace eilang
 #endif
 
 #if DEBUG
-            // TODO: -1503. let struct identifiers be affected by being inside a module
             // TODO: -119. implement native interop with strings as struct fields
             // TODO: -109. implement native interop with structs as struct fields
             // TODO: implement type hinting for function return types, syntax: fun doThing(i: int) -> string { ret $"id: {i}"; }
@@ -100,7 +99,7 @@ namespace eilang
             // TODO: 0. parser bug: fix variable scope bug (variables inside class functions collide with global variables,
             // scope should simply take the nearest one in this case), allow global variables to have the same names as 
             // class function variables or class variables
-            // TODO: 0.9 implement date/time class(es
+            // TODO: 0.9 implement date/time class(es)
             // TODO: refactor parser and compiler
             // TODO: 2. implement Set (i.e. HashSet)
             // TODO: 3. implement networking

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Values;

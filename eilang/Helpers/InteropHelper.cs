@@ -18,6 +18,18 @@ namespace eilang.Helpers
 {
     public static class InteropHelper
     {
+        private static readonly List<ParameterType> ValidInteropTypes = new List<ParameterType>
+        {
+            new ParameterType("string", EilangType.String),
+            new ParameterType("int", EilangType.Integer),
+            new ParameterType("long", EilangType.Long),
+            new ParameterType("double", EilangType.Double),
+            new ParameterType("bool", EilangType.Bool),
+            new ParameterType("ptr", EilangType.IntPtr),
+            new ParameterType("struct", EilangType.Instance),
+            new ParameterType("()", EilangType.Uninitialized),
+        };
+        
         public static IValue Invoke(IntPtr functionPointer, TypeValue returnType, List<IValue> args, State state)
         {
             var fp = Marshal.GetDelegateForFunctionPointer(functionPointer, GetDelegateType(returnType, args));
@@ -173,17 +185,6 @@ namespace eilang.Helpers
             }
         }
 
-        private static readonly List<ParameterType> ValidInteropTypes = new List<ParameterType>
-        {
-            new ParameterType("string", EilangType.String),
-            new ParameterType("int", EilangType.Integer),
-            new ParameterType("long", EilangType.Long),
-            new ParameterType("double", EilangType.Double),
-            new ParameterType("bool", EilangType.Bool),
-            new ParameterType("ptr", EilangType.IntPtr),
-            new ParameterType("struct", EilangType.Instance),
-            new ParameterType("()", EilangType.Uninitialized),
-        };
 
         private static object ConvertArgument(IValue value)
         {
@@ -253,6 +254,8 @@ namespace eilang.Helpers
                     return typeof(long);
                 case EilangType.Double:
                     return typeof(double);
+                case EilangType.Uninitialized:
+                    return typeof(string);
                 case EilangType.Bool:
                     return typeof(bool);
                 case EilangType.IntPtr:

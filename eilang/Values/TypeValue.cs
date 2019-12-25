@@ -1,5 +1,4 @@
-﻿using System;
-using eilang.Interfaces;
+﻿using eilang.Interfaces;
 
 namespace eilang.Values
 {

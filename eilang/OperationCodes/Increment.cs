@@ -1,5 +1,4 @@
-﻿using System;
-using eilang.Exceptions;
+﻿using eilang.Exceptions;
 using eilang.Interpreting;
 using eilang.Values;
 
@@ -22,7 +21,7 @@ namespace eilang.OperationCodes
                     state.Stack.Push(state.ValueFactory.Double(val.Get<double>() + 1));
                     break;
                 default:
-                    ThrowHelper.TypeMismatch("++");
+                    ThrowHelper.TypeMismatch("++", val.Type);
                     break;
             }
         }

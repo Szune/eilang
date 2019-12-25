@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using eilang.Compiling;
+﻿using eilang.Compiling;
 using eilang.Exceptions;
 using eilang.Interfaces;
 using eilang.Interpreting;

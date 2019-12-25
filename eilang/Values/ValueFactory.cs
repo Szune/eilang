@@ -37,6 +37,11 @@ namespace eilang.Values
             return _false;
         }
 
+        public IValue Byte(byte value)
+        {
+            return new ByteValue(value);
+        }
+
         public IValue Integer(int value)
         {
             return new IntegerValue(value);

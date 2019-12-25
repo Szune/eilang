@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using eilang.Exporting;
 using eilang.Extensions;
@@ -12,7 +14,47 @@ namespace eilang.Modules
     [ExportModule("interop")]
     public static class InteropModule
     {
-        // TODO: wrap the library in a disposable that frees the library upon exit
+        private static readonly Dictionary<string, IntPtr> LibraryHandles = new Dictionary<string, IntPtr>();
+        private static readonly Dictionary<string, IntPtr> FunctionHandles = new Dictionary<string, IntPtr>();
+        [ExportFunction("call_func")]
+        public static IValue CallFunction(State state, IValue args)
+        {
+            const string expectedListMsg = "lib::call_func(string libPath, string func_name, type returnType, ... arguments) expected at least 3 arguments.";
+            var argList = args.Require(EilangType.List, expectedListMsg)
+                .As<ListValue>()
+                .RequireAtLeast(3, expectedListMsg)
+                .Item;
+            argList.OrderAsArguments();
+            var libName = argList[0]
+                .Require<StringValue>(
+                    "lib::call_func(string libPath, string func_name, type returnType, ... arguments) expected first argument to be a string.")
+                .Item;
+            
+            var funcName = argList[1]
+                .Require<StringValue>(
+                    "lib::call_func(string libPath, string func_name, type returnType, ... arguments) expected second argument to be a string.")
+                .Item;
+            
+            var returnType = argList[2]
+                .Require<TypeValue>(
+                    "lib::call_func(string libPath, string func_name, type returnType, ... arguments) expected third argument to be the return type of the native function.");
+
+            if (!LibraryHandles.TryGetValue(libName, out var libHandle))
+            {
+                libHandle = NativeLibrary.Load(libName);
+                LibraryHandles[libName] = libHandle;
+            }
+
+            var libAndFuncName = $"{libName}__{funcName}";
+            if (!FunctionHandles.TryGetValue(libAndFuncName, out var funcHandle))
+            {
+                funcHandle = NativeLibrary.GetExport(libHandle, funcName);
+                FunctionHandles[libAndFuncName] = funcHandle;
+            }
+            
+            return InteropHelper.Invoke(funcHandle, returnType, argList.Skip(3).ToList(), state);
+        }
+        
         [ExportFunction("load_lib")]
         public static IValue Load(State state, IValue args)
         {

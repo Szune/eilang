@@ -11,6 +11,7 @@ namespace eilang.Interfaces
     {
         IValue String(string str);
         IValue InternalString(string str);
+        IValue Byte(byte value);
         IValue Integer(int value);
         IValue Long(long value);
         IValue Double(double value);

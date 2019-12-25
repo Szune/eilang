@@ -30,6 +30,7 @@ namespace eilang.Values
         Type = 32768,
         Struct = 65536,
         ClassOrStruct = 131072,
+        Byte = 262144
     }
     
     public static class Types
@@ -50,6 +51,7 @@ namespace eilang.Values
                 "ptr" => EilangType.IntPtr,
                 "type" => EilangType.Type,
                 "()" => EilangType.Uninitialized,
+                "byte" => EilangType.Byte,
                 _ => GetClassOrStruct(type, environment)
             };
         }

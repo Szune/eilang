@@ -9,11 +9,6 @@ namespace eilang.Exceptions
 {
     public static class ThrowHelper
     {
-        public static void TypeMismatch(string onOperator)
-        {
-            throw new InterpreterException($"Invalid value(s) used with '{onOperator}' operator.");
-        }
-        
         public static void VariableNotFound(string variable)
         {
             throw new InterpreterException($"Variable not found: {variable}");
@@ -59,6 +54,16 @@ namespace eilang.Exceptions
         public static void InteropStructFieldType(StructField field)
         {
             throw new InvalidStructFieldTypeException($"{field.Name}: {field.Type}({field.ByteCount}), {field.Type} is not a known type for struct fields.");
+        }
+
+        public static InvalidValueException TypeMismatch(EilangType a, string usedOperator, EilangType b)
+        {
+            return new InvalidValueException($"({a} {usedOperator} {b}): {a} does not support binary operator '{usedOperator}' with {b}");
+        }
+        
+        public static InvalidValueException TypeMismatch(string usedOperator, EilangType unary)
+        {
+            return new InvalidValueException($"({usedOperator}{unary}): {unary} does not support unary operator '{usedOperator}'");
         }
     }
 }

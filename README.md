@@ -2,6 +2,7 @@
 eilang is a scripting language. That's about it. For documentation, [refer to the wiki](../../wiki).
 
 There's a basic **Telegram bot** implementation under [Scripts/telegram.ei](Scripts/telegram.ei) and [Scripts/bot.ei](Scripts/bot.ei) as well.
+An example of native interop can be found at [Scripts/mouse.ei](Scripts/mouse.ei).
 
 **Table of contents**
 1. [Exporting classes/functions from C# to eilang](#exporting-classes-and-functions)

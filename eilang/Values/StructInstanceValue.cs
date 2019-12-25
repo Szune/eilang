@@ -17,7 +17,7 @@ namespace eilang.Values
             {
                 variables.Add($"{item.Key}: {item.Value}");
             }
-            return "<" + Get<StructInstance>().Owner.Name + ">{" + string.Join(", ", variables)
+            return "<" + Get<StructInstance>().Owner.FullName + ">{" + string.Join(", ", variables)
                    + "}";
         }
     }

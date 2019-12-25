@@ -1,0 +1,41 @@
+modu mouse {
+	struct POINT {
+		x,
+		y: int(4)
+	}
+	typ api {
+		ctor() {
+			me.user32 = interop::load_lib("User32.dll");
+			me.get_cursor_pos = interop::get_export(me.user32, "GetCursorPos");
+			me.set_cursor_pos = interop::get_export(me.user32, "SetCursorPos");
+		}
+
+		fun getCursorPos() {
+			var point = *mouse::POINT{};
+			var success = interop::invoke_func(me.get_cursor_pos, typeof(bool), point);
+			if(!success) {
+				println("error: failed to get cursor pos");
+			}
+			ret point;
+		}
+
+		fun setCursorPos(x: int, y: int) {
+			var success = interop::invoke_func(me.set_cursor_pos, typeof(bool), x, y);
+			if(!success) {
+				println("error: failed to set cursor pos");
+			}
+		}
+
+		fun free() {
+			interop::free_lib(me.user32);
+		}
+	}
+}
+
+var mouse = *mouse::api();
+var pos = mouse.getCursorPos();
+for(1..6) {
+	mouse.setCursorPos(pos.x + (ix * 20), pos.y + (ix * 20));
+	sleep(250);
+}
+mouse.free();

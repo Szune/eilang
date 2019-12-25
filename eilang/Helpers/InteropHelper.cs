@@ -169,7 +169,7 @@ namespace eilang.Helpers
             }
             else
             {
-                return null;
+                return new InteropArguments(null);
             }
         }
 
@@ -282,11 +282,12 @@ namespace eilang.Helpers
             () => Assembly.Value.DefineDynamicModule("CustomNativeInteropDelegates"),
             LazyThreadSafetyMode.ExecutionAndPublication);
 
-        private static readonly Dictionary<Type[], Type> BuiltDelegates = new Dictionary<Type[], Type>();
+        private static readonly Dictionary<int, Type> BuiltDelegates = new Dictionary<int, Type>();
 
         private static Type MakeNewCustomDelegate(Type[] types)
         {
-            if (BuiltDelegates.TryGetValue(types, out var interopDelegate))
+            var hash = GetHash(types);
+            if (BuiltDelegates.TryGetValue(hash, out var interopDelegate))
             {
                 return interopDelegate;
             }
@@ -295,7 +296,7 @@ namespace eilang.Helpers
                 Type returnType = types[^1]; // get the last parameter
                 Type[] parameters = types.Length > 1 ? types[..^1] : null; // get all parameters except the last
 
-                var builder = Module.Value.DefineType("CustomNativeInteropDelegateHelper",
+                var builder = Module.Value.DefineType($"CustomNativeInteropDelegateHelper{hash}",
                     TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass |
                     TypeAttributes.AutoClass,
                     typeof(MulticastDelegate));
@@ -311,9 +312,14 @@ namespace eilang.Helpers
                     .SetImplementationFlags(implementationFlags);
 
                 var customDelegate = builder.CreateType();
-                BuiltDelegates[types] = customDelegate;
+                BuiltDelegates[hash] = customDelegate;
                 return customDelegate;
             }
+        }
+
+        private static int GetHash(Type[] types)
+        {
+            return string.Join("", types.Select(t => t.FullName)).GetHashCode();
         }
 
         private class InteropArguments

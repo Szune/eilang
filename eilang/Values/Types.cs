@@ -76,7 +76,7 @@ namespace eilang.Values
             if (value is InstanceValue iv)
                 return iv.Item.Owner.FullName;
             else if (value is StructInstanceValue siv)
-                return siv.Item.Owner.Name;
+                return siv.Item.Owner.FullName;
             else
                 return value.Type.ToString().ToLowerInvariant();
         }
@@ -107,8 +107,8 @@ namespace eilang.Values
                         (t.Type == EilangType.ClassOrStruct && t.Name == iv.Item.Owner.FullName))) ||
                    (value is StructInstanceValue siv &&
                     types.Any(t => 
-                        (t.Type == EilangType.Struct && t.Name == siv.Item.Owner.Name) ||
-                        (t.Type == EilangType.ClassOrStruct && t.Name == siv.Item.Owner.Name)));
+                        (t.Type == EilangType.Struct && t.Name == siv.Item.Owner.FullName) ||
+                        (t.Type == EilangType.ClassOrStruct && t.Name == siv.Item.Owner.FullName)));
         }
 
         public static void Ensure(string function, string parameterName, IValue value, List<ParameterType> types)

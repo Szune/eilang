@@ -268,14 +268,18 @@ namespace eilang.Compiling
             function.Write(OpFactory.Push(ValueFactory.Long(longConstant.Long)));
         }
 
-        public void Visit(AstStructDeclaration astStructDeclaration, Module function)
+        public void Visit(AstStructDeclaration astStructDeclaration, Module mod)
         {
-            ScriptEnvironment.Structs.Add(astStructDeclaration.Identifier, new Struct(astStructDeclaration.Identifier, astStructDeclaration.Fields));
+            var strut = new Struct(astStructDeclaration.Identifier, mod.Name, astStructDeclaration.Fields);
+            ScriptEnvironment.Structs.Add(strut.FullName, strut);
         }
 
         public void Visit(AstStructInitialization astStructInit, Function function, Module mod)
         {
-            function.Write(OpFactory.InitializeStruct(astStructInit.StructName));
+            var fullName = astStructInit.StructName.Contains("::")
+                ? astStructInit.StructName
+                : $"{SpecialVariables.Global}::{astStructInit.StructName}";
+            function.Write(OpFactory.InitializeStruct(fullName));
         }
 
         public void Visit(AstIndexerReference indexer, Function function, Module mod)

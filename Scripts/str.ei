@@ -120,7 +120,7 @@ modu str {
             }
         }
         if(lastIndex == -1) {
-            ret str.get();
+            ret str;
         } else {
             ret str.view(0, lastIndex);
         }

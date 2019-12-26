@@ -1,10 +1,10 @@
 ﻿# extension methods
-fun string->contains(find: string) { # extends string class with contains() function
-    ret me.index_of(find, 0) > -1;
-}
-
 fun string->get() {
     ret me.view(0, me.len());
+}
+
+fun string->contains(find: string) { # extends string class with contains() function
+    ret me.index_of(find, 0) > -1;
 }
 
 fun string->ends_with(find: string) {
@@ -71,7 +71,7 @@ fun string->trim_end() {
         }
     }
     if(lastIndex == -1) {
-        ret "";
+        ret me.get();
     } else {
         ret me.view(0, lastIndex);
     }
@@ -120,7 +120,7 @@ modu str {
             }
         }
         if(lastIndex == -1) {
-            ret "";
+            ret str.get();
         } else {
             ret str.view(0, lastIndex);
         }

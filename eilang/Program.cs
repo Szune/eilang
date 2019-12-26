@@ -90,6 +90,7 @@ namespace eilang
 #endif
 
 #if DEBUG
+	    // TODO: implement a SQLite wrapper?
             // TODO: -119. implement native interop with strings as struct fields
             // TODO: -109. implement native interop with structs as struct fields
             // TODO: implement type hinting for function return types, syntax: fun doThing(i: int) -> string { ret $"id: {i}"; }

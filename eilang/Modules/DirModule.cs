@@ -15,7 +15,7 @@ namespace eilang.Modules
         [ExportFunction("move")]
         public static IValue RenameDirectory(State state, IValue args)
         {
-            return IoModule.Move("rename_dir", state, args,
+            return IoModule.Move("dir::move", state, args,
                 (cName, nName) => Directory.Move(cName, nName));
         }
         

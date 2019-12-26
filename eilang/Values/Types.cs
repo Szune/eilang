@@ -32,7 +32,7 @@ namespace eilang.Values
         ClassOrStruct = 131072,
         Byte = 262144
     }
-    
+
     public static class Types
     {
         public static EilangType GetType(string type, IEnvironment environment = default)
@@ -60,7 +60,7 @@ namespace eilang.Values
         {
             if (environment == null)
                 return EilangType.ClassOrStruct;
-            
+
             if (environment.Structs.ContainsKey(type))
             {
                 return EilangType.Struct;
@@ -103,14 +103,16 @@ namespace eilang.Values
 
         private static bool IsInstanceOfAValidType(IValue value, List<ParameterType> types)
         {
-            return (value is InstanceValue iv &&
-                    types.Any(t =>
-                        (t.Type == EilangType.Class && t.Name == iv.Item.Owner.FullName) ||
-                        (t.Type == EilangType.ClassOrStruct && t.Name == iv.Item.Owner.FullName))) ||
-                   (value is StructInstanceValue siv &&
-                    types.Any(t => 
-                        (t.Type == EilangType.Struct && t.Name == siv.Item.Owner.FullName) ||
-                        (t.Type == EilangType.ClassOrStruct && t.Name == siv.Item.Owner.FullName)));
+            return value switch
+            {
+                InstanceValue iv => types.Any(t =>
+                    (t.Type == EilangType.Class && GetFullName(t.Name) == iv.Item.Owner.FullName) ||
+                    (t.Type == EilangType.ClassOrStruct && GetFullName(t.Name) == iv.Item.Owner.FullName)),
+                StructInstanceValue siv => types.Any(t =>
+                    (t.Type == EilangType.Struct && GetFullName(t.Name) == siv.Item.Owner.FullName) ||
+                    (t.Type == EilangType.ClassOrStruct && GetFullName(t.Name) == siv.Item.Owner.FullName)),
+                _ => false
+            };
         }
 
         public static void Ensure(string function, string parameterName, IValue value, List<ParameterType> types)
@@ -131,5 +133,12 @@ namespace eilang.Values
             }
         }
 
+        public static string GetFullName(string name)
+        {
+            var fullName = name.Contains("::")
+                ? name
+                : $"{SpecialVariables.Global}::{name}";
+            return fullName;
+        }
     }
 }

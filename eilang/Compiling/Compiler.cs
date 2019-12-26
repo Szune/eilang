@@ -80,9 +80,7 @@ namespace eilang.Compiling
 
         public void Visit(AstClassInitialization init, Function function, Module mod)
         {
-            var fullName = init.Class.Contains("::")
-                ? init.Class
-                : $"{SpecialVariables.Global}::{init.Class}";
+            var fullName = Types.GetFullName(init.Class);
             Log($"Compiling instance initialization '{fullName}'");
             init.Arguments.Accept(this, function, mod);
             function.Write(OpFactory.Push(ValueFactory.Integer(init.Arguments.Count)), new Metadata {Ast = init});
@@ -276,9 +274,7 @@ namespace eilang.Compiling
 
         public void Visit(AstStructInitialization astStructInit, Function function, Module mod)
         {
-            var fullName = astStructInit.StructName.Contains("::")
-                ? astStructInit.StructName
-                : $"{SpecialVariables.Global}::{astStructInit.StructName}";
+            var fullName = Types.GetFullName(astStructInit.StructName);
             function.Write(OpFactory.InitializeStruct(fullName));
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using eilang.Ast;
 using eilang.Compiling;
 using eilang.Exceptions;
@@ -499,7 +500,7 @@ namespace eilang.Parsing
             Require(TokenType.RightParenthesis);
             var block = new AstBlock(_lastConsumed.Position);
             ParseBlock(block);
-            ast.Expressions.Add(new AstUse(ident, expr, block, _lastConsumed.Position));
+            ast.Expressions.Add(new AstUse(ident, expr, block, pos));
         }
 
         private void ParseSelfAssignment(IHaveExpression ast)
@@ -1397,14 +1398,18 @@ namespace eilang.Parsing
         {
             var name = Require(TokenType.Identifier).Text;
 
+            if (!Match(TokenType.DoubleColon))
+                return name;
+                
+            var sb = new StringBuilder(name);
             while (Match(TokenType.DoubleColon))
             {
                 Consume();
-                name += "::";
-                name += Require(TokenType.Identifier).Text;
+                sb.Append("::");
+                sb.Append(Require(TokenType.Identifier).Text);
             }
 
-            return name;
+            return sb.ToString();
         }
 
         private Token Consume()

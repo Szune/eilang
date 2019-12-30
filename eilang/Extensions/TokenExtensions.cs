@@ -23,7 +23,7 @@ namespace eilang.Extensions
         {
             if (!expected.Contains(token.Type))
                 throw new ParserException(
-                    $"Unexpected token {token.Type}, expected {expected} at line {token.Position.Line + 1}, col {token.Position.Col}");
+                    $"Unexpected token {token.Type}, expected any of '{string.Join("', '", expected)}' at line {token.Position.Line + 1}, col {token.Position.Col}");
             return token;
         }
     }

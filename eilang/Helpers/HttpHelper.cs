@@ -24,7 +24,8 @@ namespace eilang.Helpers
         {
             var parsedHeaders = ParseHeaders(headers);
             SetHeaders(parsedHeaders);
-            var result = HttpClient.PostAsync(url, new StringContent(postContent, Encoding.UTF8, "application/json"))
+            using var json = new StringContent(postContent, Encoding.UTF8, "application/json");
+            var result = HttpClient.PostAsync(url, json)
                 .Result;
             var content = result.Content.ReadAsStringAsync().Result;
             return state.ValueFactory.String(content);

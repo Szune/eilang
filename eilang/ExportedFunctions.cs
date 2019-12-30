@@ -74,9 +74,9 @@ namespace eilang
             return type switch
             {
                 InstanceValue instanceValue => instanceValue.Item.Owner,
-                ListValue listValue => new ListClass(_),
-                MapValue mapValue => new MapClass(_),
-                StringValue stringValue => new StringClass(_),
+                ListValue _ => new ListClass(_),
+                MapValue _ => new MapClass(_),
+                StringValue _ => new StringClass(_),
                 _ => throw new ArgumentOutOfRangeException(nameof(type))
             };
         }

@@ -43,7 +43,7 @@ println('hello world');
 # 'use' statements close the file handle at the end of the block
 use (var f = file::open('file_test.txt')) {
     for { 
-        if(f.is_eof()) {
+        if f.is_eof() {
             break;
         }
         var read = f.readln();
@@ -93,8 +93,9 @@ modu hello {
 }
 
 fun main() {
-    *hello::world('human').greet(); # prints "hello human!"
-    println($'ciao {*hello::world('human').name}'); # prints "ciao human"
+    var human = *hello::world('human');
+    human.greet(); # prints "hello human!"
+    println($'ciao {human.name}'); # prints "ciao human"
 }
 ```
 
@@ -104,9 +105,9 @@ typ point {
     ctor(x: int, y: int); # creates a constructor that sets the member variables 'x' and 'y'
 
     fun idx_get(idx: int) { # indexer, for no good reason
-        if(idx == 0) {
+        if idx == 0 {
             ret x;
-        } else if (idx == 1) {
+        } elif idx == 1 {
             ret y;
         }
         ret -1;

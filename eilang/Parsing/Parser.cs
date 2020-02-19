@@ -22,7 +22,7 @@ namespace eilang.Parsing
         private int _forDepth;
         private bool _inClass;
         private bool _inExtensionFunction;
-        private Stack<VariableScope> _scopes = new Stack<VariableScope>();
+        private readonly Stack<VariableScope> _scopes = new Stack<VariableScope>();
         private Token _lastConsumed = new Token();
         private bool _inConstructor;
 
@@ -285,7 +285,7 @@ namespace eilang.Parsing
             ast.Functions.Add(fun);
         }
 
-        private void ParseExtensionFunction(IHaveFunction ast) // TODO: stop doing this and return the function instead 
+        private void ParseExtensionFunction(IHaveFunction ast) // TODO: stop doing this (IHaveFunction ast) and return the function instead 
         {
             var pos = _lastConsumed.Position;
             // the type we're extending
@@ -341,6 +341,7 @@ namespace eilang.Parsing
 
         private List<Parameter> ParseParameterList()
         {
+            // TODO: rewrite this mess
             Require(TokenType.LeftParenthesis);
             var paramz = new List<Parameter>();
             while (!Match(TokenType.RightParenthesis) && !Match(TokenType.EOF))
@@ -460,6 +461,7 @@ namespace eilang.Parsing
 
         private void ParseSwitch(IHaveExpression ast)
         {
+            // TODO: jump table optimization *after implementing it as syntactic sugar*
             throw new NotImplementedException();
             /*
              * switch int_thing {
@@ -692,9 +694,7 @@ namespace eilang.Parsing
         {
             Require(TokenType.While);
             var pos = _lastConsumed.Position;
-            Require(TokenType.LeftParenthesis);
             var condition = ParseOr();
-            Require(TokenType.RightParenthesis);
             var block = new AstBlock(_lastConsumed.Position);
             _forDepth++;
             ParseBlock(block);
@@ -762,41 +762,42 @@ namespace eilang.Parsing
         {
             Require(TokenType.If);
             var pos = _lastConsumed.Position;
-            Require(TokenType.LeftParenthesis);
             var condition = ParseOr();
-            Require(TokenType.RightParenthesis);
             var ifPart = new AstBlock(_lastConsumed.Position);
             ParseBlock(ifPart);
             
-            if (!Match(TokenType.Else))
+            if (!Match(TokenType.Else) && !Match(TokenType.ElseIf))
             {
-                ast.Expressions.Add(new AstIf(condition, ifPart, null, pos));
+                ast.Expressions.Add(new AstIf(condition, ifPart, pos));
                 return;
             }
 
-            var firstIf = new AstIf(condition, ifPart, null, pos);
+            var firstIf = new AstIf(condition, ifPart, pos);
             var currentIf = firstIf;
-            while (Match(TokenType.Else))
+           
+            // elif chains
+            while (Match(TokenType.ElseIf))
             {
-                Consume();
-                if (Match(TokenType.If))
-                {
                     Consume();
                     var cond = ParseOr();
                     var ifBlock = new AstBlock(_lastConsumed.Position);
                     ParseBlock(ifBlock);
-                    var newIf = new AstIf(cond, ifBlock, null, pos);
+                    var newIf = new AstIf(cond, ifBlock, pos);
                     currentIf.SetElse(newIf);
                     currentIf = newIf;
-                }
-                else
+            }
+            
+            // else
+            if (Match(TokenType.Else))
+            {
+                Consume();
+                if (Match(TokenType.If))
                 {
-                    var elseBlock = new AstBlock(_lastConsumed.Position);
-                    ParseBlock(elseBlock);
-                    currentIf.SetElse(elseBlock);
-                    ast.Expressions.Add(firstIf);
-                    return;
+                    ThrowParserException($"Unexpected '{TokenValues.If}' after '{TokenValues.Else}', did you mean '{TokenValues.ElseIf}'?\n");
                 }
+                var elseBlock = new AstBlock(_lastConsumed.Position);
+                ParseBlock(elseBlock);
+                currentIf.SetElse(elseBlock);
             }
             ast.Expressions.Add(firstIf); // this part is reached if there were else ifs without an ending else
         }
@@ -1439,6 +1440,9 @@ namespace eilang.Parsing
             return consumed;
         }
         
+        /// <summary>
+        /// Throws an exception with the message "{s} near line ~"
+        /// </summary>
         private dynamic ThrowParserException(string s)
         {
             var value0 = _buffer[0].GetValue();

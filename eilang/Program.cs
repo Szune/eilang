@@ -4,9 +4,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using eilang.Exceptions;
 using eilang.Extensions;
 using eilang.Helpers;
+using eilang.Modules;
 using eilang.Values;
 
 namespace eilang
@@ -30,6 +32,7 @@ namespace eilang
                     var exeDirectory = PathHelper.GetEilangBinaryDirectory();
                     var fullPath = Path.Combine(exeDirectory, args[1]);
 
+                    EnvModule.RemoveSelfArgument();
                     try
                     {
                         Eilang.RunFile(fullPath);
@@ -89,13 +92,28 @@ namespace eilang
             }
 #endif
 
-#if DEBUG
+        // --------not sure begin--------
 	    // TODO: implement a SQLite wrapper?
+        // TODO: implement attributes, syntax (needs work):
+            /*  defining attribute class:
+                    attr Io { } # with ctor if it needs properties
+                setting attribute on thing:
+                    [Io]
+                    typ FileReader { }
+                checking if thing has attribute:
+                    attr<Io>(thing).has_value (.value to get properties)
+                thing can be a function pointer, a function, an instance of a class
+            */
+        // TODO: implement ? and ?: operator:
+        /*          var x = thing?.value ?: *thingClass(); # thing is any class that has a has_value() function
+                    # if thing.has_value == true, assign thing.value, otherwise assign *thingClass()
+        */
+        // TODO: implement ?? operator, altering the ? operator to check for null instead
+        // --------not sure end--------
             // TODO: -119. implement native interop with strings as struct fields
             // TODO: -109. implement native interop with structs as struct fields
             // TODO: implement type hinting for function return types, syntax: fun doThing(i: int) -> string { ret $"id: {i}"; }
             // TODO: -0.99 implement interfaces
-            // TODO: finish changing exceptions in operation codes to ErrorMessageException instead of InterpreterException
             // TODO: -0.5 implement try/catch/finally
             // TODO: 0. parser bug: fix variable scope bug (variables inside class functions collide with global variables,
             // scope should simply take the nearest one in this case), allow global variables to have the same names as 
@@ -119,6 +137,7 @@ namespace eilang
             // TODO: 12. static analysis of types (i.e. type checking)
             // TODO: 13. rework stack/value/memory implementation to be more efficient, getting rid of unnecessary memory overhead etc
 
+#if DEBUG
             //EilangScript.RunFile(@"D:\Google Drive\Programmeringsprojekt\eilang\eilang.Tests\Scripts\import_tests.ei");
             Eilang.RunFile("test.ei");
             var returnValue = Eilang.Eval("ret 'eilang';");

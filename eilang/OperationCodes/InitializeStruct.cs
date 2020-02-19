@@ -20,7 +20,7 @@ namespace eilang.OperationCodes
             }
             else
             {
-                ThrowHelper.StructNotFound(StructName);
+                throw ThrowHelper.StructNotFound(StructName);
             }
         }
     }

@@ -84,11 +84,13 @@ namespace eilang.Tokens
                 case TokenType.Integer:
                     return Integer.ToString();
                 case TokenType.Double:
-                    return Double.ToString();
+                    return Double.ToString(); // TODO: set culture
                 case TokenType.If:
                     return " " + TokenValues.If + " ";
                 case TokenType.Else:
                     return " " + TokenValues.Else + " ";
+                case TokenType.ElseIf:
+                    return " " + TokenValues.ElseIf + " ";
                 case TokenType.Or:
                     return TokenValues.Or;
                 case TokenType.And:
@@ -197,8 +199,25 @@ namespace eilang.Tokens
                 case TokenType.Tilde:
                     c = TokenValues.Tilde;
                     break;
+                case TokenType.Struct:
+                    return " " + TokenValues.Struct + " ";
+                case TokenType.Use:
+                    return " " + TokenValues.Use + " ";
+                case TokenType.While:
+                    return " " + TokenValues.While + " ";
+                case TokenType.Arrow:
+                    return TokenValues.Arrow;
+                case TokenType.Pipe:
+                    c = '|';
+                    break;
+                case TokenType.Switch:
+                    return " " + TokenValues.Switch + " ";
+                case TokenType.TypeOf:
+                    return TokenValues.TypeOf;
+                case TokenType.Long:
+                    return Long.ToString();
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(Type));
             }
 
             return c.ToString();

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using eilang.Compiling;
 using eilang.Interfaces;
@@ -7,30 +8,56 @@ using eilang.Values;
 
 namespace eilang.Exceptions
 {
+    /// <summary>
+    /// Helper class to get exceptions to throw. Exceptions need to be thrown manually by the caller.
+    /// </summary>
     public static class ThrowHelper
     {
-        public static void VariableNotFound(string variable)
+        public static NotFoundException VariableNotFound(string variable)
         {
-            throw new InterpreterException($"Variable not found: {variable}");
+            return new NotFoundException($"Variable not found: {variable}");
         }
-        
-        public static void StructNotFound(string strut)
+
+        public static NotFoundException FunctionNotFound(string function)
         {
-            throw new InterpreterException($"Struct not found: {strut}");
+            return new NotFoundException($"Function '{function}' not found.");
         }
-        
-        public static void InvalidArgumentCount(Function func, int argumentCount)
+
+        public static NotFoundException MemberFunctionNotFound(string function, string ofClass)
         {
-            throw new InvalidArgumentCountException(
+            return new NotFoundException(
+                $"Member function '{function}' not found in class '{ofClass}'");
+        }
+
+        public static NotFoundException ConstructorNotFound(int argumentCount, string ofClass)
+        {
+            return new NotFoundException(
+                $"Class '{ofClass}' does not contain a constructor that takes {argumentCount} arguments.");
+        }
+
+        public static NotFoundException ClassNotFound(string className)
+        {
+            return new NotFoundException($"Class not found {className}");
+        }
+
+        public static NotFoundException StructNotFound(string strut)
+        {
+            return new NotFoundException($"Struct not found: {strut}");
+        }
+
+        public static InvalidArgumentCountException InvalidArgumentCount(Function func, int argumentCount)
+        {
+            return new InvalidArgumentCountException(
                 $"Function {GetFunctionSignature(func)} expected {func.Arguments.Count} arguments, but received {argumentCount}.");
         }
 
-        public static void InvalidArgumentType(Function function, string parameterName, IValue value,
+        public static InvalidArgumentTypeException InvalidArgumentType(Function function, string parameterName, IValue value,
             List<ParameterType> types)
         {
             var allowedTypes = string.Join(" | ", types.Select(t => t.Name));
             var actualType = Types.GetTypeName(value);
-            throw new InvalidArgumentTypeException($"Invalid argument type '{actualType}' for parameter '{parameterName}' in function {GetFunctionSignature(function)}, expected {allowedTypes}");
+            return new InvalidArgumentTypeException(
+                $"Invalid argument type '{actualType}' for parameter '{parameterName}' in function {GetFunctionSignature(function)}, expected {allowedTypes}");
         }
 
         private static string GetFunctionSignature(Function func)
@@ -39,31 +66,43 @@ namespace eilang.Exceptions
             return $"{func.FullName}({arguments})";
         }
 
-        public static void InvalidArgumentType(string function, string parameterName, IValue value, List<ParameterType> types)
+        public static InvalidArgumentTypeException InvalidArgumentType(string function, string parameterName, IValue value,
+            List<ParameterType> types)
         {
             var allowedTypes = string.Join(" | ", types.Select(t => t.Name));
             var actualType = Types.GetTypeName(value);
-            throw new InvalidArgumentTypeException($"Invalid argument type '{actualType}' for parameter '{parameterName}' in function '{function}', expected {allowedTypes}");
+            return new InvalidArgumentTypeException(
+                $"Invalid argument type '{actualType}' for parameter '{parameterName}' in function '{function}', expected {allowedTypes}");
         }
 
-        public static void InteropStructFieldSize(StructField field)
+        public static InvalidStructFieldSizeException InteropStructFieldSize(StructField field)
         {
-            throw new InvalidStructFieldSizeException($"{field.Name}: {field.Type}({field.ByteCount}), {field.ByteCount} is not a known size for the specified type.");
+            return new InvalidStructFieldSizeException(
+                $"{field.Name}: {field.Type}({field.ByteCount}), {field.ByteCount} is not a known size for the specified type.");
         }
 
-        public static void InteropStructFieldType(StructField field)
+        public static InvalidStructFieldTypeException InteropStructFieldType(StructField field)
         {
-            throw new InvalidStructFieldTypeException($"{field.Name}: {field.Type}({field.ByteCount}), {field.Type} is not a known type for struct fields.");
+            return new InvalidStructFieldTypeException(
+                $"{field.Name}: {field.Type}({field.ByteCount}), {field.Type} is not a known type for struct fields.");
         }
 
         public static InvalidValueException TypeMismatch(EilangType a, string usedOperator, EilangType b)
         {
-            return new InvalidValueException($"({a} {usedOperator} {b}): {a} does not support binary operator '{usedOperator}' with {b}");
+            return new InvalidValueException(
+                $"({a} {usedOperator} {b}): {a} does not support binary operator '{usedOperator}' with {b}");
         }
-        
+
         public static InvalidValueException TypeMismatch(string usedOperator, EilangType unary)
         {
-            return new InvalidValueException($"({usedOperator}{unary}): {unary} does not support unary operator '{usedOperator}'");
+            return new InvalidValueException(
+                $"({usedOperator}{unary}): {unary} does not support unary operator '{usedOperator}'");
+        }
+
+        public static ListIndexOutOfRangeException ListIndexOutOfRange(string arrayName, int index, List<IValue> list)
+        {
+            return new ListIndexOutOfRangeException(
+                $"Index out of range: {arrayName}[{index}],\nitems in list ({list.Count} total): {{{string.Join("}, {", list)}}}");
         }
     }
 }

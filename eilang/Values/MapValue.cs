@@ -5,7 +5,7 @@ using eilang.Interfaces;
 
 namespace eilang.Values
 {
-    public class MapValue : ValueBase<Dictionary<IValue,IValue>>, IValueWithMathOperands
+    public class MapValue : ValueBase<Dictionary<IValue,IValue>>, IValueWithMathOperands, IEilangEquatable
     {
         public MapValue(Instance value) : base(EilangType.Map, value)
         {
@@ -48,6 +48,25 @@ namespace eilang.Values
         public IValue Modulo(IValueWithMathOperands other, IValueFactory fac)
         {
             throw ThrowHelper.TypeMismatch(Type, "%", other.Type);
+        }
+
+        public IValue ValueEquals(IEilangEquatable other, IValueFactory fac)
+        {
+            return fac.Bool(BoolEquals(other));
+        }
+
+        public IValue ValueNotEquals(IEilangEquatable other, IValueFactory fac)
+        {
+            return fac.Bool(!BoolEquals(other));
+        }
+
+        private bool BoolEquals(IEilangEquatable other) // TODO: decide what type of equality checking should be performed on maps
+        {
+            return other.Type switch
+            {
+                EilangType.Map => true,
+                _ => false
+            };
         }
     }
 }

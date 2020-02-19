@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Transactions;
 using eilang.Exceptions;
 using eilang.Tokens;
 
@@ -23,6 +22,7 @@ namespace eilang.Lexing
                 {TokenValues.If, TokenType.If},
                 {TokenValues.Switch, TokenType.Switch},
                 {TokenValues.Else, TokenType.Else},
+                {TokenValues.ElseIf, TokenType.ElseIf},
                 {TokenValues.Return, TokenType.Return},
                 {TokenValues.Class, TokenType.Class},
                 {TokenValues.Struct, TokenType.Struct},

@@ -73,5 +73,6 @@
         Switch,
         TypeOf,
         Long,
+        ElseIf
     }
 }

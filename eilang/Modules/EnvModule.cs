@@ -13,13 +13,41 @@ namespace eilang.Modules
     [ExportModule("env")]
     public static class EnvModule
     {
-        private static readonly Lazy<string[]> _args = new Lazy<string[]>(() => Environment.GetCommandLineArgs(),
+        private static readonly Lazy<string[]> Args = new Lazy<string[]>(GetArgs,
             LazyThreadSafetyMode.ExecutionAndPublication);
+
+        private static bool _removeSelfArgument;
+
+        private static string[] GetArgs()
+        {
+            var args = Environment.GetCommandLineArgs();
+            if (!_removeSelfArgument)
+            {
+                return args;
+            }
+            var argsWithoutS = new string[args.Length - 2]; // without -s and the filename
+            var c = 0;
+            var removed = false;
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i].ToUpperInvariant() == "-S" && !removed) // remove only the first occurrence of -s
+                {
+                    i++; // skip the argument to -s as well
+                    removed = true;
+                    continue;
+                }
+
+                argsWithoutS [c] = args[i];
+                c++;
+            }
+
+            return argsWithoutS;
+        }
 
         [ExportFunction("get_args")]
         public static IValue GetArguments(State state, IValue args)
         {
-            return state.ValueFactory.List(_args.Value.Select(state.ValueFactory.String).ToList());
+            return state.ValueFactory.List(Args.Value.Select(state.ValueFactory.String).ToList());
         }
 
         [ExportFunction("get_bin_dir")]
@@ -44,6 +72,11 @@ namespace eilang.Modules
                 .To<string>();
             PathHelper.SetWorkingDirectory(dir);
             return state.ValueFactory.Void();
+        }
+
+        public static void RemoveSelfArgument()
+        {
+            _removeSelfArgument = true;
         }
     }
 }

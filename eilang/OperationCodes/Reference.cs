@@ -2,6 +2,7 @@
 using eilang.Interfaces;
 using eilang.Values;
 using System;
+using eilang.Exceptions;
 
 namespace eilang.OperationCodes
 {
@@ -17,8 +18,7 @@ namespace eilang.OperationCodes
         {
             var value = state.Scopes.Peek().GetVariable(_name.As<StringValue>().Item);
             if (value == null)
-                throw new InvalidOperationException(
-                    $"Variable '{_name.As<StringValue>().Item}' could not be found.");
+                throw ThrowHelper.VariableNotFound(_name.As<StringValue>().Item);
             state.Stack.Push(value);
         }
     }

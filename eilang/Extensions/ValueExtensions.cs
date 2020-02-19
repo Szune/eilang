@@ -17,31 +17,24 @@ namespace eilang.Extensions
             {
                 factory = new ValueFactory();
             }
-            
-            var type = obj.GetType();
-            switch (type)
+
+            return obj switch
             {
-                case var _ when type == typeof(string):
-                    return factory.String((string) obj);
-                case var _ when type == typeof(int):
-                    return factory.Integer((int) obj);
-                case var _ when type == typeof(long):
-                    return factory.Long((long) obj);
-                case var _ when type == typeof(double):
-                    return factory.Double((double) obj);
-                case var _ when type == typeof(bool):
-                    return factory.Bool((bool) obj);
-                case var _ when type == typeof(IntPtr):
-                    return factory.IntPtr((IntPtr) obj);
-                case var _ when !type.IsAbstract && !type.IsPrimitive: // probably going to need more guards here
-                    return ConvertToEilangInstance(type, obj, factory);
-                default:
-                    throw new NotImplementedException();
-            }
+                string s => factory.String(s),
+                int i => factory.Integer(i),
+                long l => factory.Long(l),
+                double d => factory.Double(d),
+                bool b => factory.Bool(b),
+                IntPtr ptr => factory.IntPtr(ptr),
+                _ => ConvertToEilangInstance(obj, factory)
+            };
         }
 
-        private static IValue ConvertToEilangInstance(Type type, object obj, IValueFactory factory)
+        private static IValue ConvertToEilangInstance(object obj, IValueFactory factory)
         {
+            var type = obj.GetType();
+            if (type.IsAbstract || type.IsPrimitive) // probably going to need more guards here
+                throw new NotImplementedException();
             var members = type.GetMemberInfos();
             var name = type.Name;
             var clas = new Class(name, SpecialVariables.Global);
@@ -81,7 +74,7 @@ namespace eilang.Extensions
                     return ConvertToCSharpObject(type, variables);
                 default:
                     throw new NotImplementedException();
-                // TODO: implement converting from an eilang list to C# List<T>
+                // TODO: implement converting from an eilang list to C# List<T>, same with map/dictionary
             }
         }
 

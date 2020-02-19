@@ -33,7 +33,7 @@ namespace eilang.OperationCodes
         Initialize Initialize(IValue className);
         CallExported CallExported(IValue functionName);
         TypeGet TypeGet();
-        CallMember CallMember(IValue functionName);
+        CallMember CallMember(IValue functionName, int argumentCount);
         MemberReference MemberReference(IValue memberName);
         MemberSet MemberSet(IValue memberName);
         And And();

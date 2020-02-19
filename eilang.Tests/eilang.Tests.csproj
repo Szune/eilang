@@ -74,6 +74,10 @@
       <Content Include="Scripts\old_tests.ei">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
+      <None Remove="Scripts\str_interning_tests.ei" />
+      <Content Include="Scripts\str_interning_tests.ei">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

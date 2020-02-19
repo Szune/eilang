@@ -5,7 +5,7 @@ using eilang.Interfaces;
 
 namespace eilang.Values
 {
-    public class ListValue : ValueBase<List<IValue>>, IValueWithMathOperands
+    public class ListValue : ValueBase<List<IValue>>, IValueWithMathOperands, IEilangEquatable
     {
         public ListValue(Instance value) : base(EilangType.List, value)
         {
@@ -45,6 +45,25 @@ namespace eilang.Values
         public IValue Modulo(IValueWithMathOperands other, IValueFactory fac)
         {
             throw ThrowHelper.TypeMismatch(Type, "%", other.Type);
+        }
+
+        public IValue ValueEquals(IEilangEquatable other, IValueFactory fac)
+        {
+            return fac.Bool(BoolEquals(other));
+        }
+
+        public IValue ValueNotEquals(IEilangEquatable other, IValueFactory fac)
+        {
+            return fac.Bool(!BoolEquals(other));
+        }
+
+        private bool BoolEquals(IEilangEquatable other) // TODO: decide what type of equality checking should be performed on lists
+        {
+            return other.Type switch
+            {
+                EilangType.List => true,
+                _ => false
+            };
         }
     }
 }

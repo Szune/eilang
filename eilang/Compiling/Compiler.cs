@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using eilang.Ast;
@@ -40,6 +41,7 @@ namespace eilang.Compiling
             OpFactory = opFactory;
         }
 
+        [Conditional("DEBUG")]
         private void Log(string msg)
         {
             Logger?.WriteLine(msg);
@@ -287,15 +289,13 @@ namespace eilang.Compiling
             function.Write(OpFactory.Reference(ValueFactory.String(indexer.Identifier)), new Metadata {Ast = indexer});
             function.Write(OpFactory.TypeGet(), new Metadata {Ast = indexer});
             indexer.IndexExprs[0].Accept(this, function, mod);
-            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = indexer}); // arg count
-            function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
+            function.Write(OpFactory.CallMember(ValueFactory.String("idx_get"), argumentCount: 1),
                 new Metadata {Variable = indexer.Identifier, IndexerDepth = 0, Ast = indexer});
             for (int i = 1; i < indexer.IndexExprs.Count; i++)
             {
                 function.Write(OpFactory.TypeGet(), new Metadata {Ast = indexer});
                 indexer.IndexExprs[i].Accept(this, function, mod);
-                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = indexer}); // arg count
-                function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
+                function.Write(OpFactory.CallMember(ValueFactory.String("idx_get"), argumentCount: 1),
                     new Metadata {Variable = indexer.Identifier, IndexerDepth = i, Ast = indexer});
             }
         }
@@ -328,9 +328,7 @@ namespace eilang.Compiling
                     {
                         function.Write(OpFactory.TypeGet(), new Metadata {Ast = assignment});
                         assignment.Set.IndexExprs[i].Accept(this, function, mod);
-                        function.Write(OpFactory.Push(ValueFactory.Integer(1)),
-                            new Metadata {Ast = assignment}); // arg count
-                        function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
+                        function.Write(OpFactory.CallMember(ValueFactory.String("idx_get"), argumentCount: 1),
                             new Metadata {Ast = assignment});
                     }
 
@@ -346,8 +344,7 @@ namespace eilang.Compiling
                     switch (assignment.Set.Type)
                     {
                         case AssignmentSet.Array:
-                            function.Write(OpFactory.Push(ValueFactory.Integer(2)), new Metadata {Ast = assignment});
-                            function.Write(OpFactory.CallMember(ValueFactory.String("idx_set")),
+                            function.Write(OpFactory.CallMember(ValueFactory.String("idx_set"), argumentCount: 2),
                                 new Metadata {Ast = assignment});
                             break;
                         case AssignmentSet.Variable:
@@ -419,8 +416,7 @@ namespace eilang.Compiling
             switch (assignment.Set.Type)
             {
                 case AssignmentSet.Array:
-                    function.Write(OpFactory.Push(ValueFactory.Integer(2)), new Metadata {Ast = assignment});
-                    function.Write(OpFactory.CallMember(ValueFactory.String("idx_set")),
+                    function.Write(OpFactory.CallMember(ValueFactory.String("idx_set"), argumentCount: 2),
                         new Metadata {Ast = assignment});
                     break;
                 case AssignmentSet.Variable:
@@ -516,8 +512,7 @@ namespace eilang.Compiling
             {
                 function.Write(OpFactory.TypeGet(), new Metadata {Ast = indexer});
                 indexer.IndexExprs[i].Accept(this, function, mod);
-                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = indexer}); // arg count
-                function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
+                function.Write(OpFactory.CallMember(ValueFactory.String("idx_get"), argumentCount: 1),
                     new Metadata {IndexerDepth = i, Ast = indexer});
             }
         }
@@ -566,8 +561,7 @@ namespace eilang.Compiling
             function.Write(OpFactory.TemporaryReference(ValueFactory.String($".aval{ForDepth}")),
                 new Metadata {Ast = forArray});
             function.Write(OpFactory.TypeGet(), new Metadata {Ast = forArray});
-            function.Write(OpFactory.Push(ValueFactory.Integer(0)), new Metadata {Ast = forArray});
-            function.Write(OpFactory.CallMember(ValueFactory.String("len")), new Metadata {Ast = forArray});
+            function.Write(OpFactory.CallMember(ValueFactory.String("len"), argumentCount: 0), new Metadata {Ast = forArray});
             function.Write(OpFactory.TemporarySet(ValueFactory.String($".alen{ForDepth}")),
                 new Metadata {Ast = forArray});
             function.Write(OpFactory.TemporaryReference(ValueFactory.String($".alen{ForDepth}")),
@@ -614,8 +608,7 @@ namespace eilang.Compiling
                 new Metadata {Ast = forArray});
             function.Write(OpFactory.TypeGet(), new Metadata {Ast = forArray});
             function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata {Ast = forArray});
-            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = forArray});
-            function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")), new Metadata {Ast = forArray});
+            function.Write(OpFactory.CallMember(ValueFactory.String("idx_get"), argumentCount: 1), new Metadata {Ast = forArray});
             function.Write(OpFactory.Set(ValueFactory.String($".it{ForDepth}")), new Metadata {Ast = forArray});
             forArray.Body.Accept(this, function, mod);
             var addressOfLoopStep = function.Length;
@@ -644,20 +637,30 @@ namespace eilang.Compiling
             ForDepth++;
             function.Write(OpFactory.ScopeNew(), new Metadata {Ast = forRange});
             forRange.Range.Begin.Accept(this, function, mod);
+            if (forRange.Reversed) // the highest number in the range is always exclusive
+            {
+                function.Write(OpFactory.Push(ValueFactory.Integer(1)));
+                function.Write(OpFactory.Subtract());
+            }
             forRange.Range.End.Accept(this, function, mod);
             if (forRange.Reversed)
-                function.Write(OpFactory.LessThanOrEquals(), new Metadata {Ast = forRange});
+                function.Write(OpFactory.LessThan(), new Metadata {Ast = forRange});
             else
                 function.Write(OpFactory.GreaterThanOrEquals(), new Metadata {Ast = forRange});
             function.Write(OpFactory.JumpIfTrue(ValueFactory.Integer(0)), new Metadata {Ast = forRange});
             var addressOfFirstJmpT = function.Code.Count - 1;
             forRange.Range.Begin.Accept(this, function, mod);
+            if (forRange.Reversed)
+            {
+                function.Write(OpFactory.Push(ValueFactory.Integer(1)));
+                function.Write(OpFactory.Subtract());
+            }
             function.Write(OpFactory.Define($".ix{ForDepth}"), new Metadata {Ast = forRange});
             function.Write(OpFactory.Reference(ValueFactory.String($".ix{ForDepth}")), new Metadata {Ast = forRange});
             var addressOfCmp = function.Code.Count - 1;
             forRange.Range.End.Accept(this, function, mod);
             if (forRange.Reversed)
-                function.Write(OpFactory.LessThanOrEquals(), new Metadata {Ast = forRange});
+                function.Write(OpFactory.LessThan(), new Metadata {Ast = forRange});
             else
                 function.Write(OpFactory.GreaterThanOrEquals(), new Metadata {Ast = forRange});
             function.Write(OpFactory.JumpIfTrue(ValueFactory.Integer(0)), new Metadata {Ast = forRange});
@@ -814,9 +817,7 @@ namespace eilang.Compiling
         {
             function.Write(OpFactory.TypeGet(), new Metadata {Ast = memberFuncCall});
             memberFuncCall.Arguments.Accept(this, function, mod);
-            function.Write(OpFactory.Push(ValueFactory.Integer(memberFuncCall.Arguments.Count)),
-                new Metadata {Ast = memberFuncCall});
-            function.Write(OpFactory.CallMember(ValueFactory.String(memberFuncCall.Ident)),
+            function.Write(OpFactory.CallMember(ValueFactory.String(memberFuncCall.Ident), argumentCount: memberFuncCall.Arguments.Count),
                 new Metadata {Ast = memberFuncCall});
         }
 
@@ -825,15 +826,13 @@ namespace eilang.Compiling
             function.Write(OpFactory.MemberReference(ValueFactory.String(indexer.Ident)), new Metadata {Ast = indexer});
             function.Write(OpFactory.TypeGet(), new Metadata {Ast = indexer});
             indexer.IndexExprs[0].Accept(this, function, mod);
-            function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = indexer}); // arg count
-            function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
+            function.Write(OpFactory.CallMember(ValueFactory.String("idx_get"), argumentCount: 1),
                 new Metadata {Variable = indexer.Ident, IndexerDepth = 0, Ast = indexer});
             for (int i = 1; i < indexer.IndexExprs.Count; i++)
             {
                 function.Write(OpFactory.TypeGet(), new Metadata {Ast = indexer});
                 indexer.IndexExprs[i].Accept(this, function, mod);
-                function.Write(OpFactory.Push(ValueFactory.Integer(1)), new Metadata {Ast = indexer}); // arg count
-                function.Write(OpFactory.CallMember(ValueFactory.String("idx_get")),
+                function.Write(OpFactory.CallMember(ValueFactory.String("idx_get"), argumentCount: 1),
                     new Metadata {Variable = indexer.Ident, IndexerDepth = i, Ast = indexer});
             }
         }

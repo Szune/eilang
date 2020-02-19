@@ -6,6 +6,7 @@
         public const string If = "if";
         public const string Switch = "switch";
         public const string Else = "else";
+        public const string ElseIf = "elif";
         public const string Class = "typ";
         public const string Struct = "struct";
         public const string Module = "modu";

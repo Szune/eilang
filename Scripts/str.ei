@@ -49,7 +49,7 @@ fun string->trim_start() {
         if(!foundStart) {
             if(it == ' ') {
                 continue;
-            } else if (it != ' ') {
+            } elif (it != ' ') {
                 foundStart = true;
             }
         }
@@ -65,7 +65,7 @@ fun string->trim_end() {
     for ~(len-1..0) {
         if(me[ix] == ' ') {
             continue;
-        } else if (me[ix] != ' ') {
+        } elif (me[ix] != ' ') {
             lastIndex = ix + 1;
             break;
         }
@@ -98,7 +98,7 @@ modu str {
             if(!foundStart) {
                 if(it == char) {
                     continue;
-                } else if (it != char) {
+                } elif (it != char) {
                     foundStart = true;
                 }
             }
@@ -114,7 +114,7 @@ modu str {
         for ~(len-1..0) {
             if(str[ix] == char) {
                 continue;
-            } else if (str[ix] != char) {
+            } elif (str[ix] != char) {
                 lastIndex = ix + 1;
                 break;
             }

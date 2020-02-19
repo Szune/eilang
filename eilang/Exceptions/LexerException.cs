@@ -7,7 +7,7 @@ namespace eilang.Exceptions
     internal class LexerException : Exception
     {
         public LexerException()
-        {   
+        { 
         }
 
         public LexerException(string message) : base(message)

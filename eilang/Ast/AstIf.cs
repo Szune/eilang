@@ -10,11 +10,10 @@ namespace eilang.Ast
         public AstExpression IfExpr { get; }
         public AstExpression ElseExpr { get; private set; }
 
-        public AstIf(AstExpression condition, AstExpression ifExpr, AstExpression elseExpr, Position position) : base(position)
+        public AstIf(AstExpression condition, AstExpression ifExpr, Position position) : base(position)
         {
             Condition = condition;
             IfExpr = ifExpr;
-            ElseExpr = elseExpr;
         }
 
         public override void Accept(IVisitor visitor, Function function, Module mod)

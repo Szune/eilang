@@ -206,9 +206,9 @@ namespace eilang.OperationCodes
             return _typeGet;
         }
 
-        public CallMember CallMember(IValue functionName)
+        public CallMember CallMember(IValue functionName, int argumentCount)
         {
-            return new CallMember(functionName);
+            return new CallMember(functionName, argumentCount);
         }
 
         public MemberReference MemberReference(IValue memberName)

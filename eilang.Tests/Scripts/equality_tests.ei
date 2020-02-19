@@ -10,6 +10,8 @@ assert(1.1 != 2, "testing 1.1 != 0"); # int has precedence, no rounding is perfo
 assert(true == true, "testing true == true");
 assert(true != false, "testing true != false");
 assert(false != true, "testing false != true");
+assert([] != (), "testing [] != ()\t(list != uninitialized)");
+assert({} != (), "testing {} != ()\t(map != uninitialized)");
 
 
 fun test1() { }

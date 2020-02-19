@@ -7,19 +7,19 @@ namespace eilang.Helpers
 {
     public static class PathHelper
     {
-        private static Lazy<string> _exeDirectory =
+        private static readonly Lazy<string> ExeDirectory =
             new Lazy<string>(
-                () => Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName).Replace("\\", "/"),
+                () => Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName ?? "").Replace("\\", "/"),
                 LazyThreadSafetyMode.ExecutionAndPublication);
 
         public static string GetEilangBinaryDirectory()
         {
-            return _exeDirectory.Value;
+            return !string.IsNullOrWhiteSpace(ExeDirectory.Value) ? ExeDirectory.Value : throw new InvalidOperationException("Failed to retrieve binary directory.");
         }
 
         public static string GetEilangStdDirectory()
         {
-            var eilangStdDirectory = Path.Join(_exeDirectory.Value, "std").Replace("\\", "/");
+            var eilangStdDirectory = Path.Join(GetEilangBinaryDirectory(), "std").Replace("\\", "/");
             eilangStdDirectory = eilangStdDirectory.EndsWith("/") ? eilangStdDirectory : eilangStdDirectory + "/";
 #if DEBUG
             Console.WriteLine("Eilang std directory: " + eilangStdDirectory);

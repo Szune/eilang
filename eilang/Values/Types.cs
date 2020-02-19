@@ -97,7 +97,7 @@ namespace eilang.Values
 
             if (!types.Any(t => t.Type == value.Type))
             {
-                ThrowHelper.InvalidArgumentType(function, parameterName, value, types);
+                throw ThrowHelper.InvalidArgumentType(function, parameterName, value, types);
             }
         }
 
@@ -129,7 +129,7 @@ namespace eilang.Values
 
             if (!types.Any(t => t.Type == value.Type))
             {
-                ThrowHelper.InvalidArgumentType(function, parameterName, value, types);
+                throw ThrowHelper.InvalidArgumentType(function, parameterName, value, types);
             }
         }
 

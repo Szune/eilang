@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using eilang.Exceptions;
 using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Values;
@@ -19,14 +20,13 @@ namespace eilang.OperationCodes
         {
             var argCount = state.Stack.Pop().Get<int>();
             if (!state.Environment.Classes.TryGetValue(_className.As<StringValue>().Item, out var clas))
-                throw new InvalidOperationException($"Class not found {_className.As<StringValue>().Item}");
+                throw ThrowHelper.ClassNotFound(_className.As<StringValue>().Item);
             var instScope = new Scope();
             var newInstance = new Instance(instScope, clas);
             // figure out which constructor to call (should probably do that in the parser though)
             var ctor = clas.Constructors.FirstOrDefault(c => c.Arguments.Count == argCount);
             if (ctor == null && argCount > 0)
-                throw new InvalidOperationException(
-                    $"No constructor exists which takes {argCount} arguments.");
+                throw ThrowHelper.ConstructorNotFound(argCount, _className.As<StringValue>().Item);
             else if ((ctor == null && argCount == 0) || ctor?.Length == 1)
                 ctor = clas.CtorForMembersWithValues;
             state.Frames.Push(new CallFrame(ctor));

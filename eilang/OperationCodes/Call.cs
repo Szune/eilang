@@ -21,21 +21,19 @@ namespace eilang.OperationCodes
                            state.Stack.Pop().As<InternalStringValue>().Item;
             
             var callArgCount = state.Stack.Pop().Get<int>();
-            if (state.Environment.Functions.ContainsKey($"{SpecialVariables.Global}::{funcName}"))
+            if (state.Environment.Functions.TryGetValue($"{SpecialVariables.Global}::{funcName}", out var globalFunc))
             {
-                var func = state.Environment.Functions[$"{SpecialVariables.Global}::{funcName}"];
-                VerifyArgumentCount(func, callArgCount); // not sure if it's worth making this check during the parsing stage
-                state.Frames.Push(new CallFrame(func));
+                VerifyArgumentCount(globalFunc, callArgCount); // not sure if it's worth making this check during the parsing stage
+                state.Frames.Push(new CallFrame(globalFunc));
             }
-            else if (state.Environment.Functions.ContainsKey(funcName))
+            else if (state.Environment.Functions.TryGetValue(funcName, out var func))
             {
-                var func = state.Environment.Functions[funcName];
                 VerifyArgumentCount(func, callArgCount);
                 state.Frames.Push(new CallFrame(func));
             }
             else
             {
-                throw new InterpreterException($"Function '{funcName}' not found.");
+                throw ThrowHelper.FunctionNotFound(funcName);
             }
 
             var currentScope = state.Scopes.Peek();
@@ -46,7 +44,7 @@ namespace eilang.OperationCodes
         {
             if (func.Arguments.Count != argumentCount && !func.VariableAmountOfArguments)
             {
-                ThrowHelper.InvalidArgumentCount(func, argumentCount);
+                throw ThrowHelper.InvalidArgumentCount(func, argumentCount);
             }
         }
     }

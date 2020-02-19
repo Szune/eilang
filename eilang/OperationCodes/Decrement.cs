@@ -21,8 +21,7 @@ namespace eilang.OperationCodes
                     state.Stack.Push(state.ValueFactory.Double(val.Get<double>() - 1));
                     break;
                 default:
-                    ThrowHelper.TypeMismatch("--", val.Type);
-                    break;
+                    throw ThrowHelper.TypeMismatch("--", val.Type);
             }
         }
     }

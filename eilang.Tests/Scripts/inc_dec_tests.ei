@@ -6,10 +6,10 @@ fun main() {
     var i = 0;
     var stop = false;
     for () {
-        if(stop && i == 2) {
+        if stop && i == 2 {
             println("stop on next!");
         }
-        else if (stop && i == 3)
+        elif stop && i == 3
         {
             println("breaking!");
             break;
@@ -17,7 +17,7 @@ fun main() {
         i++;
         println("looping, i = " + i);
 
-        if(i == 2) {
+        if i == 2 {
             println("continuing infinite loop");
             stop = true;
             continue;

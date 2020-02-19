@@ -99,8 +99,7 @@ namespace eilang.Helpers
                         case 4:
                             return state.ValueFactory.Integer(reader.ReadInt32());
                         default:
-                            ThrowHelper.InteropStructFieldSize(field);
-                            return null;
+                            throw ThrowHelper.InteropStructFieldSize(field);
                     }
                 case EilangType.Long:
                     switch (field.ByteCount)
@@ -114,8 +113,7 @@ namespace eilang.Helpers
                         case 8:
                             return state.ValueFactory.Long(reader.ReadInt64());
                         default:
-                            ThrowHelper.InteropStructFieldSize(field);
-                            return null;
+                            throw ThrowHelper.InteropStructFieldSize(field);
                     }
                 case EilangType.Double:
                     switch (field.ByteCount)
@@ -123,8 +121,7 @@ namespace eilang.Helpers
                         case 8:
                             return state.ValueFactory.Double(reader.ReadDouble());
                         default:
-                            ThrowHelper.InteropStructFieldSize(field);
-                            return null;
+                            throw ThrowHelper.InteropStructFieldSize(field);
                     }
                 case EilangType.Bool:
                     switch (field.ByteCount)
@@ -132,14 +129,12 @@ namespace eilang.Helpers
                         case 1:
                             return state.ValueFactory.Bool(reader.ReadBoolean());
                         default:
-                            ThrowHelper.InteropStructFieldSize(field);
-                            return null;
+                            throw ThrowHelper.InteropStructFieldSize(field);
                     }
                 case EilangType.Struct:
                     throw new NotImplementedException("Struct fields on structs are not supported yet.");
                 default:
-                    ThrowHelper.InteropStructFieldType(field);
-                    return null;
+                    throw ThrowHelper.InteropStructFieldType(field);
             }
         }
 
@@ -205,8 +200,7 @@ namespace eilang.Helpers
                 case EilangType.Uninitialized:
                     return null;
             }
-            ThrowHelper.InvalidArgumentType("interop::invoke_func", "...", value, ValidInteropTypes);
-            return null;
+            throw ThrowHelper.InvalidArgumentType("interop::invoke_func", "...", value, ValidInteropTypes);
         }
 
         private static object ConvertStructArgument(StructInstanceValue strut)
@@ -265,8 +259,7 @@ namespace eilang.Helpers
                         return typeof(IntPtr);
                     break;
             }
-            ThrowHelper.InvalidArgumentType("interop::invoke_func", paramName, value, ValidInteropTypes);
-            return null;
+            throw ThrowHelper.InvalidArgumentType("interop::invoke_func", paramName, value, ValidInteropTypes);
         }
 
         private static IValue ConvertReturnValue(object? result, State state)

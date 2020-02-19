@@ -17,8 +17,7 @@ namespace eilang.OperationCodes
                         : state.ValueFactory.False());
                     break;
                 default:
-                    ThrowHelper.TypeMismatch("!", val.Type);
-                    break;
+                    throw ThrowHelper.TypeMismatch("!", val.Type);
             }
         }
     }

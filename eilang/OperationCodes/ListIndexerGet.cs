@@ -17,8 +17,7 @@ namespace eilang.OperationCodes
                 state.Frames.Pop(); // pop current method call frame for "idx_get"
                 var errorFrame = state.Frames.Peek();
                 var arrayName = errorFrame.GetNearestMethodCallAboveCurrentAddress("idx_get")?.Metadata?.Variable;
-                throw new InterpreterException(
-                    $"Index out of range: {arrayName}[{index}],\nitems in list ({list.Count} total): {{{string.Join("}, {", list)}}}");
+                throw ThrowHelper.ListIndexOutOfRange(arrayName, index, list);
             }
 
             state.Stack.Push(list[index]);

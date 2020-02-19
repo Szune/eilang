@@ -12,16 +12,18 @@ namespace eilang.OperationCodes
     public class CallMember : IOperationCode
     {
         private readonly IValue _functionName;
+        private readonly int _argumentCount;
 
-        public CallMember(IValue functionName)
+        public CallMember(IValue functionName, int argumentCount)
         {
             _functionName = functionName;
+            _argumentCount = argumentCount;
         }
+        
         public void Execute(State state)
         {
-            var mCallArgCount = state.Stack.Pop().Get<int>();
             var tmpValues = new Stack<IValue>();
-            for (int i = 0; i < mCallArgCount; i++)
+            for (int i = 0; i < _argumentCount; i++)
             {
                 var val = state.Stack.Pop();
                 tmpValues.Push(val);
@@ -29,24 +31,23 @@ namespace eilang.OperationCodes
 
             var callingClass = state.Stack.Pop().Get<Class>();
             var callingInstance = state.Stack.Pop().Get<Instance>();
-            for (int i = 0; i < mCallArgCount; i++)
+            for (int i = 0; i < _argumentCount; i++)
             {
                 state.Stack.Push(tmpValues.Pop());
             }
 
             if (callingClass.TryGetFunction(_functionName.As<StringValue>().Item, out var membFunc))
             {
-                PushCall(state, mCallArgCount, membFunc, callingInstance);
+                PushCall(state, _argumentCount, membFunc, callingInstance);
             }
             else if(state.Environment.ExtensionFunctions.TryGetValue(
             $"{callingClass.FullName}->{_functionName.As<StringValue>().Item}", out var extensionFunc))
             {
-                PushCall(state, mCallArgCount, extensionFunc, callingInstance);
+                PushCall(state, _argumentCount, extensionFunc, callingInstance);
             }
             else
             {
-                throw new InvalidOperationException(
-                    $"Member function '{_functionName.As<StringValue>().Item}' not found in class '{callingClass.FullName}'");
+                throw ThrowHelper.MemberFunctionNotFound(_functionName.As<StringValue>().Item, callingClass.FullName);
             }
         }
 
@@ -54,7 +55,7 @@ namespace eilang.OperationCodes
         {
             if (func.Arguments.Count != mCallArgCount && !func.VariableAmountOfArguments)
             {
-                ThrowHelper.InvalidArgumentCount(func, mCallArgCount);
+                throw ThrowHelper.InvalidArgumentCount(func, mCallArgCount);
             }
             state.Stack.Push(state.ValueFactory.Integer(mCallArgCount));
             state.Frames.Push(new CallFrame(func));

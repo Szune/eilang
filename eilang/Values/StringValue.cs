@@ -1,10 +1,11 @@
 ﻿using System;
 using eilang.Exceptions;
 using eilang.Interfaces;
+using Microsoft.VisualBasic;
 
 namespace eilang.Values
 {
-    public class StringValue : ValueBase<string>, IValueWithMathOperands, IEilangEquatable
+    public class StringValue : ValueBase<string>, IValueWithMathOperands, IEilangEquatable, IEilangComparable
     {
         public StringValue(Instance value) : base(EilangType.String, value)
         {
@@ -82,6 +83,42 @@ namespace eilang.Values
             {
                 EilangType.String => Item == other.As<StringValue>().Item,
                 _ => false
+            };
+        }
+
+        public IValue GreaterThan(IEilangComparable other, IValueFactory fac)
+        {
+            return other.Type switch
+            { /* TODO: make chars an actual type instead */
+                EilangType.String => fac.Bool(Item[0] > other.As<StringValue>().Item[0]),
+                _ => throw ThrowHelper.TypeMismatch(Type, ">", other.Type)
+            };
+        }
+
+        public IValue GreaterThanOrEquals(IEilangComparable other, IValueFactory fac)
+        {
+            return other.Type switch
+            {
+                EilangType.String => fac.Bool(Item[0] >= other.As<StringValue>().Item[0]),
+                _ => throw ThrowHelper.TypeMismatch(Type, ">=", other.Type)
+            };
+        }
+
+        public IValue LessThan(IEilangComparable other, IValueFactory fac)
+        {
+            return other.Type switch
+            {
+                EilangType.String => fac.Bool(Item[0] < other.As<StringValue>().Item[0]),
+                _ => throw ThrowHelper.TypeMismatch(Type, "<", other.Type)
+            };
+        }
+
+        public IValue LessThanOrEquals(IEilangComparable other, IValueFactory fac)
+        {
+            return other.Type switch
+            {
+                EilangType.String => fac.Bool(Item[0] <= other.As<StringValue>().Item[0]),
+                _ => throw ThrowHelper.TypeMismatch(Type, "<=", other.Type)
             };
         }
     }

@@ -16,6 +16,7 @@ namespace eilang.Values
         private static readonly IValue _false = new BoolValue(false);
         private static readonly IOperationCodeFactory _operationCodeFactory = new OperationCodeFactory();
         private static readonly IValue _uninitialized = new UninitializedValue();
+        private readonly Dictionary<string, StringValue> _internedStrings = new Dictionary<string, StringValue>();
 
         public IValue Long(long value)
         {
@@ -54,11 +55,20 @@ namespace eilang.Values
 
         public IValue String(string str)
         {
-            var scope = new Scope();
-            scope.DefineVariable(SpecialVariables.String, new InternalStringValue(str));
-            var instance = new Instance(scope, new StringClass(_operationCodeFactory));
-            scope.DefineVariable(SpecialVariables.Me, new InstanceValue(instance));
-            return new StringValue(instance);
+            if (_internedStrings.TryGetValue(str, out var stringValue))
+            {
+                return stringValue;
+            }
+            else
+            {
+                var scope = new Scope();
+                scope.DefineVariable(SpecialVariables.String, new InternalStringValue(str));
+                var instance = new Instance(scope, new StringClass(_operationCodeFactory));
+                scope.DefineVariable(SpecialVariables.Me, new InstanceValue(instance));
+                var newString = new StringValue(instance);
+                _internedStrings[str] = newString;
+                return newString;
+            }
         }
 
 

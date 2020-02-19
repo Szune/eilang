@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -32,6 +33,7 @@ namespace eilang.Interpreting
             _logger = logger;
         }
 
+        [Conditional("DEBUG")]
         private void Log(string msg)
         {
             _logger?.WriteLine(msg);

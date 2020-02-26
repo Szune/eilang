@@ -1,0 +1,21 @@
+modu file {
+	fun read_to_end(fileName: string) {
+		var full = "";
+		use (var f = file::open(fileName)) {
+			if(!f.is_eof()) {
+				full += f.readln();
+			}
+		    while(!f.is_eof()) {
+		        var read = f.readln();
+		        full += '\n' + read;
+	    	}
+    	}
+    	ret full;
+	}
+
+	fun write_all_text(fileName: string, content: string) {
+		use(var f = file::open(fileName)) {
+			f.write(content);
+		}
+	}
+}

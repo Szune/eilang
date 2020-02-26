@@ -1,0 +1,77 @@
+# clear intentions
+fun fizz_buzz_clear(num: int) {
+	var fizzy = "";
+	if num % 3 == 0 {
+		fizzy = "Fizz";
+	} 
+	if num % 5 == 0 {
+		fizzy += "Buzz";
+	}
+	if fizzy != "" {
+		println(fizzy);
+	} else {
+		println(num);
+	}
+}
+
+# muddy intentions
+fun fizz_buzz_ternary(num: int) {
+	println((num % 3 == 0 && num % 5 == 0
+		? 'FizzBuzz'
+		: num % 3 == 0
+			? "Fizz"
+			: num % 5 == 0
+				? "Buzz"
+				:	num));
+}
+
+# overly verbose intentions to the point of being muddy
+typ FizzBuzzer { ctor(condition: fp, action: fp); }
+fun divisible_by_three_and_five(num: int) { ret num % 3 == 0 && num % 5 == 0; }
+fun divisible_by_three(num: int) { ret num % 3 == 0; }
+fun divisible_by_five(num: int) { ret num % 5 == 0; }
+fun ret_true(num: int) { ret true; }
+fun print_fizzbuzz(num: int) { println('FizzBuzz'); }
+fun print_fizz(num: int) { println('Fizz'); }
+fun print_buzz(num: int) { println('Buzz'); }
+fun print_num(num: int) { println(num); }
+
+fun fizz_buzz_function_pointers(num: int, fizz_buzzers: list) {
+	for(fizz_buzzers) {
+		if it.condition.call(num) {
+			it.action.call(num);
+			ret;
+		}
+	}
+}
+
+var buzzers = [
+	*FizzBuzzer(@divisible_by_three_and_five, @print_fizzbuzz),
+	*FizzBuzzer(@divisible_by_three, @print_fizz),
+	*FizzBuzzer(@divisible_by_five, @print_buzz),
+	*FizzBuzzer(@ret_true, @print_num),
+	];
+
+# lambda to motivate implementation of lambdas
+fun fizz_buzz_lambda(num: int, lambdas: list) {
+	for(lambdas) {
+		if it.call(num) {
+			ret;
+		}
+	}	
+}
+
+
+var lambdas = [
+	::num => { if num % 5 == 0 && num % 3 == 0 { println("FizzBuzz"); ret true; } ret false; },
+	::num => { if num % 3 == 0 { println("Fizz"); ret true; } ret false; },
+	::num => { if num % 5 == 0 { println("Buzz"); ret true; } ret false; },
+	::num => { println(num); ret true; },
+	];
+
+for (1..101) {
+	fizz_buzz_clear(ix);
+	fizz_buzz_ternary(ix);
+	fizz_buzz_function_pointers(ix, buzzers);
+	fizz_buzz_lambda(ix, lambdas);
+}

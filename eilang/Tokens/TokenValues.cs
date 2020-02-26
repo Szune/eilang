@@ -45,6 +45,7 @@
         public const string LessThanEquals = "<=";
         public const string GreaterThanEquals = ">=";
         public const string Arrow = "->";
+        public const string LambdaArrow = "=>";
         #endregion
         
         #region 'pure' tokens

@@ -461,7 +461,7 @@ namespace eilang.Parsing
 
         private void ParseSwitch(IHaveExpression ast)
         {
-            // TODO: jump table optimization *after implementing it as syntactic sugar*
+            // TODO: jump table optimization *after first implementing it as syntactic sugar*
             throw new NotImplementedException();
             /*
              * switch int_thing {
@@ -628,7 +628,7 @@ namespace eilang.Parsing
 
         private void ThrowIfMultiReferenceContainsFunctionCallButDoesNotEndWithFunctionCall(AstMultiReference multi)
         {
-            // TODO: implement
+            // TODO: implement, jeez
         }
 
         private void ParseReturn(IHaveExpression ast)
@@ -1214,6 +1214,8 @@ namespace eilang.Parsing
                     return ParseListInit();
                 case TokenType.LeftBrace:
                     return ParseMapInit();
+                case TokenType.DoubleColon:
+                    return ParseLambda();
                 case TokenType.LeftParenthesis:
                     Consume();
                     if (Match(TokenType.RightParenthesis))
@@ -1298,6 +1300,40 @@ namespace eilang.Parsing
             }
 
             return ThrowParserException("not implemented");
+        }
+
+        private AstExpression ParseLambda()
+        {
+            Consume(); // consume ::
+            var pos = _lastConsumed.Position;
+            if (Match(TokenType.LambdaArrow))
+            {
+                // parameterless lambda
+                Consume();
+                var block = new AstBlock(_lastConsumed.Position);
+                ParseBlock(block);
+                return new AstParameterlessLambda(block, pos);
+            }
+            else // reusing the variable name 'block' is very important
+            {
+
+                var args = new List<string>();
+                while (Match(TokenType.Identifier))
+                {
+                    var identifier = Consume().Text;
+                    args.Add(identifier);
+                    if (Match(TokenType.Comma))
+                    {
+                        Consume();
+                    }
+                }
+
+                Require(TokenType.LambdaArrow);
+
+                var block = new AstBlock(_lastConsumed.Position);
+                ParseBlock(block);
+                return new AstLambda(args, block, pos);
+            }
         }
 
         private AstExpression ParseMapInit()
@@ -1389,7 +1425,7 @@ namespace eilang.Parsing
                     break;
                 }
             }
-
+            
             Require(listEnd);
             return args;
         }

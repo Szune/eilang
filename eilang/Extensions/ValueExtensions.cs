@@ -104,6 +104,20 @@ namespace eilang.Extensions
                 return ret;
             throw new InvalidValueException(message);
         }
+
+        public static ListValue RequireList(this IValue value, int withCount, string message)
+        {
+            if (value is ListValue ret && ret.Item.Count == withCount)
+                return ret;
+            throw new InvalidArgumentCountException(message);
+        }
+        
+        public static ListValue RequireListAtLeast(this IValue value, int withCount, string message)
+        {
+            if (value is ListValue ret && ret.Item.Count >= withCount)
+                return ret;
+            throw new InvalidArgumentCountException(message);
+        }
         
         public static IValue RequireAnyOf(this IValue value, EilangType typeFlags, string message)
         {

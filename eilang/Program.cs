@@ -39,7 +39,7 @@ namespace eilang
                     }
                     catch (ErrorMessageException e)
                     {
-                        WithColor(ConsoleColor.Red, () => { Console.WriteLine(e.Message); });
+                        LogLine(ConsoleColor.Red, e.Message);
                     }
                 }
                 else if (first == "-E")
@@ -54,7 +54,7 @@ namespace eilang
                     }
                     catch (ErrorMessageException e)
                     {
-                        WithColor(ConsoleColor.Red, () => { Console.WriteLine(e.Message); });
+                        LogLine(ConsoleColor.Red, e.Message);
                     }
                 }
                 return;
@@ -80,11 +80,11 @@ namespace eilang
                     }
                     catch (ErrorMessageException e)
                     {
-                        WithColor(ConsoleColor.Red, () => { Console.WriteLine(e.Message); });
+                        LogLine(ConsoleColor.Red, e.Message);
                     }
                     catch (Exception e)
                     {
-                        WithColor(ConsoleColor.Red, () => { Console.WriteLine(e); });
+                        LogLine(ConsoleColor.Red, e.Message);
                     }
                 }
 
@@ -110,6 +110,9 @@ namespace eilang
         */
         // TODO: implement ?? operator, altering the ? operator to check for null instead
         // --------not sure end--------
+        
+            // TODO: add syntax sugar for calling a fp with functionPointer(arg) instead of functionPointer.call(arg)
+            // TODO: to add to /\ make it work with 'it' in for loops, and 'me' in extension functions?
             // TODO: -119. implement native interop with strings as struct fields
             // TODO: -109. implement native interop with structs as struct fields
             // TODO: implement type hinting for function return types, syntax: fun doThing(i: int) -> string { ret $"id: {i}"; }
@@ -147,11 +150,19 @@ namespace eilang
 #endif
         }
 
-        public static void WithColor(ConsoleColor color, Action log)
+        public static void LogLine(ConsoleColor color, string text)
         {
             var old = Console.ForegroundColor;
             Console.ForegroundColor = color;
-            log();
+            Console.WriteLine(text);
+            Console.ForegroundColor = old;
+        }
+        
+        public static void Log(ConsoleColor color, string text)
+        {
+            var old = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.Write(text);
             Console.ForegroundColor = old;
         }
     }

@@ -1,0 +1,9 @@
+﻿var paramless = :: => { ret 150; };
+assert(paramless.call() == 150, 'paramless should return 150 when called');
+
+var lambda = ::num => { ret num * 5; };
+assert(lambda.call(5) == 25, 'lambda should multiply the parameter by 5');
+
+var multiLambda = ::x, y => { ret x - y};
+
+assert(multiLambda.call(7,4) == 3, 'multiparameter lambda should assign parameters in the correct order');

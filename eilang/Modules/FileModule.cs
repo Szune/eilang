@@ -19,6 +19,14 @@ namespace eilang.Modules
                 (cName, nName) => File.Move(cName, nName));
         }
         
+        [ExportFunction("copy")]
+        public static IValue CopyFile(State state, IValue args)
+        {
+            // TODO: implement with optional overwrite argument
+            throw new NotImplementedException();
+            return state.ValueFactory.Void();
+        }
+        
         [ExportFunction("make")]
         public static IValue MakeFile(State state, IValue args)
         {
@@ -39,6 +47,49 @@ Console.WriteLine(ex.ToString());
             }
         }
         
+        [ExportFunction("delete")]
+        public static IValue DeleteFile(State state, IValue args)
+        {
+            // TODO: turn RequireListAtLeast to fluent-style classes/methods
+            var argList = args
+                .RequireListAtLeast(2,
+                    "delete takes 2 arguments: string path, string patternOrName, [bool recurse = false]")
+                .Item;
+            argList.OrderAsArguments();
+            
+            var dir = argList[0]
+                .Require(EilangType.String, "directory has to be a string")
+                .To<string>();
+            
+            var pattern = argList[1]
+                .Require(EilangType.String, "pattern has to be a string")
+                .To<string>();
+            
+            // ReSharper disable once SimplifyConditionalTernaryExpression -> intention is clearer this way
+            var recurse = argList.Count > 2
+                ? argList[2]
+                    .Require(EilangType.Bool, "recurse has to be a bool")
+                    .To<bool>()
+                : false;
+
+            try
+            {
+                var files = new DirectoryInfo(dir).GetFiles(pattern,
+                    recurse
+                        ? SearchOption.AllDirectories
+                        : SearchOption.TopDirectoryOnly);
+
+                foreach (var file in files)
+                {
+                    file.Delete();
+                }
+                return state.ValueFactory.Bool(true);
+            }
+            catch
+            {
+                return state.ValueFactory.Bool(false);
+            }
+        }
         
         [ExportFunction("open")]
         public static IValue OpenFile(State state, IValue args)

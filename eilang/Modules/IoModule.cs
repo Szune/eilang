@@ -16,9 +16,7 @@ namespace eilang.Modules
         {
             const string moveError = " takes 2 arguments: string currentName, string newName";
             var argList = args
-                .Require(EilangType.List, func + moveError)
-                .As<ListValue>()
-                .RequireCount(2, func + moveError)
+                .RequireList(2, func + moveError)
                 .Item;
             argList.OrderAsArguments();
             
@@ -107,5 +105,6 @@ Console.WriteLine(ex.ToString());
             var files = dir.GetFiles().Select(d => factory.String(d.Name)).ToList();
             return factory.List(files);
         }
+
     }
 }

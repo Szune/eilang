@@ -207,6 +207,8 @@ namespace eilang.Tokens
                     return " " + TokenValues.While + " ";
                 case TokenType.Arrow:
                     return TokenValues.Arrow;
+                case TokenType.LambdaArrow:
+                    return TokenValues.LambdaArrow;
                 case TokenType.Pipe:
                     c = '|';
                     break;

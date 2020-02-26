@@ -28,6 +28,8 @@ namespace eilang.Compiling
         protected readonly IDictionary<int, Stack<(int Index, int Type)>> LoopControlFlowOps =
             new Dictionary<int, Stack<(int Index, int Type)>>();
 
+        private int _anonymousFunctionsCounter;
+
         protected const int Break = 0xBAD;
         protected const int Continue = 0xCAB;
         public const int InLoopReturn = 0xCAF0;
@@ -278,6 +280,48 @@ namespace eilang.Compiling
         {
             var fullName = Types.GetFullName(astStructInit.StructName);
             function.Write(OpFactory.InitializeStruct(fullName));
+        }
+
+        public static string GetAnonymousFunctionName(int number) => $".anon<>func`{number}";
+        
+        public void Visit(AstLambda astLambda, Function function, Module mod)
+        {
+            _anonymousFunctionsCounter++;
+            var func = new Function(GetAnonymousFunctionName(_anonymousFunctionsCounter), SpecialVariables.Global, astLambda.Arguments);
+            for (int i = func.Arguments.Count - 1; i > -1; i--)
+            {
+                func.Write(OpFactory.Define(astLambda.Arguments[i]), new Metadata {Ast = astLambda});
+            }
+            astLambda.Code.Accept(this, func, mod);
+            SetupImplicitReturn(func, astLambda);
+            
+            ScriptEnvironment.Functions.Add(func.FullName, func);
+            function.Write(OpFactory.Push(ValueFactory.FunctionPointer(func.FullName)),
+                new Metadata {Ast = astLambda});
+        }
+
+        public void Visit(AstParameterlessLambda astLambda, Function function, Module mod)
+        {
+            _anonymousFunctionsCounter++;
+            // TODO optimization for later: use Enumerable.Empty or an argument count of 0
+            var func = new Function(GetAnonymousFunctionName(_anonymousFunctionsCounter), SpecialVariables.Global, new List<string>());
+            astLambda.Code.Accept(this, func, mod);
+            SetupImplicitReturn(func, astLambda);
+            ScriptEnvironment.Functions.Add(func.FullName, func);
+            function.Write(OpFactory.Push(ValueFactory.FunctionPointer(func.Name)),
+                new Metadata {Ast = astLambda});
+        }
+        
+        private void SetupImplicitReturn(Function func, IAst ast)
+        {
+            if (func.Length < 1)
+            {
+                func.Write(OpFactory.Return(), new Metadata {Ast = ast});
+            }
+            else if (func[^1].Op != OpFactory.Return())
+            {
+                func.Write(OpFactory.Return(), new Metadata {Ast = ast});
+            }
         }
 
         public void Visit(AstIndexerReference indexer, Function function, Module mod)
@@ -974,14 +1018,7 @@ namespace eilang.Compiling
             }
 
             func.Expressions.Accept(this, newFunc, mod);
-            if (newFunc.Length < 1)
-            {
-                newFunc.Write(OpFactory.Return(), new Metadata {Ast = func});
-            }
-            else if (newFunc[^1].Op != OpFactory.Return())
-            {
-                newFunc.Write(OpFactory.Return(), new Metadata {Ast = func});
-            }
+            SetupImplicitReturn(newFunc, func);
 
 //            if (ScriptEnvironment.Functions.ContainsKey(newFunc.FullName))
 //                throw new CompilerException(
@@ -1017,14 +1054,7 @@ namespace eilang.Compiling
             }
 
             memberFunc.Expressions.Accept(this, func, mod);
-            if (func.Length < 1)
-            {
-                func.Write(OpFactory.Return(), new Metadata {Ast = memberFunc});
-            }
-            else if (func[^1].Op.GetType().Name != OpFactory.Return().GetType().Name)
-            {
-                func.Write(OpFactory.Return(), new Metadata {Ast = memberFunc});
-            }
+            SetupImplicitReturn(func, memberFunc);
 
             ScriptEnvironment.ExtensionFunctions.Add($"{extendingFullName}->{memberFunc.Name}", func);
         }
@@ -1044,14 +1074,7 @@ namespace eilang.Compiling
             }
 
             memberFunc.Expressions.Accept(this, func, mod);
-            if (func.Length < 1)
-            {
-                func.Write(OpFactory.Return(), new Metadata {Ast = memberFunc});
-            }
-            else if (func[^1].Op.GetType().Name != OpFactory.Return().GetType().Name)
-            {
-                func.Write(OpFactory.Return(), new Metadata {Ast = memberFunc});
-            }
+            SetupImplicitReturn(func, memberFunc);
 
             clas.Functions.Add(func.Name, func);
         }

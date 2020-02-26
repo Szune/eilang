@@ -174,6 +174,11 @@ namespace eilang.Lexing
                             token = GetToken(TokenType.EqualsEquals);
                             _reader.ConsumeChar();
                         }
+                        else if (_reader.Next == '>')
+                        {
+                            token = GetToken(TokenType.LambdaArrow);
+                            _reader.ConsumeChar();
+                        }
                         else
                         {
                             token = GetToken(TokenType.Equals);

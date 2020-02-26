@@ -37,6 +37,25 @@ println('hello world');
 # global expressions are run if there is no main function ("fun main()")
 ```
 
+##### Lambdas:
+```eilang
+fun list->filter(filterFunc: fp) { # extension function on lists
+	var filteredList = [];
+	for(me) { # loop through the list the function is being used on
+		if filterFunc.call(it) {
+			filteredList.add(it);
+		}
+	}
+	ret filteredList;
+}
+
+var numbers = [0, 1, 2, 3, 4, 5, 6, 7];
+var odd = numbers.filter(::num => { ret num % 2 == 1; }); 
+println(odd);
+var lamb = :: => { println("whoa"); }; # parameterless lambda
+lamb.call(); # syntax sugar "lamb();" is on the todo list.
+```
+
 ##### File I/O:
 ###### Reading
 ```eilang

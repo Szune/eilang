@@ -31,6 +31,9 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
       <None Remove="Scripts\str_interpolation_tests.ei" />
+      <Content Include="Scripts\lambda_tests.ei">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
       <Content Include="Scripts\str_interpolation_tests.ei">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>

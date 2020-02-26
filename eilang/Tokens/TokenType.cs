@@ -73,6 +73,7 @@
         Switch,
         TypeOf,
         Long,
-        ElseIf
+        ElseIf,
+        LambdaArrow
     }
 }

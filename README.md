@@ -50,9 +50,9 @@ fun list->filter(filterFunc: fp) { # extension function on lists
 }
 
 var numbers = [0, 1, 2, 3, 4, 5, 6, 7];
-var odd = numbers.filter(::num => { ret num % 2 == 1; }); 
+var odd = numbers.filter(::num { ret num % 2 == 1; }); 
 println(odd);
-var lamb = :: => { println("whoa"); }; # parameterless lambda
+var lamb = :: { println("whoa"); }; # parameterless lambda
 lamb.call(); # syntax sugar "lamb();" is on the todo list.
 ```
 

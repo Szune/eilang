@@ -1306,10 +1306,9 @@ namespace eilang.Parsing
         {
             Consume(); // consume ::
             var pos = _lastConsumed.Position;
-            if (Match(TokenType.LambdaArrow))
+            if (Match(TokenType.LeftBrace))
             {
                 // parameterless lambda
-                Consume();
                 var block = new AstBlock(_lastConsumed.Position);
                 ParseBlock(block);
                 return new AstParameterlessLambda(block, pos);
@@ -1327,8 +1326,6 @@ namespace eilang.Parsing
                         Consume();
                     }
                 }
-
-                Require(TokenType.LambdaArrow);
 
                 var block = new AstBlock(_lastConsumed.Position);
                 ParseBlock(block);

@@ -63,10 +63,10 @@ fun fizz_buzz_lambda(num: int, lambdas: list) {
 
 
 var lambdas = [
-	::num => { if num % 5 == 0 && num % 3 == 0 { println("FizzBuzz"); ret true; } ret false; },
-	::num => { if num % 3 == 0 { println("Fizz"); ret true; } ret false; },
-	::num => { if num % 5 == 0 { println("Buzz"); ret true; } ret false; },
-	::num => { println(num); ret true; },
+	::num { if num % 5 == 0 && num % 3 == 0 { println("FizzBuzz"); ret true; } ret false; },
+	::num { if num % 3 == 0 { println("Fizz"); ret true; } ret false; },
+	::num { if num % 5 == 0 { println("Buzz"); ret true; } ret false; },
+	::num { println(num); ret true; },
 	];
 
 for (1..101) {

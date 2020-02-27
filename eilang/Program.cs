@@ -111,6 +111,7 @@ namespace eilang
         // TODO: implement ?? operator, altering the ? operator to check for null instead
         // --------not sure end--------
         
+            // TODO: change syntax of lambda to :: { } (parameterless) and ::val {  }
             // TODO: add syntax sugar for calling a fp with functionPointer(arg) instead of functionPointer.call(arg)
             // TODO: to add to /\ make it work with 'it' in for loops, and 'me' in extension functions?
             // TODO: -119. implement native interop with strings as struct fields

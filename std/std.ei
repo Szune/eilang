@@ -1,0 +1,11 @@
+modu std {
+	typ maybe {
+		ctor(value: any) {
+			me.has_value = true;
+		}
+		ctor() {
+			me.value = ();
+			me.has_value = false;
+		}
+	}
+}

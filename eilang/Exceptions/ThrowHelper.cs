@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using eilang.Compiling;
 using eilang.Interfaces;
 using eilang.Parsing;
@@ -49,6 +50,12 @@ namespace eilang.Exceptions
         {
             return new InvalidArgumentCountException(
                 $"Function {GetFunctionSignature(func)} expected {func.Arguments.Count} arguments, but received {argumentCount}.");
+        }
+        
+        public static InvalidArgumentCountException ZeroArgumentsExpected(string func)
+        {
+            return new InvalidArgumentCountException(
+                $"Function {func}() expected 0 arguments.");
         }
 
         public static InvalidArgumentTypeException InvalidArgumentType(Function function, string parameterName, IValue value,
@@ -103,6 +110,16 @@ namespace eilang.Exceptions
         {
             return new ListIndexOutOfRangeException(
                 $"Index out of range: {arrayName}[{index}],\nitems in list ({list.Count} total): {{{string.Join("}, {", list)}}}");
+        }
+
+        public static ArgumentMismatchException ArgumentMismatch(string signature)
+        {
+            return new ArgumentMismatchException(signature);
+        }
+
+        public static ArgumentValidationFailedException ArgumentValidationFailed(string name, EilangType type, EilangType actual, string function)
+        {
+            throw new ArgumentValidationFailedException($"In function {function}: argument {type.ToString().ToLower()} {name} received value of type {actual}");
         }
     }
 }

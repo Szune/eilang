@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using eilang.ArgumentBuilders;
 using eilang.Classes;
 using eilang.Exceptions;
 using eilang.Exporting;
@@ -20,24 +21,24 @@ namespace eilang
                 LazyThreadSafetyMode.ExecutionAndPublication);
 
         [ExportFunction("exit")]
-        public static IValue Exit(State state, IValue args)
+        public static IValue Exit(State state, Arguments args)
         {
-            switch (args.Type)
+            var value = args.EilangValue();
+            switch (value.Type)
             {
                 case EilangType.String:
-                    throw new ExitException(args.To<string>());
+                    throw new ExitException(value.To<string>());
                 case EilangType.Integer:
-                    throw new ExitException(args.To<int>());
+                    throw new ExitException(value.To<int>());
                 default:
                     throw new ExitException();
             }
         }
 
         [ExportFunction("type")]
-        public static IValue Type(State state, IValue args)
+        public static IValue Type(State state, Arguments arg)
         {
-            var type = args.RequireAnyOf(EilangType.Instance | EilangType.Map | EilangType.List | EilangType.String,
-                $"type takes 1 argument: instance | map | list | string value, received {args.Type}");
+            var type = arg.EilangValue(EilangType.Instance | EilangType.Map | EilangType.List | EilangType.String, "value");
             var typeClass = GetClass(type);
             var typeScope = GetScope(type);
             // .As<InstanceValue>();
@@ -82,27 +83,29 @@ namespace eilang
         }
 
         [ExportFunction("input")]
-        public static IValue Input(State state, IValue code)
+        public static IValue Input(State state, Arguments args)
         {
+            args.Void();
             return state.ValueFactory.String(Console.ReadLine() ?? "");
         }
 
         [ExportFunction("eval")]
-        public static IValue Eval(State state, IValue code)
+        public static IValue Eval(State state, Arguments arg)
         {
-            return Eilang.Eval(code.To<string>());
+            return Eilang.Eval(arg.Single<string>(EilangType.String, "text"));
         }
 
         [ExportFunction("sleep")]
-        public static IValue Sleep(State state, IValue milliseconds)
+        public static IValue Sleep(State state, Arguments args)
         {
-            System.Threading.Thread.Sleep(milliseconds.To<int>());
+            Thread.Sleep(args.Single<int>(EilangType.Integer, "milliseconds"));
             return state.ValueFactory.Void();
         }
 
         [ExportFunction("assert")]
-        public static IValue Assert(State state, IValue args)
+        public static IValue Assert(State state, Arguments arg)
         {
+            var args = arg.EilangValue(EilangType.List | EilangType.String, "message");
             if (args.Type == EilangType.List)
             {
                 var list = args.As<ListValue>().Item;
@@ -119,18 +122,18 @@ namespace eilang
         }
 
         [ExportFunction("println")]
-        public static IValue PrintLine(State state, IValue value)
+        public static IValue PrintLine(State state, Arguments args)
         {
-            var printValue = GetPrintValue(value);
+            var printValue = GetPrintValue(args.EilangValue());
             Console.WriteLine(printValue);
 
             return state.ValueFactory.Void();
         }
         
         [ExportFunction("print")]
-        public static IValue Print(State state, IValue value)
+        public static IValue Print(State state, Arguments args)
         {
-            var printValue = GetPrintValue(value);
+            var printValue = GetPrintValue(args.EilangValue());
             Console.Write(printValue);
 
             return state.ValueFactory.Void();

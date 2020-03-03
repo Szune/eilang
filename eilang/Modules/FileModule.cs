@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using eilang.ArgumentBuilders;
 using eilang.Exporting;
 using eilang.Extensions;
 using eilang.Interfaces;
@@ -13,26 +14,25 @@ namespace eilang.Modules
     {
         [ExportFunction("rename")]
         [ExportFunction("move")]
-        public static IValue RenameFile(State state, IValue args)
+        public static IValue RenameFile(State state, Arguments args)
         {
             return IoModule.Move("file::move", state, args, 
-                (cName, nName) => File.Move(cName, nName));
+                File.Move);
         }
         
         [ExportFunction("copy")]
-        public static IValue CopyFile(State state, IValue args)
+        public static IValue CopyFile(State state, Arguments args)
         {
+            
             // TODO: implement with optional overwrite argument
             throw new NotImplementedException();
             return state.ValueFactory.Void();
         }
         
         [ExportFunction("make")]
-        public static IValue MakeFile(State state, IValue args)
+        public static IValue MakeFile(State state, Arguments args)
         {
-            var name = args
-                .Require(EilangType.String, "mkfile takes 1 argument: string fileName")
-                .To<string>();
+            var name = args.Single<string>(EilangType.String, "fileName");
             try
             {
                 File.Create(name).Dispose(); // dispose the returned FileStream
@@ -48,33 +48,20 @@ Console.WriteLine(ex.ToString());
         }
         
         [ExportFunction("delete")]
-        public static IValue DeleteFile(State state, IValue args)
+        public static IValue DeleteFile(State state, Arguments args)
         {
-            // TODO: turn RequireListAtLeast to fluent-style classes/methods
-            var argList = args
-                .RequireListAtLeast(2,
-                    "delete takes 2 arguments: string path, string patternOrName, [bool recurse = false]")
-                .Item;
-            argList.OrderAsArguments();
-            
-            var dir = argList[0]
-                .Require(EilangType.String, "directory has to be a string")
-                .To<string>();
-            
-            var pattern = argList[1]
-                .Require(EilangType.String, "pattern has to be a string")
-                .To<string>();
-            
-            // ReSharper disable once SimplifyConditionalTernaryExpression -> intention is clearer this way
-            var recurse = argList.Count > 2
-                ? argList[2]
-                    .Require(EilangType.Bool, "recurse has to be a bool")
-                    .To<bool>()
-                : false;
+            var argList = args.List().With
+                .Argument(EilangType.String, "path")
+                .Argument(EilangType.String, "patternOrName")
+                .OptionalArgument(EilangType.Bool, "recurse", false)
+                .Build();
+            var path = argList.Get<string>(0);
+            var patternOrName = argList.Get<string>(1);
+            var recurse = argList.Get<bool>(2);
 
             try
             {
-                var files = new DirectoryInfo(dir).GetFiles(pattern,
+                var files = new DirectoryInfo(path).GetFiles(patternOrName,
                     recurse
                         ? SearchOption.AllDirectories
                         : SearchOption.TopDirectoryOnly);
@@ -92,40 +79,34 @@ Console.WriteLine(ex.ToString());
         }
         
         [ExportFunction("open")]
-        public static IValue OpenFile(State state, IValue args)
+        public static IValue OpenFile(State state, Arguments arg)
         {
-            if (args.Type == EilangType.List)
+            if (arg.Type == EilangType.List)
             {
-                var list = args.As<ListValue>()
-                    .RequireCount(2, "open_file takes 1 or 2 arguments: string fileName, [bool append]")
-                    .Item;
-                list.OrderAsArguments();
-                return OpenFileInner(state, list[0], list[1]);
+                var list = arg.List().With
+                    .Argument(EilangType.String, "fileName")
+                    .OptionalArgument(EilangType.Bool, "append", false)
+                    .Build();
+                return OpenFileInner(state, list.Get<string>(0), list.Get<bool>(1));
             }
 
-            return OpenFileInner(state, args);
+            var fileName = arg.Single<string>(EilangType.String, "fileName");
+            return OpenFileInner(state, fileName, false);
         }
 
-        private static IValue OpenFileInner(State state, IValue fileName, IValue append = null)
+        private static IValue OpenFileInner(State state, string fileName, bool append)
         {
-            var name = fileName
-                .Require(EilangType.String, "open_file requires that parameter 'fileName' is a string.")
-                .To<string>();
-            var shouldAppend = append?
-                .Require(EilangType.Bool, "open_file requires that parameter 'append' is a bool.")
-                .To<bool>() ?? false;
-
             // TODO: add encoding options
             FileStream fileStream;
             TextReader reader;
-            if (shouldAppend)
+            if (append)
             {
-                fileStream = new FileStream(name, FileMode.Append, FileAccess.Write, FileShare.None);
+                fileStream = new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.None);
                 reader = new StringReader("Cannot read from file that was opened with 'append' set to true.");
             }
             else
             {
-                fileStream = new FileStream(name, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                fileStream = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
                 reader = new StreamReader(fileStream);
             }
             

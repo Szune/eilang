@@ -1,0 +1,192 @@
+# probably the worst json implementation in the world
+modu json {
+	fun serialize(m: map) {
+		exit("not implemented yet");
+		var json = "";
+		ret json;
+	}
+	
+	fun deserialize(json: string) {
+		ret *json::JsonDeserializer(json).deserialize();
+	}
+
+	typ JsonDeserializer {
+		ctor(json: string) {
+			me.pos = 0;
+			me.buffer = [' ', ' '];
+			me.eof = false;
+			me.len = json.len();
+			me.consume();
+			me.consume();
+			me.m = {};
+		}
+
+		fun deserialize() {
+			while !me.eof {
+				me.skip_ws();
+				if me.buffer[0] == '{' {
+					me.deserialize_root_object();
+				}
+				# TODO: allow deserializing standalone json arrays, maps, properties also
+			}
+
+			ret me.m;
+		}
+
+		fun skip_ws() {
+			var f = me.buffer[0];
+			while (!me.eof &&
+					(f == ' ' || 
+					f == '\t' || 
+					f == '\r' || 
+					f == '\n')) {
+				f = me.consume_and_ret();
+			}
+		}
+
+		fun deserialize_root_object() {
+			me.require('{');
+			while !me.eof {
+				me.skip_ws();
+				if me.buffer[0] == '}' {
+					break;
+				} elif me.buffer[0] == ',' {
+					me.consume();
+				}
+				var prop = me.deserialize_property();
+				me.m[prop.key] = prop.value;
+			}
+			me.skip_ws();
+			me.require('}');
+		}
+
+		fun deserialize_object() {
+			var obj = {};
+			me.require('{');
+			while !me.eof && me.buffer[0] != '}' {
+				me.skip_ws();
+				if me.buffer[0] == ',' {
+					me.consume();
+				}
+				var prop = me.deserialize_property();
+				obj[prop.key] = prop.value;
+			}
+			me.skip_ws();
+			me.require('}');
+			ret obj;
+		}
+
+		fun deserialize_property() {
+			var name = me.deserialize_string();
+			me.skip_ws();
+			me.require(":");
+			me.skip_ws();
+			var propValue = me.deserialize_property_value();
+			ret *{key = name, value = propValue};
+		}
+
+		fun deserialize_property_value() {
+			var f = me.buffer[0];
+			if f == '"' {
+				ret me.deserialize_string();
+			} elif f == '{' {
+				ret me.deserialize_object();
+			} elif f == '[' {
+				ret me.deserialize_array();
+			} elif me.is_number(f, me.buffer[1]) {
+				ret me.deserialize_number();
+			} else {
+				exit("Unknown json value starting with '" + f + "'");
+			}
+		}
+
+		fun deserialize_array() {
+			var l = [];
+			me.require('[');
+			while !me.eof && me.buffer[0] != ']' {
+				me.skip_ws();
+				if me.buffer[0] == ',' {
+					me.consume();
+					me.skip_ws();
+				}
+				var value = me.deserialize_property_value();
+				l.add(value);
+			}
+			me.skip_ws();
+			me.require(']');
+			ret l;
+		}
+
+		fun deserialize_number() {
+			var sb = me.consume_and_ret(); # if this was a -, the rest can be assumed to be positive
+			var hasDeciPoint = false;
+			while me.is_positive_number(me.buffer[0]) || me.buffer[0] == '.' {
+				if me.buffer[0] == '.' {
+					if hasDeciPoint {
+						exit("Error: Two decimal points in number");
+					} else {
+						hasDeciPoint = true;
+					}
+				}
+				sb += me.consume_and_ret();
+			}
+
+			if hasDeciPoint {
+				ret sb.replace(".", ",").double();
+			} else {
+				ret sb.int();
+			}
+		}
+
+		fun deserialize_string() {
+			var sb = "";
+			me.require('"');
+			while me.buffer[0] != '"' {
+				sb += me.consume_and_ret();
+			}
+			me.require('"');
+			ret sb;
+		}
+
+		fun is_number(num: string, next: string) {
+			ret (num >= '0' && num <= '9') || (num == '-' && me.is_positive_number(next));
+		}
+
+		fun is_positive_number(num: string) {
+			ret num >= '0' && num <= '9';
+		}
+
+		fun consume() {
+			me.buffer[0] = me.buffer[1];
+
+			if me.pos < me.len {
+				me.buffer[1] = me.json[me.pos];
+			}
+			if me.pos >= me.len {
+				me.eof = true;
+			}
+			me.pos++;
+		}
+
+		fun consume_and_ret() {
+			var consumed = me.buffer[0];
+			me.buffer[0] = me.buffer[1];
+
+			if me.pos < me.len {
+				me.buffer[1] = me.json[me.pos];
+			}
+			if me.pos >= me.len {
+				me.eof = true;
+			}
+			me.pos++;
+			ret consumed;
+		}
+
+		fun require(token: string) {
+			var consumed = me.consume_and_ret();
+			if consumed != token {
+				exit($"Required '{token}' but found '{consumed}'");
+			}
+		}
+	}
+}

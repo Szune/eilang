@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using eilang.ArgumentBuilders;
 using eilang.Exporting;
 using eilang.Extensions;
 using eilang.Helpers;
@@ -45,31 +46,29 @@ namespace eilang.Modules
         }
 
         [ExportFunction("get_args")]
-        public static IValue GetArguments(State state, IValue args)
+        public static IValue GetArguments(State state, Arguments args)
         {
             return state.ValueFactory.List(Args.Value.Select(state.ValueFactory.String).ToList());
         }
 
         [ExportFunction("get_bin_dir")]
-        public static IValue GetEilangBinaryDirectory(State state, IValue args)
+        public static IValue GetEilangBinaryDirectory(State state, Arguments args)
         {
             var exeDirectory = PathHelper.GetEilangBinaryDirectory();
             return state.ValueFactory.String(exeDirectory);
         }
 
         [ExportFunction("get_current_dir")]
-        public static IValue GetWorkingDirectory(State state, IValue args)
+        public static IValue GetWorkingDirectory(State state, Arguments args)
         {
             var currentDirectory = PathHelper.GetWorkingDirectory();
             return state.ValueFactory.String(currentDirectory);
         }
         
         [ExportFunction("set_current_dir")]
-        public static IValue SetWorkingDirectory(State state, IValue args)
+        public static IValue SetWorkingDirectory(State state, Arguments args)
         {
-            var dir = args
-                .Require(EilangType.String, "set_current_dir takes 1 argument: string directory")
-                .To<string>();
+            var dir = args.Single<string>(EilangType.String, "directory");
             PathHelper.SetWorkingDirectory(dir);
             return state.ValueFactory.Void();
         }

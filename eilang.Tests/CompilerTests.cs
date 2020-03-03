@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using eilang.Ast;
-using eilang.Classes;
 using eilang.Compiling;
 using eilang.OperationCodes;
 using eilang.Parsing;

@@ -1,28 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <AssemblyName>ei</AssemblyName>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <PublishSingleFile>true</PublishSingleFile>
-    <Authors>Erik Iwarson</Authors>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="test.ei" />
-    <Content Include="test.ei">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="str.ei" />
-    <Content Include="str.ei">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="std.ei" />
-    <None Remove="cmd.ei" />
-    <Content Include="cmd.ei">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+    <PropertyGroup>
+        <AssemblyName>ei</AssemblyName>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <PublishSingleFile>true</PublishSingleFile>
+        <Authors>Erik Iwarson</Authors>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <AssemblyTitle>eilang</AssemblyTitle>
+        <AssemblyVersion>0.2</AssemblyVersion>
+    </PropertyGroup>
+    
+    <ItemGroup>
+<!--        <Content Include="..\scripts\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />-->
+<!--        <Content Include="..\std\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />-->
+    </ItemGroup>
 </Project>

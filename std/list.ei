@@ -1,0 +1,17 @@
+fun list->filter(filtering: fp) {
+	var l = [];
+	for(me) {
+		if filtering.call(it) {
+			l.add(it);
+		}
+	}
+	ret l;
+}
+
+fun list->map(mapping: fp) {
+	var l = [];
+	for(me) {
+		l.add(mapping.call(it));
+	}
+	ret l;
+}

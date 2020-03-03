@@ -1,4 +1,6 @@
-﻿modu cmd {
+﻿import str;
+
+modu cmd {
     typ parsed_args {
         ctor(args);
         
@@ -21,7 +23,7 @@
                     ret it.value;
                 }
             }
-            ret *cmd::arg("","");
+            ret "";
         }
     }
 
@@ -53,25 +55,25 @@
                     var arg_val = [];
                     for {
                         cursor++;
-                        if (cursor > len - 1) {
+                        if cursor > len - 1 {
                             break;
-                        } else if (arg_list[cursor][0] == '-') {
+                        } elif arg_list[cursor][0] == '-' {
                             cursor--;
                             break;
                         }
                         arg_val.add(arg_list[cursor]);
                     }
                     var add_val = "";
-                    if(arg_val.len() > 0) {
+                    if arg_val.len() > 0 {
                         add_val = str::join(" ", arg_val);
                     }
                     all.add(*cmd::arg(arg_name, add_val));
                 } else {
                     var arg_val = [];
                     for {
-                        if (cursor > len - 1) {
+                        if cursor > len - 1 {
                             break;
-                        } else if (arg_list[cursor][0] == '-') {
+                        } elif arg_list[cursor][0] == '-' {
                             cursor--;
                             break;
                         }

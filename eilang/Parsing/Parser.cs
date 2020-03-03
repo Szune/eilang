@@ -285,7 +285,7 @@ namespace eilang.Parsing
             ast.Functions.Add(fun);
         }
 
-        private void ParseExtensionFunction(IHaveFunction ast) // TODO: stop doing this (IHaveFunction ast) and return the function instead 
+        private void ParseExtensionFunction(IHaveFunction ast) // TODO: stop doing this (IHaveFunction ast) and return the function AST instead 
         {
             var pos = _lastConsumed.Position;
             // the type we're extending

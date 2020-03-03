@@ -1,0 +1,40 @@
+import str;
+
+modu path {
+    fun with_ext(str_path: string, ext: string) {
+        if(!str_path.ends_with(ext)) {
+            ret str_path + ext;
+        } else {
+            ret str_path;
+        }
+    }
+
+    fun combine(a: string, b: string) {
+    	var newA = str::trim_end_opt(a, "\\");
+    	newA = str::trim_end_opt(newA, "/");
+    	var newB = str::trim_start_opt(b, "\\");
+    	newB = str::trim_start_opt(newB, "/");
+    	ret a + "\\" + b;
+    }
+
+    fun get_dir_split_char(str_path: string) {
+    	if(str_path.contains("\\")) {
+    		ret '\\';
+    	} else {
+    		ret '/';
+    	}
+    }
+
+    fun get_dir(str_path: string) {
+    	var splitChar = path::get_dir_split_char(str_path);
+    	if(!str_path.contains("\\") && !str_path.contains("/")) {
+    		ret str_path;
+    	}
+
+    	var index = 0; # refactor this part to str::last_index_of()
+    	while (str_path.index_of(splitChar, index + 1) > -1) {
+    		index = str_path.index_of(splitChar, index + 1);
+    	}
+    	ret str_path.view(0, index);
+    }
+}

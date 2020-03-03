@@ -1,5 +1,5 @@
-﻿using eilang.Exporting;
-using eilang.Extensions;
+﻿using eilang.ArgumentBuilders;
+using eilang.Exporting;
 using eilang.Helpers;
 using eilang.Interfaces;
 using eilang.Interpreting;
@@ -11,43 +11,28 @@ namespace eilang.Modules
     public static class HttpModule
     {
         [ExportFunction("get")]
-        public static IValue Get(State state, IValue args)
+        public static IValue Get(State state, Arguments args)
         {
-            const string expectedArguments = "get takes 2 arguments: string url, string headers";
-            var argList = args
-                .Require(EilangType.List, expectedArguments)
-                .As<ListValue>()
-                .RequireCount(2, expectedArguments)
-                .Item;
-            argList.OrderAsArguments();
-            var url = argList[0]
-                .Require(EilangType.String, "get requires that parameter 'url' is a string.")
-                .To<string>();
-            var headers = argList[1]
-                .Require(EilangType.String, "get requires that parameter 'headers' is a string.")
-                .To<string>();
+            var argList = args.List().With
+                .Argument(EilangType.String, "url")
+                .OptionalArgument(EilangType.String, "headers", "")
+                .Build();
+            var url = argList.Get<string>(0);
+            var headers = argList.Get<string>(1);
             return HttpHelper.Get(state, url, headers);
         }
         
         [ExportFunction("post")]
-        public static IValue Post(State state, IValue args)
+        public static IValue Post(State state, Arguments args)
         {
-            const string expectedArguments = "post takes 3 arguments: string url, string headers, string content";
-            var argList = args
-                .Require(EilangType.List, expectedArguments)
-                .As<ListValue>()
-                .RequireCount(3, expectedArguments)
-                .Item;
-            argList.OrderAsArguments();
-            var url = argList[0]
-                .Require(EilangType.String, "post requires that parameter 'url' is a string.")
-                .To<string>();
-            var headers = argList[1]
-                .Require(EilangType.String, "post requires that parameter 'headers' is a string.")
-                .To<string>();
-            var content = argList[2]
-                .Require(EilangType.String, "post requires that parameter 'content' is a string.")
-                .To<string>();
+            var argList = args.List().With
+                .Argument(EilangType.String, "url")
+                .Argument(EilangType.String, "headers")
+                .Argument(EilangType.String, "content")
+                .Build();
+            var url = argList.Get<string>(0);
+            var headers = argList.Get<string>(1);
+            var content = argList.Get<string>(2);
             return HttpHelper.Post(state, url, headers, content);
         }
     }

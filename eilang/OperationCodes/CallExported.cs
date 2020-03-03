@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using eilang.ArgumentBuilders;
+using eilang.Extensions;
 using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Values;
@@ -13,19 +15,23 @@ namespace eilang.OperationCodes
         {
             _functionName = functionName;
         }
-        
+
         public void Execute(State state)
         {
             var argLength = state.Stack.Pop().Get<int>();
+            var function = _functionName.As<StringValue>().Item;
             if (argLength == 0)
             {
-                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state, state.ValueFactory.Void());
+                var result =
+                    state.Environment.ExportedFunctions[function](state,
+                        Arguments.Create(state.ValueFactory.Void(), function));
                 state.PushIfNonVoidValue(result);
             }
             else if (argLength == 1)
             {
                 var val = state.Stack.Pop();
-                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state, val);
+                var result = state.Environment.ExportedFunctions[function](state,
+                    Arguments.Create(val, function));
                 state.PushIfNonVoidValue(result);
             }
             else
@@ -37,7 +43,8 @@ namespace eilang.OperationCodes
                 }
 
                 var list = state.ValueFactory.List(values);
-                var result = state.Environment.ExportedFunctions[_functionName.As<StringValue>().Item](state, list);
+                var result = state.Environment.ExportedFunctions[function](state, 
+                    Arguments.Create(list, function));
                 state.PushIfNonVoidValue(result);
             }
         }

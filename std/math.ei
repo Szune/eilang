@@ -1,0 +1,18 @@
+modu math {
+	fun pow(num: int | double, times: int | double) {
+		if (times == 0) {
+			ret 1;
+		}
+		var initial = num;
+		var t = times;
+		if(times < 0) {
+			initial = 1.0 / num;
+			t = -times;
+		}
+		var res = initial;
+		for(0..t - 1) {
+			res *= initial;
+		}
+		ret res;
+	}
+}

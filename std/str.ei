@@ -1,0 +1,127 @@
+﻿# extension methods
+fun string->get() {
+    ret me.view(0, me.len());
+}
+
+fun string->contains(find: string) { # extends string class with contains() function
+    ret me.index_of(find, 0) > -1;
+}
+
+fun string->ends_with(find: string) {
+    var len_str = me.len();
+    var len_find = find.len();
+    if len_find > len_str {
+        ret false;
+    }
+    
+    var c = 0;
+    for(len_str - len_find..len_str) {
+        if me[ix] != find[c] {
+            ret false;
+        }
+        c++;
+    }
+    ret true;
+}
+
+fun string->starts_with(find: string) {
+    var len_str = me.len();
+    var len_find = find.len();
+    if len_find > len_str {
+        ret false;
+    }
+    
+    var c = 0;
+    for(0..len_find) {
+        if me[ix] != find[c] {
+            ret false;
+        }
+        c++;
+    }
+    ret true;
+}
+
+fun string->trim_start() {
+    var new = "";
+    var foundStart = false;
+    for (me) {
+        if !foundStart {
+            if it == ' ' {
+                continue;
+            } elif it != ' ' {
+                foundStart = true;
+            }
+        }
+        new += it;
+    }
+    ret new;
+}
+
+fun string->trim_end() {
+    var new = "";
+    var lastIndex = -1;
+    var len = me.len();
+    for ~(len..0) {
+        if me[ix] == ' ' {
+            continue;
+        } elif me[ix] != ' ' {
+            lastIndex = ix + 1;
+            break;
+        }
+    }
+    if lastIndex == -1 {
+        ret me.get();
+    } else {
+        ret me.view(0, lastIndex);
+    }
+}
+
+fun string->trim() {
+    ret me.trim_end().trim_start();
+}
+
+# static methods
+modu str {
+   fun join(joiner: string, strings: list) {
+        var finalStr = strings[0];
+        for (strings.skip(1)) {
+            finalStr += joiner + it;
+        }
+        ret finalStr;
+    }
+
+    fun trim_start_opt(str, char) {
+        var new = "";
+        var foundStart = false;
+        for (str) {
+            if !foundStart {
+                if it == char {
+                    continue;
+                } elif it != char {
+                    foundStart = true;
+                }
+            }
+            new += it;
+        }
+        ret new;
+    }
+    
+    fun trim_end_opt(str, char) {
+        var new = "";
+        var lastIndex = -1;
+        var len = str.len();
+        for ~(len..0) {
+            if str[ix] == char {
+                continue;
+            } elif str[ix] != char {
+                lastIndex = ix + 1;
+                break;
+            }
+        }
+        if lastIndex == -1 {
+            ret str;
+        } else {
+            ret str.view(0, lastIndex);
+        }
+    }
+}

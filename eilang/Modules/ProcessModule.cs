@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using eilang.ArgumentBuilders;
 using eilang.Exporting;
-using eilang.Extensions;
 using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Values;
@@ -14,47 +14,41 @@ namespace eilang.Modules
     public class ProcessModule
     {
         [ExportFunction("start")]
-        public static IValue StartProcess(State state, IValue args)
+        public static IValue StartProcess(State state, Arguments arg)
         {
-            if (args.Type == EilangType.List)
+            if (arg.Type == EilangType.List)
             {
-                var list = args
-                    .As<ListValue>()
-                    .RequireCount(2, "start takes 1 or 2 arguments: string processName, [string args]")
-                    .Item;
-                list.OrderAsArguments();
+                var list = arg.List().With
+                    .Argument(EilangType.String, "processName")
+                    .OptionalArgument(EilangType.String, "args", "")
+                    .Build();
 
-                return StartInner(state, list[0], list[1]);
+                return StartInner(state, list.Get<string>(0), list.Get<string>(1));
             }
 
-            return StartInner(state, args);
+            var str = arg.Single<string>(EilangType.String, "processName");
+
+            return StartInner(state, str, "");
         }
 
-        private static IValue StartInner(State state, IValue processName, IValue args = null)
+        private static IValue StartInner(State state, string processName, string args)
         {
-            var fileName = processName
-                .Require(EilangType.String, "start requires that parameter 'processName' is a string.")
-                .To<string>();
-
-            if (args == null)
+            if (string.IsNullOrWhiteSpace(args))
             {
-                Process.Start(fileName);
+                Process.Start(processName);
             }
             else
             {
-                var argsString = args
-                    .Require(EilangType.String, "start requires that parameter 'args' is a string.")
-                    .To<string>();
-                Process.Start(fileName, argsString);
+                Process.Start(processName, args);
             }
 
             return state.ValueFactory.Void();
         }
 
         [ExportFunction("kill")]
-        public static IValue KillProcess(State state, IValue args)
+        public static IValue KillProcess(State state, Arguments args)
         {
-            var name = args.GetStringArgument("kill takes 1 argument: string processName");
+            var name = args.Single<string>(EilangType.String, "processName");
             var processes = Process.GetProcessesByName(name);
             foreach (var proc in processes)
             {
@@ -65,9 +59,9 @@ namespace eilang.Modules
         }
 
         [ExportFunction("kill_wait")]
-        public static IValue KillProcessAndWaitForExit(State state, IValue args)
+        public static IValue KillProcessAndWaitForExit(State state, Arguments args)
         {
-            var name = args.GetStringArgument("kill_wait takes 1 argument: string processName");
+            var name = args.Single<string>(EilangType.String, "processName");
             var processes = Process.GetProcessesByName(name);
             foreach (var proc in processes)
             {
@@ -79,9 +73,9 @@ namespace eilang.Modules
         }
 
         [ExportFunction("get")]
-        public static IValue GetProcesses(State state, IValue args)
+        public static IValue GetProcesses(State state, Arguments args)
         {
-            var name = args.GetStringArgument("get takes 1 argument: string processName");
+            var name = args.Single<string>(EilangType.String, "processName");
             var processes = Process.GetProcessesByName(name);
             var fac = state.ValueFactory; // needs to be captured for the lambda
             return fac.List(

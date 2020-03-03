@@ -1,0 +1,9 @@
+import std;
+
+fun map->try_get(key: string | int) {
+	if(me.contains(key)) {
+		ret *std::maybe(me[key]);
+	} else {
+		ret *std::maybe();
+	}
+}

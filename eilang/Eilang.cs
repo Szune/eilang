@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using eilang.ArgumentBuilders;
 using eilang.Compiling;
 using eilang.Exceptions;
 using eilang.Extensions;
@@ -141,7 +142,7 @@ namespace eilang
                     var eval = interpreter.Interpret(environment);
                     if (eval.Type != EilangType.Void)
                     {
-                        ExportedFunctions.PrintLine(new State(environment, null, null, null, null, new ValueFactory()), eval);
+                        ExportedFunctions.PrintLine(new State(environment, null, null, null, null, new ValueFactory()), Arguments.Create(eval, "eval"));
                     }
                 }
                 catch (ExitException e)

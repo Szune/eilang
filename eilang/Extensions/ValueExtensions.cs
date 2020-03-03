@@ -44,6 +44,7 @@ namespace eilang.Extensions
                 var value = member.GetValue(obj).ToValue(factory);
                 scope.DefineVariable(member.Name, value);
             }
+
             return factory.Instance(new Instance(scope, clas));
         }
 
@@ -51,31 +52,41 @@ namespace eilang.Extensions
         {
             return (T) To(value, typeof(T));
         }
-        
+
         public static object To(this IValue value, Type type)
         {
-            switch (type)
+            object ConvertValue()
             {
-                case var _ when type == typeof(string):
-                    return Convert.ChangeType(value.As<StringValue>().Item, type);
-                case var _ when type == typeof(IntPtr):
-                    return Convert.ChangeType(value.As<IntPtrValue>().Item, type);
-                case var _ when type == typeof(int):
-                    return Convert.ChangeType(value.As<IntegerValue>().Item, type);
-                case var _ when type == typeof(long):
-                    return Convert.ChangeType(value.As<LongValue>().Item, type);
-                case var _ when type == typeof(double):
-                    return Convert.ChangeType(value.As<DoubleValue>().Item, type);
-                case var _ when type == typeof(bool):
-                    return Convert.ChangeType(value.As<BoolValue>().Item, type);
-                case var _ when !type.IsAbstract && !type.IsPrimitive: // probably going to need more guards here
-                    var instance = value.As<InstanceValue>();
-                    var variables = instance.Item.Scope.GetAllVariables().Where(v => v.Key != SpecialVariables.Me);
-                    return ConvertToCSharpObject(type, variables);
-                default:
-                    throw new NotImplementedException();
-                // TODO: implement converting from an eilang list to C# List<T>, same with map/dictionary
+                switch (type)
+                {
+                    case var _ when type == typeof(string):
+                        return Convert.ChangeType(value.As<StringValue>()?.Item, type);
+                    case var _ when type == typeof(IntPtr):
+                        return Convert.ChangeType(value.As<IntPtrValue>()?.Item, type);
+                    case var _ when type == typeof(int):
+                        return Convert.ChangeType(value.As<IntegerValue>()?.Item, type);
+                    case var _ when type == typeof(long):
+                        return Convert.ChangeType(value.As<LongValue>()?.Item, type);
+                    case var _ when type == typeof(double):
+                        return Convert.ChangeType(value.As<DoubleValue>()?.Item, type);
+                    case var _ when type == typeof(bool):
+                        return Convert.ChangeType(value.As<BoolValue>()?.Item, type);
+                    case var _ when type == typeof(TypeValue):
+                        return value.As<TypeValue>();
+                    case var _ when !type.IsAbstract && !type.IsPrimitive: // probably going to need more guards here
+                        var instance = value.As<InstanceValue>();
+                        if (instance == null)
+                            return null;
+                        var variables = instance.Item.Scope.GetAllVariables().Where(v => v.Key != SpecialVariables.Me);
+                        return ConvertToCSharpObject(type, variables);
+                    default:
+                        throw new NotImplementedException();
+                    // TODO: implement converting from an eilang list to C# List<T>, same with map/dictionary
+                }
             }
+
+            return ConvertValue() ??
+                   throw new InvalidArgumentTypeException($"Failed to convert from {value.GetType()} to {type}");
         }
 
         private static object ConvertToCSharpObject(Type type, IEnumerable<KeyValuePair<string, IValue>> variables)
@@ -89,68 +100,5 @@ namespace eilang.Extensions
 
             return instance;
         }
-
-
-        public static IValue Require(this IValue value, EilangType type, string message)
-        {
-            if (value.Type == type) 
-                return value;
-            throw new InvalidValueException(message);
-        }
-        
-        public static T Require<T>(this IValue value, string message)
-        {
-            if (value is T ret) 
-                return ret;
-            throw new InvalidValueException(message);
-        }
-
-        public static ListValue RequireList(this IValue value, int withCount, string message)
-        {
-            if (value is ListValue ret && ret.Item.Count == withCount)
-                return ret;
-            throw new InvalidArgumentCountException(message);
-        }
-        
-        public static ListValue RequireListAtLeast(this IValue value, int withCount, string message)
-        {
-            if (value is ListValue ret && ret.Item.Count >= withCount)
-                return ret;
-            throw new InvalidArgumentCountException(message);
-        }
-        
-        public static IValue RequireAnyOf(this IValue value, EilangType typeFlags, string message)
-        {
-            if ((value.Type & typeFlags) != 0) 
-                return value;
-            throw new InvalidValueException(message);
-        }
-        
-        public static void OrderAsArguments(this List<IValue> value)
-        {
-            value.Reverse();
-        }
-        
-        public static ListValue RequireCount(this ListValue value, int count, string message)
-        {
-            if (value.Item.Count == count) 
-                return value;
-            throw new InvalidArgumentCountException(message);
-        }
-        
-        public static ListValue RequireAtLeast(this ListValue value, int count, string message)
-        {
-            if (value.Item.Count >= count) 
-                return value;
-            throw new InvalidArgumentCountException(message);
-        }
-
-        public static string GetStringArgument(this IValue value, string errorMessage)
-        {
-            return value
-                .Require(EilangType.String, errorMessage)
-                .To<string>();
-        }
-        
     }
 }

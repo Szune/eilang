@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
+using eilang.ArgumentBuilders;
 using eilang.Classes;
 using eilang.Compiling;
+using eilang.Extensions;
 using eilang.Interpreting;
 using eilang.OperationCodes;
 
 namespace eilang.Interfaces
 {
-    public delegate IValue ExportedFunction(State state, IValue args);
+    public delegate IValue ExportedFunction(State state, Arguments args);
     public interface IEnvironment
     {
         IOperationCodeFactory OperationCodeFactory { get; }

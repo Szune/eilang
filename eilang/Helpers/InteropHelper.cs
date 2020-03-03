@@ -140,7 +140,7 @@ namespace eilang.Helpers
 
         private static InteropArguments ConvertArguments(List<IValue> args)
         {
-            if (args.Count > 0) // multiple arguments
+            if (args.Count > 1) // multiple arguments
             {
                 var allocatedMemory = new List<AllocatedMemory>();
                 var argumentArray = new object[args.Count];

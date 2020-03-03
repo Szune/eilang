@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using eilang.ArgumentBuilders;
 using eilang.Exporting;
 using eilang.Extensions;
 using eilang.Interfaces;
@@ -12,24 +13,21 @@ namespace eilang.Modules
     [ExportModule("io")]
     public static class IoModule
     {
-        public static IValue Move(string func, State state, IValue args, Action<string, string> moveAction)
+        public static IValue Move(string func, State state, Arguments args, Action<string, string, bool> moveAction)
         {
-            const string moveError = " takes 2 arguments: string currentName, string newName";
-            var argList = args
-                .RequireList(2, func + moveError)
-                .Item;
-            argList.OrderAsArguments();
+            var argList = args.List().With
+                .Argument(EilangType.String, "currentName")
+                .Argument(EilangType.String, "newName")
+                .OptionalArgument(EilangType.Bool, "overwrite", false)
+                .Build();
+
+            var currentName = argList.Get<string>(0);
+            var newName = argList.Get<string>(1);
+            var overwrite = argList.Get<bool>(2);
             
-            var currentName = argList[0]
-                .Require(EilangType.String, "currentName has to be a string")
-                .To<string>();
-            
-            var newName = argList[1]
-                .Require(EilangType.String, "newName has to be a string")
-                .To<string>();
             try
             {
-                moveAction(currentName, newName);
+                moveAction(currentName, newName, overwrite);
                 return state.ValueFactory.True();
             }
             catch(Exception ex)
@@ -42,38 +40,33 @@ Console.WriteLine(ex.ToString());
         }
 
         [ExportFunction("get_drives")]
-        public static IValue GetDrives(State state, IValue args)
+        public static IValue GetDrives(State state, Arguments args)
         {
-            var fac = state.ValueFactory;
+            args.Void();
+            var fac = state.ValueFactory; // capture ValueFactory for lambda
             var drives = DriveInfo.GetDrives().Select(d => fac.String(d.Name)).ToList();
             return state.ValueFactory.List(drives);
         }
 
         [ExportFunction("is_file")]
-        public static IValue IsFile(State state, IValue args)
+        public static IValue IsFile(State state, Arguments args)
         {
-            var fileName = args
-                .Require(EilangType.String, "is_file takes 1 argument: string fileName")
-                .To<string>();
+            var fileName = args.Single<string>(EilangType.String, "fileName");
             return state.ValueFactory.Bool(File.Exists(fileName));
         }
         
         [ExportFunction("is_dir")]
-        public static IValue IsDirectory(State state, IValue args)
+        public static IValue IsDirectory(State state, Arguments args)
         {
-            var dirName = args
-                .Require(EilangType.String, "is_dir takes 1 argument: string directory")
-                .To<string>();
+            var dirName = args.Single<string>(EilangType.String, "directory");
             var factory = state.ValueFactory;
             return factory.Bool(Directory.Exists(dirName));
         }
 
         [ExportFunction("get_items")]
-        public static IValue GetItems(State state, IValue args)
+        public static IValue GetItems(State state, Arguments args)
         {
-            var dirName = args
-                .Require(EilangType.String, "get_items takes 1 argument: string directory")
-                .To<string>();
+            var dirName = args.Single<string>(EilangType.String, "directory");
             
             var dir = new DirectoryInfo(dirName);
             var factory = state.ValueFactory;
@@ -82,11 +75,9 @@ Console.WriteLine(ex.ToString());
         }
         
         [ExportFunction("get_dirs")]
-        public static IValue GetDirectories(State state, IValue args)
+        public static IValue GetDirectories(State state, Arguments args)
         {
-            var dirName = args
-                .Require(EilangType.String, "get_dirs takes 1 argument: string directory")
-                .To<string>();
+            var dirName = args.Single<string>(EilangType.String, "directory");
             
             var dir = new DirectoryInfo(dirName);
             var factory = state.ValueFactory;
@@ -94,11 +85,9 @@ Console.WriteLine(ex.ToString());
             return factory.List(dirs);
         }
         [ExportFunction("get_files")]
-        public static IValue GetFiles(State state, IValue args)
+        public static IValue GetFiles(State state, Arguments args)
         {
-            var dirName = args
-                .Require(EilangType.String, "get_files takes 1 argument: string directory")
-                .To<string>();
+            var dirName = args.Single<string>(EilangType.String, "directory");
             
             var dir = new DirectoryInfo(dirName);
             var factory = state.ValueFactory;

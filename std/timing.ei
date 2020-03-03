@@ -1,0 +1,41 @@
+modu watch {
+	typ Watch {
+		start, end, elapsed: long;
+		ctor() {
+			me.reset();
+		}
+
+		fun start() {
+			me.start = me._get_ms();
+		}
+
+		fun stop() {
+			me.end = me._get_ms();
+			me.elapsed = me.end - me.start;
+		}
+
+		fun reset() {
+			me.start = 0;
+			me.end = 0;
+			me.elapsed = 0;
+		}
+
+		fun restart() {
+			me.reset();
+			me.start();
+		}
+
+		fun get_elapsed() {
+			var now = me._get_ms();
+			ret now - me.start;
+		}
+
+		fun _get_ms() {
+			ret interop::call_func("Winmm.dll", "timeGetTime", typeof(long));
+		}
+	}
+
+	fun new() {
+		ret *watch::Watch();
+	}
+}

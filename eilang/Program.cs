@@ -91,6 +91,7 @@ namespace eilang
                 Console.WriteLine();
             }
 #endif
+        // TODO: refactor into two projects, eilang.Language and eilang.Runner
 
         // --------not sure begin--------
 	    // TODO: implement a SQLite wrapper?

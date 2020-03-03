@@ -105,20 +105,18 @@ namespace eilang
         [ExportFunction("assert")]
         public static IValue Assert(State state, Arguments arg)
         {
-            var args = arg.EilangValue(EilangType.List | EilangType.String, "message");
-            if (args.Type == EilangType.List)
+            if (arg.Type == EilangType.List)
             {
-                var list = args.As<ListValue>().Item;
-                if (list.Count != 2)
-                {
-                    throw new InvalidOperationException(
-                        "Assert takes 1 or 2 arguments: bool assert, [string message]");
-                }
+                var list = arg.List().With
+                    .Argument(EilangType.Bool, "assert")
+                    .OptionalArgument(EilangType.String, "message", "")
+                    .Build();
 
-                return AssertInner(state, list[1], list[0]);
+                return AssertInner(state, list.Get<bool>(0), list.Get<string>(1));
             }
 
-            return AssertInner(state, args);
+            var assert = arg.Single<bool>(EilangType.Bool, "assert");
+            return AssertInner(state, assert, "");
         }
 
         [ExportFunction("println")]
@@ -162,18 +160,11 @@ namespace eilang
             };
         }
 
-        private static IValue AssertInner(State state, IValue assert, IValue message = null)
+        private static IValue AssertInner(State state, bool assert, string message)
         {
-            if (assert.Type != EilangType.Bool)
-            {
-                throw new InvalidOperationException("Can only assert bool values");
-            }
-
-            if (message != null && message.Type != EilangType.String)
-                throw new InvalidOperationException("Message can only be of type string");
-            if (assert.Get<bool>())
+            if (assert)
                 return state.ValueFactory.Void();
-            throw new AssertionException("Assertion was false" + (message != null ? ": " + message.To<string>() : "."));
+            throw new AssertionException("Assertion was false" + (!string.IsNullOrWhiteSpace(message) ? ": " + message : "."));
         }
     }
 }

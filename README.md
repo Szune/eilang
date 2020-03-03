@@ -23,10 +23,10 @@ Look at `eilang/Classes/DisposableClass.cs` for a simple class
 Example exported function from `eilang/ExportedFunctions.cs`:
 ```csharp
 [ExportFunction("sleep")]
-public static IValue Sleep(IValueFactory fac, IValue milliseconds)
+public static IValue Sleep(State state, Arguments args)
 {
-    System.Threading.Thread.Sleep(milliseconds.To<int>());
-    return fac.Void();
+    Thread.Sleep(args.Single<int>(EilangType.Integer, "milliseconds"));
+    return state.ValueFactory.Void();
 }
 ```
 

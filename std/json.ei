@@ -5,7 +5,7 @@ modu json {
 		var json = "";
 		ret json;
 	}
-	
+
 	fun deserialize(json: string) {
 		ret *json::JsonDeserializer(json).deserialize();
 	}
@@ -35,12 +35,15 @@ modu json {
 
 		fun skip_ws() {
 			var f = me.buffer[0];
-			while (!me.eof &&
-					(f == ' ' || 
-					f == '\t' || 
-					f == '\r' || 
+			while ((f == ' ' ||
+					f == '\t' ||
+					f == '\r' ||
 					f == '\n')) {
-				f = me.consume_and_ret();
+				if me.eof {
+					ret;
+				}
+				me.consume();
+				f = me.buffer[0];
 			}
 		}
 
@@ -52,6 +55,7 @@ modu json {
 					break;
 				} elif me.buffer[0] == ',' {
 					me.consume();
+					me.skip_ws();
 				}
 				var prop = me.deserialize_property();
 				me.m[prop.key] = prop.value;
@@ -67,6 +71,7 @@ modu json {
 				me.skip_ws();
 				if me.buffer[0] == ',' {
 					me.consume();
+					me.skip_ws();
 				}
 				var prop = me.deserialize_property();
 				obj[prop.key] = prop.value;

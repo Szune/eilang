@@ -1,50 +1,58 @@
+using System.Runtime.CompilerServices;
 using eilang.Interfaces;
 
-namespace eilang.Values
+namespace eilang.Values;
+
+public abstract class ValueBase : IValue
 {
-    public abstract class ValueBase<TValue> : IValue
+    protected ValueBase(EilangType type, object value)
     {
-        protected ValueBase(EilangType type, object value)
-        {
-            Type = type;
-            Value = value;
-        }
+        Type = type;
+        _value = value;
+    }
 
-        public EilangType Type { get; }
-        public object Value { get; }
-        public virtual TValue Item => (TValue) Value;
-        
-        public T As<T>() where T : class, IValue
-        {
-            return this as T;
-        }
+    public EilangType Type { get; }
+    internal readonly object _value;
+    public object Value => _value;
 
-        public T Get<T>()
-        {
-            return (T) Value;
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T As<T>() where T : class, IValue
+    {
+        return this as T;
+    }
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T Get<T>()
+    {
+        return (T) _value;
+    }
 
-            if (!(obj is IValue other))
-                return false;
-            return Value.Equals(other.Value);
-        }
+}
+public abstract class ValueBase<TValue> : ValueBase
+{
+    protected ValueBase(EilangType type, object value) : base(type, value)
+    {
+    }
 
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((Value != null ? Value.GetHashCode() : 0) * 397) ^ (int) Type;
-            }
-        }
+    public virtual TValue Item => (TValue) _value;
 
-        public override string ToString()
+    public override bool Equals(object obj)
+    {
+        if (!(obj is IValue other))
+            return false;
+        return _value.Equals(other.Value);
+    }
+
+    public override int GetHashCode()
+    {
+        unchecked
         {
-            return Value?.ToString() ?? "{null}";
+            return ((_value != null ? _value.GetHashCode() : 0) * 397) ^ (int) Type;
         }
+    }
+
+    public override string ToString()
+    {
+        return _value?.ToString() ?? "{null}";
     }
 }

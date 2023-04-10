@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
-using eilang.Interfaces;
 
-namespace eilang.Values
+namespace eilang.Values;
+
+public class InternalMapValue : ValueBase<Dictionary<ValueBase,ValueBase>>
 {
-    public class InternalMapValue : ValueBase<Dictionary<IValue,IValue>>
+    public InternalMapValue(Dictionary<ValueBase,ValueBase> items) : base(EilangType.Map, items)
     {
-        public InternalMapValue(Dictionary<IValue,IValue> items) : base(EilangType.Map, items)
-        {
-        }
     }
 }

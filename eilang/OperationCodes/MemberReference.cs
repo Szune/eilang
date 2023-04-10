@@ -1,25 +1,23 @@
 ﻿using eilang.Exceptions;
 using eilang.Interfaces;
 using eilang.Interpreting;
-using eilang.Values;
 
-namespace eilang.OperationCodes
+namespace eilang.OperationCodes;
+
+public class MemberReference : IOperationCode
 {
-    public class MemberReference : IOperationCode
-    {
-        private readonly IValue _memberName;
+    private readonly string _memberName;
 
-        public MemberReference(IValue memberName)
-        {
-            _memberName = memberName;
-        }
-        public void Execute(State state)
-        {
-            var instance = state.Stack.Pop().Get<IScope>();
-            var member = instance.GetVariable(_memberName.As<StringValue>().Item);
-            if (member == null)
-                throw ThrowHelper.VariableNotFound(_memberName.As<StringValue>().Item);
-            state.Stack.Push(member);
-        }
+    public MemberReference(string memberName)
+    {
+        _memberName = memberName;
+    }
+    public void Execute(State state)
+    {
+        var instance = (IScope)state.Stack.Pop()._value;
+        var member = instance.GetVariable(_memberName);
+        if (member == null)
+            throw ThrowHelper.VariableNotFound(_memberName);
+        state.Stack.Push(member);
     }
 }

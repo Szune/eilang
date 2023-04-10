@@ -1,7 +1,8 @@
-﻿namespace eilang.Interfaces
+﻿using eilang.Values;
+
+namespace eilang.Interfaces;
+
+public interface ICanBeNegated
 {
-    public interface ICanBeNegated
-    {
-        IValue Negate(IValueFactory fac);
-    }
+    ValueBase Negate(IValueFactory fac);
 }

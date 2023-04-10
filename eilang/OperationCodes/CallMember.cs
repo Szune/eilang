@@ -1,65 +1,76 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Buffers;
+using System.Runtime.CompilerServices;
 using eilang.Classes;
 using eilang.Compiling;
 using eilang.Exceptions;
-using eilang.Interfaces;
 using eilang.Interpreting;
 using eilang.Values;
 
-namespace eilang.OperationCodes
-{
-    public class CallMember : IOperationCode
-    {
-        private readonly IValue _functionName;
-        private readonly int _argumentCount;
+namespace eilang.OperationCodes;
 
-        public CallMember(IValue functionName, int argumentCount)
+public class CallMember : IOperationCode
+{
+    private readonly string _functionName;
+    private readonly int _argumentCount;
+
+    public CallMember(string functionName, int argumentCount)
+    {
+        _functionName = functionName;
+        _argumentCount = argumentCount;
+    }
+
+    public void Execute(State state)
+    {
+        Class callingClass;
+        Instance callingInstance;
+        if (_argumentCount > 0)
         {
-            _functionName = functionName;
-            _argumentCount = argumentCount;
-        }
-        
-        public void Execute(State state)
-        {
-            var tmpValues = new Stack<IValue>();
-            for (int i = 0; i < _argumentCount; i++)
+            var tmpValues = ArrayPool<ValueBase>.Shared.Rent(_argumentCount);
+            for (int i = _argumentCount - 1; i >= 0; i--)
             {
                 var val = state.Stack.Pop();
-                tmpValues.Push(val);
+                tmpValues[i] = val;
             }
 
-            var callingClass = state.Stack.Pop().Get<Class>();
-            var callingInstance = state.Stack.Pop().Get<Instance>();
+            callingClass = (Class)state.Stack.Pop()._value;
+            callingInstance = (Instance)state.Stack.Pop()._value;
             for (int i = 0; i < _argumentCount; i++)
             {
-                state.Stack.Push(tmpValues.Pop());
+                state.Stack.Push(tmpValues[i]);
             }
 
-            if (callingClass.TryGetFunction(_functionName.As<StringValue>().Item, out var membFunc))
-            {
-                PushCall(state, _argumentCount, membFunc, callingInstance);
-            }
-            else if(state.Environment.ExtensionFunctions.TryGetValue(
-            $"{callingClass.FullName}->{_functionName.As<StringValue>().Item}", out var extensionFunc))
-            {
-                PushCall(state, _argumentCount, extensionFunc, callingInstance);
-            }
-            else
-            {
-                throw ThrowHelper.MemberFunctionNotFound(_functionName.As<StringValue>().Item, callingClass.FullName);
-            }
+            ArrayPool<ValueBase>.Shared.Return(tmpValues);
         }
-
-        private void PushCall(State state, int mCallArgCount, Function func, Instance callingInstance)
+        else
         {
-            if (func.Arguments.Count != mCallArgCount && !func.VariableAmountOfArguments)
-            {
-                throw ThrowHelper.InvalidArgumentCount(func, mCallArgCount);
-            }
-            state.Stack.Push(state.ValueFactory.Integer(mCallArgCount));
-            state.Frames.Push(new CallFrame(func));
-            state.Scopes.Push(new Scope(callingInstance.Scope));
+            callingClass = (Class)state.Stack.Pop()._value;
+            callingInstance = (Instance)state.Stack.Pop()._value;
         }
+
+        if (callingClass.TryGetFunction(_functionName, out var membFunc))
+        {
+            PushCall(state, _argumentCount, membFunc, callingInstance);
+        }
+        else if(state.Environment.ExtensionFunctions.TryGetValue(
+                    $"{callingClass.FullName}->{_functionName}", out var extensionFunc))
+        {
+            PushCall(state, _argumentCount, extensionFunc, callingInstance);
+        }
+        else
+        {
+            throw ThrowHelper.MemberFunctionNotFound(_functionName, callingClass.FullName);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void PushCall(State state, int mCallArgCount, Function func, Instance callingInstance)
+    {
+        if (func.Arguments.Count != mCallArgCount && !func.VariableAmountOfArguments)
+        {
+            throw ThrowHelper.InvalidArgumentCount(func, mCallArgCount);
+        }
+        state.Stack.Push(state.ValueFactory.Integer(mCallArgCount));
+        state.Frames.Push(new CallFrame(func));
+        state.Scopes.Push(new Scope(callingInstance.Scope));
     }
 }

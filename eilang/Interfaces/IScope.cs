@@ -1,9 +1,10 @@
-﻿namespace eilang.Interfaces
+﻿using eilang.Values;
+
+namespace eilang.Interfaces;
+
+public interface IScope
 {
-    public interface IScope
-    {
-        IValue GetVariable(string name);
-        void SetVariable(string name, IValue value);
-        void DefineVariable(string name, IValue value);
-    }
+    ValueBase GetVariable(string name);
+    void SetVariable(string name, ValueBase value);
+    void DefineVariable(string name, ValueBase value);
 }

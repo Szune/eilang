@@ -1,14 +1,11 @@
-﻿using eilang.Interfaces;
+﻿namespace eilang.Values;
 
-namespace eilang.Values
+public class TypeValue : ValueBase<string>
 {
-    public class TypeValue : ValueBase<IValue>
-    {
-        public EilangType TypeOf { get; }
+    public EilangType TypeOf { get; }
 
-        public TypeValue(string typeName, EilangType type) : base(EilangType.Type, typeName)
-        {
-            TypeOf = type;
-        }
+    public TypeValue(string typeName, EilangType type) : base(EilangType.Type, typeName)
+    {
+        TypeOf = type;
     }
 }

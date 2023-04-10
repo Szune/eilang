@@ -1,22 +1,20 @@
-﻿using eilang.Interfaces;
-using eilang.Interpreting;
+﻿using eilang.Interpreting;
 using eilang.Values;
 
-namespace eilang.OperationCodes
+namespace eilang.OperationCodes;
+
+public class TemporarySet : IOperationCode
 {
-    public class TemporarySet : IOperationCode
+    private readonly ValueBase _variableName;
+
+    public TemporarySet(ValueBase variableName)
     {
-        private readonly IValue _variableName;
+        _variableName = variableName;
+    }
 
-        public TemporarySet(IValue variableName)
-        {
-            _variableName = variableName;
-        }
-
-        public void Execute(State state)
-        {
-            var val = state.Stack.Pop();
-            state.TemporaryVariables.Peek().SetVariable(_variableName.As<StringValue>().Item, val);
-        }
+    public void Execute(State state)
+    {
+        var val = state.Stack.Pop();
+        state.TemporaryVariables.Peek().SetVariable(_variableName.As<StringValue>().Item, val);
     }
 }

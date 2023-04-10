@@ -3,70 +3,69 @@ using System.Linq;
 using eilang.Exceptions;
 using eilang.Interfaces;
 
-namespace eilang.Values
+namespace eilang.Values;
+
+public class MapValue : ValueBase<Dictionary<ValueBase,ValueBase>>, IValueWithMathOperands, IEilangEquatable
 {
-    public class MapValue : ValueBase<Dictionary<IValue,IValue>>, IValueWithMathOperands, IEilangEquatable
+    public MapValue(Instance value) : base(EilangType.Map, value)
     {
-        public MapValue(Instance value) : base(EilangType.Map, value)
-        {
-        }
+    }
 
-        public override Dictionary<IValue,IValue> Item => Get<Instance>()
-            .GetVariable(SpecialVariables.Map)
-            .Get<Dictionary<IValue,IValue>>();
-        
-        public override string ToString()
-        {
-            return "{" + string.Join(", ",
-                       Item.Select(item => $"{item.Key}: {item.Value}")) + "}";
-        }
-        
-        public IValue Add(IValueWithMathOperands other, IValueFactory fac)
-        {
-            return other.Type switch
-            {
-                EilangType.String => fac.String(ToString() + other.As<StringValue>().Item),
-                _ => throw ThrowHelper.TypeMismatch(Type, "+", other.Type)
-            };
-        }
+    public override Dictionary<ValueBase,ValueBase> Item => Get<Instance>()
+        .GetVariable(SpecialVariables.Map)
+        .Get<Dictionary<ValueBase,ValueBase>>();
 
-        public IValue Subtract(IValueWithMathOperands other, IValueFactory fac)
-        {
-            throw ThrowHelper.TypeMismatch(Type, "-", other.Type);
-        }
+    public override string ToString()
+    {
+        return "{" + string.Join(", ",
+            Item.Select(item => $"{item.Key}: {item.Value}")) + "}";
+    }
 
-        public IValue Multiply(IValueWithMathOperands other, IValueFactory fac)
+    public ValueBase Add(IValueWithMathOperands other, IValueFactory fac)
+    {
+        return other.Type switch
         {
-            throw ThrowHelper.TypeMismatch(Type, "*", other.Type);
-        }
+            EilangType.String => fac.String(ToString() + other.As<StringValue>().Item),
+            _ => throw ThrowHelper.TypeMismatch(Type, "+", other.Type)
+        };
+    }
 
-        public IValue Divide(IValueWithMathOperands other, IValueFactory fac)
-        {
-            throw ThrowHelper.TypeMismatch(Type, "/", other.Type);
-        }
+    public ValueBase Subtract(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "-", other.Type);
+    }
 
-        public IValue Modulo(IValueWithMathOperands other, IValueFactory fac)
-        {
-            throw ThrowHelper.TypeMismatch(Type, "%", other.Type);
-        }
+    public ValueBase Multiply(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "*", other.Type);
+    }
 
-        public IValue ValueEquals(IEilangEquatable other, IValueFactory fac)
-        {
-            return fac.Bool(BoolEquals(other));
-        }
+    public ValueBase Divide(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "/", other.Type);
+    }
 
-        public IValue ValueNotEquals(IEilangEquatable other, IValueFactory fac)
-        {
-            return fac.Bool(!BoolEquals(other));
-        }
+    public ValueBase Modulo(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "%", other.Type);
+    }
 
-        private bool BoolEquals(IEilangEquatable other) // TODO: decide what type of equality checking should be performed on maps
+    public ValueBase ValueEquals(IEilangEquatable other, IValueFactory fac)
+    {
+        return fac.Bool(BoolEquals(other));
+    }
+
+    public ValueBase ValueNotEquals(IEilangEquatable other, IValueFactory fac)
+    {
+        return fac.Bool(!BoolEquals(other));
+    }
+
+    private bool BoolEquals(IEilangEquatable other) // TODO: decide what type of equality checking should be performed on maps
+    {
+        return other.Type switch
         {
-            return other.Type switch
-            {
-                EilangType.Map => true,
-                _ => false
-            };
-        }
+            EilangType.Map => true,
+            _ => false
+        };
     }
 }

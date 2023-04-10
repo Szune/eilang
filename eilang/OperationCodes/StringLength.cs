@@ -1,13 +1,12 @@
 ﻿using eilang.Interpreting;
 
-namespace eilang.OperationCodes
+namespace eilang.OperationCodes;
+
+public class StringLength : IOperationCode
 {
-    public class StringLength : IOperationCode
+    public void Execute(State state)
     {
-        public void Execute(State state)
-        {
-            var str = state.Scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
-            state.Stack.Push(state.ValueFactory.Integer(str.Length));
-        }
+        var str = state.Scopes.Peek().GetVariable(SpecialVariables.String).Get<string>();
+        state.Stack.Push(state.ValueFactory.Integer(str.Length));
     }
 }

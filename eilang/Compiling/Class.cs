@@ -1,27 +1,57 @@
 using System.Collections.Generic;
+using System.Threading;
 using eilang.Compiling;
+using eilang.Values;
 
-namespace eilang.Classes
+namespace eilang.Classes;
+
+public class Class
 {
-    public class Class
+    private static int _typeIdAcc = -1;
+    public readonly int Id;
+    public Class(string name, string module)
     {
-        public Class(string name, string module)
+        Id = Interlocked.Increment(ref _typeIdAcc);
+        ValueFactory._classes.Add(new ClassValue(this));
+        Name = name;
+        Module = module;
+        CtorForMembersWithValues = new MemberFunction(".ctorForInit", "na", new List<string>(), this);
+    }
+
+    public string Name { get; }
+    public string Module { get; }
+    private string _fullName;
+    public string FullName => _fullName ??= $"{Module}::{Name}";
+    // N.B.:
+    // using a list because unless classes have hundreds of methods,
+    // hashing and scanning dictionaries is often slower
+    private List<MemberFunction> _functions = new();
+    public IEnumerable<MemberFunction> Functions => _functions;
+    public List<MemberFunction> Constructors {get;} = new();
+    public MemberFunction CtorForMembersWithValues { get; }
+
+    public void AddMethod(MemberFunction function)
+    {
+        _functions.Add(function);
+    }
+
+    public bool TryGetFunction(string name, out MemberFunction func)
+    {
+        // N.B.:
+        // using a list because unless classes have hundreds of methods,
+        // hashing and scanning dictionaries is often slower
+        for (var i = 0; i < _functions.Count; i++)
         {
-            Name = name;
-            Module = module;
-            CtorForMembersWithValues = new MemberFunction(".ctorForInit", "na", new List<string>(), this);
+            var f = _functions[i];
+
+            if (string.Equals(name, f.Name))
+            {
+                func = f;
+                return true;
+            }
         }
 
-        public string Name { get; }
-        public string Module { get; }
-        public string FullName => $"{Module}::{Name}";
-        public Dictionary<string, MemberFunction> Functions {get;} = new Dictionary<string, MemberFunction>();
-        public List<MemberFunction> Constructors {get;} = new List<MemberFunction>();
-        public MemberFunction CtorForMembersWithValues { get; }
-
-        public bool TryGetFunction(string name, out MemberFunction func)
-        {
-            return Functions.TryGetValue(name, out func);
-        }
+        func = null;
+        return false;
     }
 }

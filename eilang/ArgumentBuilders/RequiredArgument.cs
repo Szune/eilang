@@ -1,21 +1,20 @@
 ﻿using eilang.Extensions;
-using eilang.Interfaces;
+using eilang.Values;
 
-namespace eilang.ArgumentBuilders
+namespace eilang.ArgumentBuilders;
+
+public class RequiredArgument : IArgument
 {
-    public class RequiredArgument : IArgument
+    private readonly ValueBase _value;
+
+    public RequiredArgument(ValueBase value)
     {
-        private readonly IValue _value;
-
-        public RequiredArgument(IValue value)
-        {
-            _value = value;
-        }
+        _value = value;
+    }
 
 
-        public T Get<T>()
-        {
-            return _value.To<T>();
-        }
+    public T Get<T>()
+    {
+        return _value.To<T>();
     }
 }

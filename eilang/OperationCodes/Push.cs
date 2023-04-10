@@ -1,20 +1,19 @@
-﻿using eilang.Interfaces;
-using eilang.Interpreting;
+﻿using eilang.Interpreting;
+using eilang.Values;
 
-namespace eilang.OperationCodes
+namespace eilang.OperationCodes;
+
+public class Push : IOperationCode
 {
-    public class Push : IOperationCode
-    {
-        private readonly IValue _value;
+    private readonly ValueBase _value;
 
-        public Push(IValue value)
-        {
-            _value = value;
-        }
-        
-        public void Execute(State state)
-        {
-            state.PushIfNonVoidValue(_value);
-        }
+    public Push(ValueBase value)
+    {
+        _value = value;
+    }
+
+    public void Execute(State state)
+    {
+        state.PushIfNonVoidValue(_value);
     }
 }

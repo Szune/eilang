@@ -1,29 +1,27 @@
 ﻿using eilang.Exceptions;
-using eilang.Interfaces;
 using eilang.Values;
 
-namespace eilang.ArgumentBuilders
+namespace eilang.ArgumentBuilders;
+
+public class RequiredArgumentValidator : IArgumentValidator
 {
-    public class RequiredArgumentValidator : IArgumentValidator
+    public EilangType Type { get; }
+    public string Name { get; }
+
+    public RequiredArgumentValidator(EilangType type, string name)
     {
-        public EilangType Type { get; }
-        public string Name { get; }
+        Type = type;
+        Name = name;
+    }
 
-        public RequiredArgumentValidator(EilangType type, string name)
+    /// <inheritdoc />
+    public IArgument Validate(ValueBase value, string function)
+    {
+        if (Type == EilangType.Any || value.Type == Type)
         {
-            Type = type;
-            Name = name;
+            return new RequiredArgument(value);
         }
 
-        /// <inheritdoc />
-        public IArgument Validate(IValue value, string function)
-        {
-            if (Type == EilangType.Any || value.Type == Type)
-            {
-                return new RequiredArgument(value);
-            }
-            
-            throw ThrowHelper.ArgumentValidationFailed(Name, Type, value.Type, function);
-        }
+        throw ThrowHelper.ArgumentValidationFailed(Name, Type, value.Type, function);
     }
 }

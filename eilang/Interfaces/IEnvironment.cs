@@ -2,21 +2,20 @@
 using eilang.ArgumentBuilders;
 using eilang.Classes;
 using eilang.Compiling;
-using eilang.Extensions;
 using eilang.Interpreting;
 using eilang.OperationCodes;
+using eilang.Values;
 
-namespace eilang.Interfaces
+namespace eilang.Interfaces;
+
+public delegate ValueBase ExportedFunction(State state, Arguments args);
+public interface IEnvironment
 {
-    public delegate IValue ExportedFunction(State state, Arguments args);
-    public interface IEnvironment
-    {
-        IOperationCodeFactory OperationCodeFactory { get; }
-        IValueFactory ValueFactory { get; }
-        IDictionary<string, Function> Functions { get; }
-        IDictionary<string, Class> Classes { get; }
-        IDictionary<string, ExportedFunction> ExportedFunctions { get; }
-        IDictionary<string, ExtensionFunction> ExtensionFunctions { get; }
-        IDictionary<string, Struct> Structs { get; }
-    }
+    IOperationCodeFactory OperationCodeFactory { get; }
+    IValueFactory ValueFactory { get; }
+    IDictionary<string, Function> Functions { get; }
+    IDictionary<string, Class> Classes { get; }
+    IDictionary<string, ExportedFunction> ExportedFunctions { get; }
+    IDictionary<string, ExtensionFunction> ExtensionFunctions { get; }
+    IDictionary<string, Struct> Structs { get; }
 }

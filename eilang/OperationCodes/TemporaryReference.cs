@@ -1,21 +1,19 @@
-﻿using eilang.Interfaces;
-using eilang.Interpreting;
+﻿using eilang.Interpreting;
 using eilang.Values;
 
-namespace eilang.OperationCodes
+namespace eilang.OperationCodes;
+
+public class TemporaryReference : IOperationCode
 {
-    public class TemporaryReference : IOperationCode
+    private readonly ValueBase _variableName;
+
+    public TemporaryReference (ValueBase variableName)
     {
-        private readonly IValue _variableName;
+        _variableName = variableName;
+    }
 
-        public TemporaryReference (IValue variableName)
-        {
-            _variableName = variableName;
-        }
-
-        public void Execute(State state)
-        {
-            state.Stack.Push(state.TemporaryVariables.Peek().GetVariable(_variableName.As<StringValue>().Item));
-        }
+    public void Execute(State state)
+    {
+        state.Stack.Push(state.TemporaryVariables.Peek().GetVariable(_variableName.As<StringValue>().Item));
     }
 }

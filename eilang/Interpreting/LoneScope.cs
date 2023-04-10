@@ -1,32 +1,32 @@
 ﻿using System.Collections.Generic;
 using eilang.Interfaces;
+using eilang.Values;
 
-namespace eilang.Interpreting
+namespace eilang.Interpreting;
+
+public class LoneScope : IScope
 {
-    public class LoneScope : IScope
+    private readonly Dictionary<string, ValueBase> _variables = new();
+
+    public ValueBase GetVariable(string name)
     {
-        private readonly Dictionary<string, IValue> _variables = new Dictionary<string,IValue>();
+        if (_variables.TryGetValue(name, out var val))
+            return val;
+        return null;
+    }
 
-        public IValue GetVariable(string name)
-        {
-            if (_variables.TryGetValue(name, out var val))
-                return val;
-            return null;
-        }
+    public void SetVariable(string name, ValueBase value)
+    {
+        _variables[name] = value;
+    }
 
-        public void SetVariable(string name, IValue value)
-        {
-            _variables[name] = value;
-        }
+    public void DefineVariable(string name, ValueBase value)
+    {
+        throw new System.NotImplementedException();
+    }
 
-        public void DefineVariable(string name, IValue value)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Clear()
-        {
-            _variables.Clear();
-        }
+    public void Clear()
+    {
+        _variables.Clear();
     }
 }

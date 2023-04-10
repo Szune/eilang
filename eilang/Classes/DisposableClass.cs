@@ -3,26 +3,24 @@ using eilang.Compiling;
 using eilang.Interfaces;
 using eilang.OperationCodes;
 
-namespace eilang.Classes
+namespace eilang.Classes;
+
+public class DisposableClass : Class
 {
-    public class DisposableClass : Class
+    public DisposableClass(IOperationCodeFactory factory, IValueFactory valueFactory) : base(
+        SpecialVariables.Disposable, SpecialVariables.Global)
     {
-        public DisposableClass(IOperationCodeFactory factory, IValueFactory valueFactory) : base(
-            SpecialVariables.Disposable, SpecialVariables.Global)
+        CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
+        CtorForMembersWithValues.Write(factory.Return());
+        AddMethod(new MemberFunction("dispose", Module, new List<string>(), this)
         {
-            CtorForMembersWithValues.Write(factory.Pop()); // pop self instance used for 'me' variable
-            CtorForMembersWithValues.Write(factory.Return());
-            Functions.Add("dispose",
-                new MemberFunction("dispose", Module, new List<string> { }, this)
-                {
-                    Code =
-                    {
-                        new Bytecode(factory.Pop()), // pops unused argument count
-                        new Bytecode(factory.Reference(valueFactory.String(SpecialVariables.Disposable))),
-                        new Bytecode(factory.Dispose()),
-                        new Bytecode(factory.Return())
-                    }
-                });
-        }
+            Code =
+            {
+                new Bytecode(factory.Pop()), // pops unused argument count
+                new Bytecode(factory.Reference(SpecialVariables.Disposable)),
+                new Bytecode(factory.Dispose()),
+                new Bytecode(factory.Return())
+            }
+        });
     }
 }

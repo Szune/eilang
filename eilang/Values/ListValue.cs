@@ -3,67 +3,66 @@ using System.Linq;
 using eilang.Exceptions;
 using eilang.Interfaces;
 
-namespace eilang.Values
+namespace eilang.Values;
+
+public class ListValue : ValueBase<List<ValueBase>>, IValueWithMathOperands, IEilangEquatable
 {
-    public class ListValue : ValueBase<List<IValue>>, IValueWithMathOperands, IEilangEquatable
+    public ListValue(Instance value) : base(EilangType.List, value)
     {
-        public ListValue(Instance value) : base(EilangType.List, value)
-        {
-        }
+    }
 
-        public override List<IValue> Item => Get<Instance>().GetVariable(SpecialVariables.List).Get<List<IValue>>();
-        
-        public override string ToString()
-        {
-            return "[" + string.Join(", ",Item.Select(item => item.ToString())) + "]";
-        }
+    public override List<ValueBase> Item => Get<Instance>().GetVariable(SpecialVariables.List).Get<List<ValueBase>>();
 
-        public IValue Add(IValueWithMathOperands other, IValueFactory fac)
-        {
-            return other.Type switch
-            {
-                EilangType.String => fac.String(ToString() + other.As<StringValue>().Item),
-                _ => throw ThrowHelper.TypeMismatch(Type, "+", other.Type)
-            };
-        }
+    public override string ToString()
+    {
+        return "[" + string.Join(", ",Item.Select(item => item.ToString())) + "]";
+    }
 
-        public IValue Subtract(IValueWithMathOperands other, IValueFactory fac)
+    public ValueBase Add(IValueWithMathOperands other, IValueFactory fac)
+    {
+        return other.Type switch
         {
-            throw ThrowHelper.TypeMismatch(Type, "-", other.Type);
-        }
+            EilangType.String => fac.String(ToString() + other.As<StringValue>().Item),
+            _ => throw ThrowHelper.TypeMismatch(Type, "+", other.Type)
+        };
+    }
 
-        public IValue Multiply(IValueWithMathOperands other, IValueFactory fac)
-        {
-            throw ThrowHelper.TypeMismatch(Type, "*", other.Type);
-        }
+    public ValueBase Subtract(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "-", other.Type);
+    }
 
-        public IValue Divide(IValueWithMathOperands other, IValueFactory fac)
-        {
-            throw ThrowHelper.TypeMismatch(Type, "/", other.Type);
-        }
+    public ValueBase Multiply(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "*", other.Type);
+    }
 
-        public IValue Modulo(IValueWithMathOperands other, IValueFactory fac)
-        {
-            throw ThrowHelper.TypeMismatch(Type, "%", other.Type);
-        }
+    public ValueBase Divide(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "/", other.Type);
+    }
 
-        public IValue ValueEquals(IEilangEquatable other, IValueFactory fac)
-        {
-            return fac.Bool(BoolEquals(other));
-        }
+    public ValueBase Modulo(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "%", other.Type);
+    }
 
-        public IValue ValueNotEquals(IEilangEquatable other, IValueFactory fac)
-        {
-            return fac.Bool(!BoolEquals(other));
-        }
+    public ValueBase ValueEquals(IEilangEquatable other, IValueFactory fac)
+    {
+        return fac.Bool(BoolEquals(other));
+    }
 
-        private bool BoolEquals(IEilangEquatable other) // TODO: decide what type of equality checking should be performed on lists
+    public ValueBase ValueNotEquals(IEilangEquatable other, IValueFactory fac)
+    {
+        return fac.Bool(!BoolEquals(other));
+    }
+
+    private bool BoolEquals(IEilangEquatable other) // TODO: decide what type of equality checking should be performed on lists
+    {
+        return other.Type switch
         {
-            return other.Type switch
-            {
-                EilangType.List => true,
-                _ => false
-            };
-        }
+            EilangType.List => true,
+            _ => false
+        };
     }
 }

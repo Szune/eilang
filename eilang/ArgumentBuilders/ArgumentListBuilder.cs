@@ -1,18 +1,17 @@
-﻿using eilang.Interfaces;
+﻿using eilang.Values;
 
-namespace eilang.ArgumentBuilders
+namespace eilang.ArgumentBuilders;
+
+public class ArgumentListBuilder
 {
-    public class ArgumentListBuilder
-    {
-        private readonly IValue _value;
-        private readonly string _function;
+    private readonly ValueBase _value;
+    private readonly string _function;
 
-        public ArgumentListBuilder(IValue value, string function)
-        {
-            _value = value;
-            _function = function;
-        }
-        
-        public ArgumentListBuilderWithArguments With => new ArgumentListBuilderWithArguments(_value, _function);
+    public ArgumentListBuilder(ValueBase value, string function)
+    {
+        _value = value;
+        _function = function;
     }
+
+    public ArgumentListBuilderWithArguments With => new(_value, _function);
 }

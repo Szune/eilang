@@ -1,125 +1,130 @@
 ﻿using System;
 using eilang.Exceptions;
 using eilang.Interfaces;
-using Microsoft.VisualBasic;
 
-namespace eilang.Values
+namespace eilang.Values;
+
+public class StringValue : ValueBase<string>, IValueWithMathOperands, IEilangEquatable, IEilangComparable
 {
-    public class StringValue : ValueBase<string>, IValueWithMathOperands, IEilangEquatable, IEilangComparable
+    public StringValue(Instance value) : base(EilangType.String, value)
     {
-        public StringValue(Instance value) : base(EilangType.String, value)
-        {
-        }
+    }
 
-        public override string Item => Get<Instance>().GetVariable(SpecialVariables.String).Get<string>();
+    // private Instance _cached;
+    // public override string Item =>
+    //     (string)(_cached ??= (Instance)_value).GetVariable(SpecialVariables.String)._value;
 
-        public override string ToString()
-        {
-            return Item ?? "{null}";
-        }
+    //public override string Item => (string)((Instance)_value).GetVariable(SpecialVariables.String)._value;
+    private string _cached;
+    public override string Item =>
+        _cached ??= (string)((Instance)_value).GetVariable(SpecialVariables.String)._value;
 
-        public override bool Equals(object obj)
-        {
-            if (!(obj is StringValue str))
-                return false;
-            return str.Item.Equals(Item, StringComparison.Ordinal);
-        }
+    public override string ToString()
+    {
+        return Item ?? "{null}";
+    }
 
-        public override int GetHashCode()
-        {
-            return Item.GetHashCode();
-        }
-        
-        public IValue Add(IValueWithMathOperands other, IValueFactory fac)
-        {
-            return other.Type switch
-            {
-                EilangType.String => fac.String(Item + other.As<StringValue>().Item),
-                EilangType.Integer => fac.String(Item + other.Get<int>()),
-                EilangType.Long => fac.String(Item + other.Get<long>()),
-                EilangType.Double => fac.String(Item + other.Get<double>()),
-                EilangType.Byte => fac.String(Item + other.Get<byte>()),
-                EilangType.Bool => fac.String(Item + other.Get<bool>()),
-                EilangType.Uninitialized => this,
-                EilangType.List => fac.String(Item + other),
-                EilangType.Map => fac.String(Item + other),
-                _ => throw ThrowHelper.TypeMismatch(Type, "+", other.Type)
-            };
-        }
+    public override bool Equals(object obj)
+    {
+        if (!(obj is StringValue str))
+            return false;
+        return str.Item.Equals(Item, StringComparison.Ordinal);
+    }
 
-        public IValue Subtract(IValueWithMathOperands other, IValueFactory fac)
-        {
-            throw ThrowHelper.TypeMismatch(Type, "-", other.Type);
-        }
+    public override int GetHashCode()
+    {
+        return Item.GetHashCode();
+    }
 
-        public IValue Multiply(IValueWithMathOperands other, IValueFactory fac)
+    public ValueBase Add(IValueWithMathOperands other, IValueFactory fac)
+    {
+        return other.Type switch
         {
-            throw ThrowHelper.TypeMismatch(Type, "*", other.Type);
-        }
+            EilangType.String => fac.String(Item + ((StringValue)other).Item),
+            EilangType.Integer => fac.String(Item + other.Get<int>()),
+            EilangType.Long => fac.String(Item + other.Get<long>()),
+            EilangType.Double => fac.String(Item + other.Get<double>()),
+            EilangType.Byte => fac.String(Item + other.Get<byte>()),
+            EilangType.Bool => fac.String(Item + other.Get<bool>()),
+            EilangType.Uninitialized => this,
+            EilangType.List => fac.String(Item + other),
+            EilangType.Map => fac.String(Item + other),
+            _ => throw ThrowHelper.TypeMismatch(Type, "+", other.Type)
+        };
+    }
 
-        public IValue Divide(IValueWithMathOperands other, IValueFactory fac)
-        {
-            throw ThrowHelper.TypeMismatch(Type, "/", other.Type);
-        }
+    public ValueBase Subtract(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "-", other.Type);
+    }
 
-        public IValue Modulo(IValueWithMathOperands other, IValueFactory fac)
-        {
-            throw ThrowHelper.TypeMismatch(Type, "%", other.Type);
-        }
+    public ValueBase Multiply(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "*", other.Type);
+    }
 
-        public IValue ValueEquals(IEilangEquatable other, IValueFactory fac)
-        {
-            return fac.Bool(BoolEquals(other));
-        }
+    public ValueBase Divide(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "/", other.Type);
+    }
 
-        public IValue ValueNotEquals(IEilangEquatable other, IValueFactory fac)
-        {
-            return fac.Bool(!BoolEquals(other));
-        }
-        
-        private bool BoolEquals(IEilangEquatable other)
-        {
-            return other.Type switch
-            {
-                EilangType.String => Item == other.As<StringValue>().Item,
-                _ => false
-            };
-        }
+    public ValueBase Modulo(IValueWithMathOperands other, IValueFactory fac)
+    {
+        throw ThrowHelper.TypeMismatch(Type, "%", other.Type);
+    }
 
-        public IValue GreaterThan(IEilangComparable other, IValueFactory fac)
-        {
-            return other.Type switch
-            { /* TODO: make chars an actual type instead */
-                EilangType.String => fac.Bool(Item[0] > other.As<StringValue>().Item[0]),
-                _ => throw ThrowHelper.TypeMismatch(Type, ">", other.Type)
-            };
-        }
+    public ValueBase ValueEquals(IEilangEquatable other, IValueFactory fac)
+    {
+        return fac.Bool(BoolEquals(other));
+    }
 
-        public IValue GreaterThanOrEquals(IEilangComparable other, IValueFactory fac)
-        {
-            return other.Type switch
-            {
-                EilangType.String => fac.Bool(Item[0] >= other.As<StringValue>().Item[0]),
-                _ => throw ThrowHelper.TypeMismatch(Type, ">=", other.Type)
-            };
-        }
+    public ValueBase ValueNotEquals(IEilangEquatable other, IValueFactory fac)
+    {
+        return fac.Bool(!BoolEquals(other));
+    }
 
-        public IValue LessThan(IEilangComparable other, IValueFactory fac)
+    private bool BoolEquals(IEilangEquatable other)
+    {
+        return other.Type switch
         {
-            return other.Type switch
-            {
-                EilangType.String => fac.Bool(Item[0] < other.As<StringValue>().Item[0]),
-                _ => throw ThrowHelper.TypeMismatch(Type, "<", other.Type)
-            };
-        }
+            EilangType.String => Item == ((StringValue)other).Item,
+            _ => false
+        };
+    }
 
-        public IValue LessThanOrEquals(IEilangComparable other, IValueFactory fac)
+    public ValueBase GreaterThan(IEilangComparable other, IValueFactory fac)
+    {
+        return other.Type switch
+        { /* TODO: make chars an actual type instead */
+            EilangType.String => fac.Bool(Item[0] > other.As<StringValue>().Item[0]),
+            _ => throw ThrowHelper.TypeMismatch(Type, ">", other.Type)
+        };
+    }
+
+    public ValueBase GreaterThanOrEquals(IEilangComparable other, IValueFactory fac)
+    {
+        return other.Type switch
         {
-            return other.Type switch
-            {
-                EilangType.String => fac.Bool(Item[0] <= other.As<StringValue>().Item[0]),
-                _ => throw ThrowHelper.TypeMismatch(Type, "<=", other.Type)
-            };
-        }
+            EilangType.String => fac.Bool(Item[0] >= other.As<StringValue>().Item[0]),
+            _ => throw ThrowHelper.TypeMismatch(Type, ">=", other.Type)
+        };
+    }
+
+    public ValueBase LessThan(IEilangComparable other, IValueFactory fac)
+    {
+        return other.Type switch
+        {
+            EilangType.String => fac.Bool(Item[0] < other.As<StringValue>().Item[0]),
+            _ => throw ThrowHelper.TypeMismatch(Type, "<", other.Type)
+        };
+    }
+
+    public ValueBase LessThanOrEquals(IEilangComparable other, IValueFactory fac)
+    {
+        return other.Type switch
+        {
+            EilangType.String => fac.Bool(Item[0] <= other.As<StringValue>().Item[0]),
+            _ => throw ThrowHelper.TypeMismatch(Type, "<=", other.Type)
+        };
     }
 }

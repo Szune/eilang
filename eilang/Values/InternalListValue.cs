@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
-using eilang.Interfaces;
 
-namespace eilang.Values
+namespace eilang.Values;
+
+public class InternalListValue : ValueBase<List<ValueBase>>
 {
-    public class InternalListValue : ValueBase<List<IValue>>
+    public InternalListValue(List<ValueBase> items) : base(EilangType.List, items)
     {
-        public InternalListValue(List<IValue> items) : base(EilangType.List, items)
-        {
-        }
     }
 }

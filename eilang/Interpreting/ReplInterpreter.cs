@@ -7,181 +7,180 @@ using eilang.Interfaces;
 using eilang.OperationCodes;
 using eilang.Values;
 
-namespace eilang.Interpreting
+namespace eilang.Interpreting;
+
+public class ReplInterpreter
 {
-    public class ReplInterpreter
+    private ScriptEnvironment _scriptEnvironment;
+    private readonly IOperationCodeFactory _opFactory;
+    private readonly IValueFactory _valueFactory;
+    private readonly Stack<CallFrame> _frames = new Stack<CallFrame>();
+    private readonly StackWithoutNullItems<ValueBase> _stack = new StackWithoutNullItems<ValueBase>();
+    private readonly Stack<Scope> _scopes = new Stack<Scope>();
+    private readonly Stack<LoneScope> _tmpVars = new Stack<LoneScope>();
+    private readonly TextWriter _logger;
+
+    public ReplInterpreter(IValueFactory valueFactory = null, IOperationCodeFactory opFactory = null,
+        TextWriter logger = null)
     {
-        private ScriptEnvironment _scriptEnvironment;
-        private readonly IOperationCodeFactory _opFactory;
-        private readonly IValueFactory _valueFactory;
-        private readonly Stack<CallFrame> _frames = new Stack<CallFrame>();
-        private readonly StackWithoutNullItems<IValue> _stack = new StackWithoutNullItems<IValue>();
-        private readonly Stack<Scope> _scopes = new Stack<Scope>();
-        private readonly Stack<LoneScope> _tmpVars = new Stack<LoneScope>();
-        private readonly TextWriter _logger;
+        _opFactory = opFactory ?? new OperationCodeFactory();
+        _valueFactory = valueFactory ?? new ValueFactory();
+        _logger = logger;
+        _scopes.Push(new Scope());
+    }
 
-        public ReplInterpreter(IValueFactory valueFactory = null, IOperationCodeFactory opFactory = null,
-            TextWriter logger = null)
+    private void Log(string msg)
+    {
+        _logger?.WriteLine(msg);
+    }
+
+    public ValueBase Interpret(ScriptEnvironment scriptEnvironment)
+    {
+        _scriptEnvironment = scriptEnvironment;
+        var state = new State(_scriptEnvironment, _frames, _stack, _scopes, _tmpVars, _valueFactory);
+        Log("Interpreting...");
+        var startFunc = GetStartFunction();
+        _frames.Push(new CallFrame(startFunc));
+        var bc = new Bytecode(null);
+        var frame = new CallFrame(new Function("<FailBeforeStart>", "<FailBeforeStart>", new List<string>()));
+
+        try
         {
-            _opFactory = opFactory ?? new OperationCodeFactory();
-            _valueFactory = valueFactory ?? new ValueFactory();
-            _logger = logger;
-            _scopes.Push(new Scope());
-        }
-
-        private void Log(string msg)
-        {
-            _logger?.WriteLine(msg);
-        }
-
-        public IValue Interpret(ScriptEnvironment scriptEnvironment)
-        {
-            _scriptEnvironment = scriptEnvironment;
-            var state = new State(_scriptEnvironment, _frames, _stack, _scopes, _tmpVars, _valueFactory);
-            Log("Interpreting...");
-            var startFunc = GetStartFunction();
-            _frames.Push(new CallFrame(startFunc));
-            var bc = new Bytecode(null);
-            var frame = new CallFrame(new Function("<FailBeforeStart>", "<FailBeforeStart>", new List<string>()));
-
-            try
+            while (_frames.Count > 0)
             {
-                while (_frames.Count > 0)
+                frame = _frames.Peek();
+                bc = frame.Function[frame.Address];
+                if (bc.Op is Return && frame.Function.FullName == startFunc.FullName)
                 {
-                    frame = _frames.Peek();
-                    bc = frame.Function[frame.Address];
-                    if (bc.Op is Return && frame.Function.FullName == startFunc.FullName)
+                    state.Frames.Pop(); // keep the scope for next read, so variables aren't reset
+                    var type = _stack.TryPeek(out var t) ? t.Type : EilangType.Void;
+                    if (type != EilangType.Void)
                     {
-                        state.Frames.Pop(); // keep the scope for next read, so variables aren't reset
-                        var type = _stack.TryPeek(out var t) ? t.Type : EilangType.Void;
-                        if (type != EilangType.Void)
-                        {
-                            return _stack.TryPop(out var result)
-                                ? result
-                                : _valueFactory.Void();
-                        }
+                        return _stack.TryPop(out var result)
+                            ? result
+                            : _valueFactory.Void();
                     }
-                    else
-                    {
-                        bc.Op.Execute(state);
-                    }
-
-                    frame.Address++;
-                }
-            }
-            catch (Exception e) when (!(e is AssertionException) && !(e is ExitException) && !(e is ErrorMessageException))
-            {
-                if (frame.Address > 0)
-                {
-                    var previous = GetCodeFromBytecode(frame.Function[frame.Address - 1]);
-                    var current = GetCodeFromBytecode(bc);
-                    var code = "";
-                    if (!string.IsNullOrWhiteSpace(current) || !string.IsNullOrWhiteSpace(previous))
-                    {
-                        code =
-                            $"\nNear code (line {bc.Metadata.Ast.Position.Line}, col {bc.Metadata.Ast.Position.Col}): {previous}\n{current}";
-                    }
-
-                    throw new InterpreterException(
-                        $"{e.Message}\nFailure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}\nPrevious bytecode was '{frame.Function[frame.Address - 1]}'",
-                        e);
                 }
                 else
                 {
-                    var current = GetCodeFromBytecode(bc);
-                    var code = "";
-                    if (!string.IsNullOrWhiteSpace(current))
-                    {
-                        code =
-                            $"\nNear code (line {bc.Metadata.Ast.Position.Line}, col {bc.Metadata.Ast.Position.Col}): {current}";
-                    }
-                    throw new InterpreterException(
-                        $"{e.Message}\nFailure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}",
-                        e);
+                    bc.Op.Execute(state);
                 }
+
+                frame.Address++;
             }
-
-            return _valueFactory.Void();
         }
-
-        private string GetCodeFromBytecode(Bytecode bytecode)
+        catch (Exception e) when (!(e is AssertionException) && !(e is ExitException) && !(e is ErrorMessageException))
         {
-            return bytecode?.Metadata?.Ast?.ToCode() ?? "";
-        }
-
-        private Function GetStartFunction()
-        {
-            /* Valid entry points:
-                1. main() inside type 'app' inside module 'prog'
-                modu prog {
-                    typ app {
-                        fun main() {
-                            // valid
-                        }
-                    }
+            if (frame.Address > 0)
+            {
+                var previous = GetCodeFromBytecode(frame.Function[frame.Address - 1]);
+                var current = GetCodeFromBytecode(bc);
+                var code = "";
+                if (!string.IsNullOrWhiteSpace(current) || !string.IsNullOrWhiteSpace(previous))
+                {
+                    code =
+                        $"\nNear code (line {bc.Metadata.Ast.Position.Line}, col {bc.Metadata.Ast.Position.Col}): {previous}\n{current}";
                 }
 
-                2. main() inside module 'prog'
-                modu prog {
-                    fun main() {
-                        // valid
-                    }
+                throw new InterpreterException(
+                    $"{e.Message}\nFailure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}\nPrevious bytecode was '{frame.Function[frame.Address - 1]}'",
+                    e);
+            }
+            else
+            {
+                var current = GetCodeFromBytecode(bc);
+                var code = "";
+                if (!string.IsNullOrWhiteSpace(current))
+                {
+                    code =
+                        $"\nNear code (line {bc.Metadata.Ast.Position.Line}, col {bc.Metadata.Ast.Position.Col}): {current}";
                 }
+                throw new InterpreterException(
+                    $"{e.Message}\nFailure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}",
+                    e);
+            }
+        }
 
-                3. main() inside type 'app'
+        return _valueFactory.Void();
+    }
+
+    private string GetCodeFromBytecode(Bytecode bytecode)
+    {
+        return bytecode?.Metadata?.Ast?.ToCode() ?? "";
+    }
+
+    private Function GetStartFunction()
+    {
+        /* Valid entry points:
+            1. main() inside type 'app' inside module 'prog'
+            modu prog {
                 typ app {
                     fun main() {
                         // valid
                     }
                 }
+            }
 
-                4. main() inside global scope
+            2. main() inside module 'prog'
+            modu prog {
                 fun main() {
                     // valid
                 }
-
-                5.
-                use the ".global" function defined in the Global module
-             */
-
-            const string main = "main";
-
-            Function ret = null;
-            if (_scriptEnvironment.Classes.TryGetValue("prog::app", out var app))
-            {
-                if (app.Functions.TryGetValue(main, out var m))
-                {
-                    ret = m;
-                }
-
-                // SHIFT + ALTGR + 9 == »
-                // SHIFT + ALTGR + 8 == «
             }
-            else if (_scriptEnvironment.Functions.TryGetValue($"prog::{main}", out var m))
+
+            3. main() inside type 'app'
+            typ app {
+                fun main() {
+                    // valid
+                }
+            }
+
+            4. main() inside global scope
+            fun main() {
+                // valid
+            }
+
+            5.
+            use the ".global" function defined in the Global module
+         */
+
+        const string main = "main";
+
+        Function ret = null;
+        if (_scriptEnvironment.Classes.TryGetValue("prog::app", out var app))
+        {
+            if (app.TryGetFunction(main, out var m))
             {
                 ret = m;
             }
-            else if (_scriptEnvironment.Classes.TryGetValue($"{SpecialVariables.Global}::app", out var globApp) &&
-                     globApp.Functions.TryGetValue(main, out var ma))
-            {
-                ret = ma;
-            }
-            else if (_scriptEnvironment.Functions.TryGetValue($"{SpecialVariables.Global}::{main}", out var globMain))
-            {
-                ret = globMain;
-            }
 
-            if (ret != null)
-            {
-                return ret;
-            }
-            else
-            {
-                var func = _scriptEnvironment.Functions[
-                    $"{SpecialVariables.Global}::{SpecialVariables.Global}"];
-                func.Write(_opFactory.Return());
-                return func;
-            }
+            // SHIFT + ALTGR + 9 == »
+            // SHIFT + ALTGR + 8 == «
+        }
+        else if (_scriptEnvironment.Functions.TryGetValue($"prog::{main}", out var m))
+        {
+            ret = m;
+        }
+        else if (_scriptEnvironment.Classes.TryGetValue($"{SpecialVariables.Global}::app", out var globApp) &&
+                 globApp.TryGetFunction(main, out var ma))
+        {
+            ret = ma;
+        }
+        else if (_scriptEnvironment.Functions.TryGetValue($"{SpecialVariables.Global}::{main}", out var globMain))
+        {
+            ret = globMain;
+        }
+
+        if (ret != null)
+        {
+            return ret;
+        }
+        else
+        {
+            var func = _scriptEnvironment.Functions[
+                $"{SpecialVariables.Global}::{SpecialVariables.Global}"];
+            func.Write(_opFactory.Return());
+            return func;
         }
     }
 }

@@ -1,85 +1,84 @@
 ﻿using eilang.Exceptions;
 using eilang.Interfaces;
 
-namespace eilang.Values
+namespace eilang.Values;
+
+public class ByteValue : ValueBase<byte>, IValueWithMathOperands
 {
-    public class ByteValue : ValueBase<byte>, IValueWithMathOperands
+    public ByteValue(byte value) : base(EilangType.Byte, value)
     {
-        public ByteValue(byte value) : base(EilangType.Byte, value)
-        {
-        }
+    }
 
-        public override bool Equals(object obj)
-        {
-            if (!(obj is ByteValue byt))
-                return false;
-            return byt.Item == Item;
-        }
-        
-        public override int GetHashCode()
-        {
-            return Item;
-        }
+    public override bool Equals(object obj)
+    {
+        if (!(obj is ByteValue byt))
+            return false;
+        return byt.Item == Item;
+    }
 
-        public IValue Add(IValueWithMathOperands other, IValueFactory fac)
-        {
-            return other.Type switch
-            {
-                EilangType.String => fac.String(Item + other.As<StringValue>().Item),
-                EilangType.Integer => fac.Integer(Item + other.Get<int>()),
-                EilangType.Long => fac.Long(Item + other.Get<long>()),
-                EilangType.Double => fac.Double(Item + other.Get<double>()),
-                EilangType.Byte => fac.Byte((byte)(Item + other.Get<byte>())),
-                _ => throw ThrowHelper.TypeMismatch(Type, "+", other.Type)
-            };
-        }
+    public override int GetHashCode()
+    {
+        return Item;
+    }
 
-        public IValue Subtract(IValueWithMathOperands other, IValueFactory fac)
+    public ValueBase Add(IValueWithMathOperands other, IValueFactory fac)
+    {
+        return other.Type switch
         {
-            return other.Type switch
-            {
-                EilangType.Integer => fac.Integer(Item - other.Get<int>()),
-                EilangType.Long => fac.Long(Item - other.Get<long>()),
-                EilangType.Double => fac.Double(Item - other.Get<double>()),
-                EilangType.Byte => fac.Byte((byte)(Item - other.Get<byte>())),
-                _ => throw ThrowHelper.TypeMismatch(Type, "-", other.Type)
-            };
-        }
+            EilangType.String => fac.String(Item + other.As<StringValue>().Item),
+            EilangType.Integer => fac.Integer(Item + other.Get<int>()),
+            EilangType.Long => fac.Long(Item + other.Get<long>()),
+            EilangType.Double => fac.Double(Item + other.Get<double>()),
+            EilangType.Byte => fac.Byte((byte)(Item + other.Get<byte>())),
+            _ => throw ThrowHelper.TypeMismatch(Type, "+", other.Type)
+        };
+    }
 
-        public IValue Multiply(IValueWithMathOperands other, IValueFactory fac)
+    public ValueBase Subtract(IValueWithMathOperands other, IValueFactory fac)
+    {
+        return other.Type switch
         {
-            return other.Type switch
-            {
-                EilangType.Integer => fac.Integer(Item * other.Get<int>()),
-                EilangType.Long => fac.Long(Item * other.Get<long>()),
-                EilangType.Double => fac.Double(Item * other.Get<double>()),
-                EilangType.Byte => fac.Byte((byte)(Item * other.Get<byte>())),
-                _ => throw ThrowHelper.TypeMismatch(Type, "*", other.Type)
-            };
-        }
+            EilangType.Integer => fac.Integer(Item - other.Get<int>()),
+            EilangType.Long => fac.Long(Item - other.Get<long>()),
+            EilangType.Double => fac.Double(Item - other.Get<double>()),
+            EilangType.Byte => fac.Byte((byte)(Item - other.Get<byte>())),
+            _ => throw ThrowHelper.TypeMismatch(Type, "-", other.Type)
+        };
+    }
 
-        public IValue Divide(IValueWithMathOperands other, IValueFactory fac)
+    public ValueBase Multiply(IValueWithMathOperands other, IValueFactory fac)
+    {
+        return other.Type switch
         {
-            return other.Type switch
-            {
-                EilangType.Integer => fac.Integer(Item / other.Get<int>()),
-                EilangType.Long => fac.Long(Item / other.Get<long>()),
-                EilangType.Double => fac.Double(Item / other.Get<double>()),
-                EilangType.Byte => fac.Byte((byte)(Item / other.Get<byte>())),
-                _ => throw ThrowHelper.TypeMismatch(Type, "/", other.Type)
-            };
-        }
+            EilangType.Integer => fac.Integer(Item * other.Get<int>()),
+            EilangType.Long => fac.Long(Item * other.Get<long>()),
+            EilangType.Double => fac.Double(Item * other.Get<double>()),
+            EilangType.Byte => fac.Byte((byte)(Item * other.Get<byte>())),
+            _ => throw ThrowHelper.TypeMismatch(Type, "*", other.Type)
+        };
+    }
 
-        public IValue Modulo(IValueWithMathOperands other, IValueFactory fac)
+    public ValueBase Divide(IValueWithMathOperands other, IValueFactory fac)
+    {
+        return other.Type switch
         {
-            return other.Type switch
-            {
-                EilangType.Integer => fac.Integer(Item % other.Get<int>()),
-                EilangType.Long => fac.Long(Item % other.Get<long>()),
-                EilangType.Double => fac.Double(Item % other.Get<double>()),
-                EilangType.Byte => fac.Byte((byte)(Item % other.Get<byte>())),
-                _ => throw ThrowHelper.TypeMismatch(Type, "%", other.Type)
-            };
-        }
+            EilangType.Integer => fac.Integer(Item / other.Get<int>()),
+            EilangType.Long => fac.Long(Item / other.Get<long>()),
+            EilangType.Double => fac.Double(Item / other.Get<double>()),
+            EilangType.Byte => fac.Byte((byte)(Item / other.Get<byte>())),
+            _ => throw ThrowHelper.TypeMismatch(Type, "/", other.Type)
+        };
+    }
+
+    public ValueBase Modulo(IValueWithMathOperands other, IValueFactory fac)
+    {
+        return other.Type switch
+        {
+            EilangType.Integer => fac.Integer(Item % other.Get<int>()),
+            EilangType.Long => fac.Long(Item % other.Get<long>()),
+            EilangType.Double => fac.Double(Item % other.Get<double>()),
+            EilangType.Byte => fac.Byte((byte)(Item % other.Get<byte>())),
+            _ => throw ThrowHelper.TypeMismatch(Type, "%", other.Type)
+        };
     }
 }

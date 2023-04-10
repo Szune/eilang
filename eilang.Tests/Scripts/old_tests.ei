@@ -7,11 +7,11 @@
     typ oth {
         other: string;
         ctor(other);
-        
+
         fun get_f() {
             ret *std::f();
         }
-        
+
         fun write() {
             println('writing from within oth');
         }
@@ -19,15 +19,15 @@
 	typ cmd {
 		arg, val: string;
 		ctor(arg, val);
-		
+
 		fun init() {
 		    arg = *std::oth('hello world from typ oth');
 		}
-		
+
 		fun init2() {
 		    arg = ['oops, init2 works wow cool'];
 		}
-		
+
 		fun init3() {
 		    arg = [['init3 also works wow']];
 		}
@@ -91,13 +91,13 @@ fun main() {
     println("fe".insert(2, "st"));
 	var parser = *std::argparse();
 	var parsed = parser.parse();
-	
+
 	var d = [];
 	d.add(['hello everybody wow yes']);
 	println(d[0][0]);
 	d.add(['hello everybody wow yes', 'd[1][1]']);
 	println(d[1][1]);
-	
+
 	var dd = [];
 	dd.add(*std::cmd());
 	dd[0].init2();
@@ -109,35 +109,35 @@ fun main() {
 	assert(
         dd[0].arg[0] == 'whoa, changed value of dd[0].arg[0]',
         'expected dd[0].arg[0] to be "whoa, changed value of dd[0].arg[0]" but was ' + dd[0].arg[0]);
-	
+
 	var nx = *std::cmd();
 	nx.init3();
 	println(nx.arg[0][0]);
 	nx.arg[0][0] = 'new 3';
 	println(nx.arg[0][0]);
 	assert(nx.arg[0][0] == 'new 3', 'expected nx.arg[0][0] to be "new 3" but was ' + nx.arg[0][0]);
-	
+
 	var nlst = [];
 	nlst.add('hej');
 	println(nlst[0]);
 	nlst[0] = 'då';
 	println(nlst[0]);
-	
+
 	var lst = [];
 	lst.add(*std::cmd());
 	println(lst.len());
 	lst[0].init();
 	println(lst[0]);
 	println('after lst[0].init();');
-	
+
 	println(lst[0].arg.other);
 	lst[0].arg.write();
 	lst[0].arg.get_f().write();
-	
+
 	for (0..(parsed.len() - 1)) {
 	    println(parsed[ix].arg);
 	}
-	
+
     #[
         block comment
     ]#
@@ -147,8 +147,8 @@ fun main() {
         println('test');
     }
 
-    for (1..6) 
-    {   
+    for (1..6)
+    {
         println(ix);
     }
     var b = 1;

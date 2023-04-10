@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using eilang.ArgumentBuilders;
@@ -14,199 +15,213 @@ using eilang.OperationCodes;
 using eilang.Parsing;
 using eilang.Values;
 
-namespace eilang
+namespace eilang;
+
+public static class Eilang
 {
-    public static class Eilang
+    public static ValueBase RunFunction(IEnvironment compiledEnvironment, string functionName, params object[] arguments)
     {
-        public static IValue RunFunction(IEnvironment compiledEnvironment, string functionName, params object[] arguments)
+        var main = new Function("main", SpecialVariables.Global, new List<string>());
+        var args = arguments.ToList();
+        foreach(var arg in args)
         {
-            var main = new Function("main", SpecialVariables.Global, new List<string>());
-            var args = arguments.ToList();
-            foreach(var arg in args)
-            {
-                main.Write(compiledEnvironment.OperationCodeFactory.Push(arg.ToValue(compiledEnvironment.ValueFactory)));
-            }
-            main.Write(compiledEnvironment.OperationCodeFactory.Push(compiledEnvironment.ValueFactory.Integer(args.Count)));
-            main.Write(compiledEnvironment.OperationCodeFactory.Call(compiledEnvironment.ValueFactory.String(functionName)));
-            main.Write(compiledEnvironment.OperationCodeFactory.Return());
-            
-            compiledEnvironment.Functions[$"{SpecialVariables.Global}::main"] = main;
-
-            var interpreter = new Interpreter(compiledEnvironment);
-            return interpreter.Interpret();
+            main.Write(compiledEnvironment.OperationCodeFactory.Push(arg.ToValue(compiledEnvironment.ValueFactory)));
         }
-        
-        public static IValue RunFile(string path, ScriptEnvironment environment = null)
+        main.Write(compiledEnvironment.OperationCodeFactory.Push(compiledEnvironment.ValueFactory.Integer(args.Count)));
+        main.Write(compiledEnvironment.OperationCodeFactory.Call(compiledEnvironment.ValueFactory.String(functionName)));
+        main.Write(compiledEnvironment.OperationCodeFactory.Return());
+
+        compiledEnvironment.Functions[$"{SpecialVariables.Global}::main"] = main;
+
+        var interpreter = new Interpreter(compiledEnvironment);
+        return interpreter.Interpret();
+    }
+
+    public static ValueBase RunFile(string path, ScriptEnvironment environment = null)
+    {
+        var imports = Enumerable.Empty<string>();
+        try
         {
-            var imports = new ImportResolver().ResolveImportsFromFile(path);
-            var code = new ImportMerger().Merge(imports);
+            imports = new ImportResolver().ResolveImportsFromFile(path);
+        }
+        catch (FileNotFoundException e)
+        {
+            var folder = Path.GetDirectoryName(e.FileName);
+            var file = Path.GetFileName(e.FileName);
+            var scriptsInFolder = new DirectoryInfo(folder).GetFiles("*.ei")
+                .Select(f => f.Name).Where(f => Math.Abs(f.Length - file.Length) < 3);
 
-            ILexer finalLexer;
-            if (code.Count > 1)
-            {
-                var lexers = new List<ILexer>();
-                foreach (var imported in code)
-                {
-                    var reader = new ScriptReader(imported.Code, imported.Path, imported.LineOffset);
-                    var lexer = new ScriptLexer(reader, new CommonLexer(reader));
-                    lexers.Add(lexer);
-                }
+            Program.LogLine(ConsoleColor.Red, $"Could not find '{file}'. Did you mean:\n{string.Join('\n', scriptsInFolder)}");
+            return new VoidValue();
+        }
 
-                finalLexer = new MultifileLexer(lexers);
-            }
-            else
+        var code = new ImportMerger().Merge(imports);
+
+        ILexer finalLexer;
+        if (code.Count > 1)
+        {
+            var lexers = new List<ILexer>();
+            foreach (var imported in code)
             {
-                var imported = code.First();
                 var reader = new ScriptReader(imported.Code, imported.Path, imported.LineOffset);
-                finalLexer = new ScriptLexer(reader, new CommonLexer(reader));
+                var lexer = new ScriptLexer(reader, new CommonLexer(reader));
+                lexers.Add(lexer);
             }
 
-            var parser = new Parser(finalLexer);
-            var ast = parser.Parse();
-
-            if (environment == null)
-            {
-                environment = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
-                environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
-                environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
-                environment.AddExportedModulesFromAssembly(typeof(Eilang));
-            }
-
-            Compiler.Compile(environment, ast
-#if LOGGING
-                ,logger: Console.Out
-#endif
-            );
-
-            var interpreter = new Interpreter(environment
-#if LOGGING
-                ,logger: Console.Out
-#endif
-            );
-            return interpreter.Interpret();
+            finalLexer = new MultifileLexer(lexers);
+        }
+        else
+        {
+            var imported = code.First();
+            var reader = new ScriptReader(imported.Code, imported.Path, imported.LineOffset);
+            finalLexer = new ScriptLexer(reader, new CommonLexer(reader));
         }
 
-        public static IValue Eval(string code, ScriptEnvironment environment = null)
+        var parser = new Parser(finalLexer);
+        var ast = parser.Parse();
+
+        if (environment == null)
         {
-            var reader = new ScriptReader(code, "eval");
-            var lexer = new ScriptLexer(reader, new CommonLexer(reader));
-            var parser = new Parser(lexer);
-            var ast = parser.Parse();
-
-            if (environment == null)
-            {
-                environment = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
-                environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
-                environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
-                environment.AddExportedModulesFromAssembly(typeof(Eilang));
-            }
-
-            Compiler.Compile(environment, ast
-#if LOGGING
-                ,logger: Console.Out
-#endif
-            );
-
-            var interpreter = new Interpreter(environment
-#if LOGGING
-                ,logger: Console.Out
-#endif
-            );
-            return interpreter.Interpret();
-        }
-
-        public static void ReplMode()
-        {
-            var environment = new ReplEnvironment(new OperationCodeFactory(), new ValueFactory());
-            var interpreter = new ReplInterpreter();
+            environment = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
             environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
             environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
             environment.AddExportedModulesFromAssembly(typeof(Eilang));
-            
-            while (true)
-            {
-                Console.Write(">");
-                var code = Console.ReadLine() ?? "";
-                if (string.IsNullOrWhiteSpace(code))
-                    continue;
-                try
-                {
-                    code = Simplify(code);
-                    var reader = new ScriptReader(code, "repl");
-                    var lexer = new ScriptLexer(reader, new CommonLexer(reader));
-                    var parser = new Parser(lexer);
-                    var ast = parser.Parse();
-
-                    Compiler.Compile(environment, ast);
-
-                    var eval = interpreter.Interpret(environment);
-                    if (eval.Type != EilangType.Void)
-                    {
-                        ExportedFunctions.PrintLine(new State(environment, null, null, null, null, new ValueFactory()), Arguments.Create(eval, "eval"));
-                    }
-                }
-                catch (ExitException e)
-                {
-                    if (!string.IsNullOrWhiteSpace(e.Message))
-                    {
-                        var oldColor = Console.ForegroundColor;
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine(e.Message);
-                        Console.ForegroundColor = oldColor;
-                    }
-                    Environment.Exit(e.ExitCode);
-                }
-                catch (ErrorMessageException e)
-                {
-                    Program.LogLine(ConsoleColor.Red, e.Message);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            }
         }
 
-        private static string Simplify(string code)
+        Compiler.Compile(environment, ast
+#if LOGGING
+                ,logger: Console.Out
+#endif
+        );
+
+        var interpreter = new Interpreter(environment
+#if LOGGING
+                ,logger: Console.Out
+#endif
+        );
+        return interpreter.Interpret();
+    }
+
+    public static ValueBase Eval(string code, ScriptEnvironment environment = null)
+    {
+        var reader = new ScriptReader(code, "eval");
+        var lexer = new ScriptLexer(reader, new CommonLexer(reader));
+        var parser = new Parser(lexer);
+        var ast = parser.Parse();
+
+        if (environment == null)
         {
-            if (code.Trim().EndsWith(";") || code.Trim().EndsWith("}"))
+            environment = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
+            environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
+            environment.AddExportedModulesFromAssembly(typeof(Eilang));
+        }
+
+        Compiler.Compile(environment, ast
+#if LOGGING
+                ,logger: Console.Out
+#endif
+        );
+
+        var interpreter = new Interpreter(environment
+#if LOGGING
+                ,logger: Console.Out
+#endif
+        );
+        return interpreter.Interpret();
+    }
+
+    public static void ReplMode()
+    {
+        var environment = new ReplEnvironment(new OperationCodeFactory(), new ValueFactory());
+        var interpreter = new ReplInterpreter();
+        environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
+        environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
+        environment.AddExportedModulesFromAssembly(typeof(Eilang));
+
+        while (true)
+        {
+            Console.Write(">");
+            var code = Console.ReadLine() ?? "";
+            if (string.IsNullOrWhiteSpace(code))
+                continue;
+            try
             {
-                return code;
+                code = Simplify(code);
+                var reader = new ScriptReader(code, "repl");
+                var lexer = new ScriptLexer(reader, new CommonLexer(reader));
+                var parser = new Parser(lexer);
+                var ast = parser.Parse();
+
+                Compiler.Compile(environment, ast);
+
+                var eval = interpreter.Interpret(environment);
+                if (eval.Type != EilangType.Void)
+                {
+                    ExportedFunctions.PrintLine(new State(environment, null, null, null, null, new ValueFactory()), Arguments.Create(eval, "eval"));
+                }
+            }
+            catch (ExitException e)
+            {
+                if (!string.IsNullOrWhiteSpace(e.Message))
+                {
+                    var oldColor = Console.ForegroundColor;
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(e.Message);
+                    Console.ForegroundColor = oldColor;
+                }
+                Environment.Exit(e.ExitCode);
+            }
+            catch (ErrorMessageException e)
+            {
+                Program.LogLine(ConsoleColor.Red, e.Message);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+    }
+
+    private static string Simplify(string code)
+    {
+        if (code.Trim().EndsWith(";") || code.Trim().EndsWith("}"))
+        {
+            return code;
+        }
+        else
+        {
+            if (Regex.IsMatch(code, "\bret\b"))
+            {
+                return $"{code};";
             }
             else
             {
-                if (Regex.IsMatch(code, "\bret\b"))
-                {
-                    return $"{code};";
-                }
-                else
-                {
-                    return $"({code});";
-                }
+                return $"({code});";
             }
         }
+    }
 
-        // TODO: make another method to compile from file and allow imports
-        public static IEnvironment Compile(string code, IEnvironment environment = null)
+    // TODO: make another method to compile from file and allow imports
+    public static IEnvironment Compile(string code, IEnvironment environment = null)
+    {
+        var reader = new ScriptReader(code, "compiled");
+        var lexer = new ScriptLexer(reader, new CommonLexer(reader));
+        var parser = new Parser(lexer);
+        var ast = parser.Parse();
+
+        if (environment == null)
         {
-            var reader = new ScriptReader(code, "compiled");
-            var lexer = new ScriptLexer(reader, new CommonLexer(reader));
-            var parser = new Parser(lexer);
-            var ast = parser.Parse();
-
-            if (environment == null)
-            {
-                var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
-                // TODO: turn the following methods into extension methods on IEnvironment
-                env.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
-                env.AddExportedFunctionsFromAssembly(typeof(Eilang));
-                env.AddExportedModulesFromAssembly(typeof(Eilang));
-                environment = env;
-            }
-
-            Compiler.Compile(environment, ast);
-
-            return environment;
+            var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            // TODO: turn the following methods into extension methods on IEnvironment
+            env.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
+            env.AddExportedFunctionsFromAssembly(typeof(Eilang));
+            env.AddExportedModulesFromAssembly(typeof(Eilang));
+            environment = env;
         }
+
+        Compiler.Compile(environment, ast);
+
+        return environment;
     }
 }

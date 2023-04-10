@@ -2,15 +2,16 @@
     <PropertyGroup>
         <AssemblyName>ei</AssemblyName>
         <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
+        <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
+        <SelfContained>true</SelfContained>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-        <PublishSingleFile>true</PublishSingleFile>
         <Authors>Erik Iwarson</Authors>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <AssemblyTitle>eilang</AssemblyTitle>
-        <AssemblyVersion>0.2</AssemblyVersion>
+        <AssemblyVersion>0.3</AssemblyVersion>
     </PropertyGroup>
-    
+
     <ItemGroup>
 <!--        <Content Include="..\scripts\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />-->
 <!--        <Content Include="..\std\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />-->

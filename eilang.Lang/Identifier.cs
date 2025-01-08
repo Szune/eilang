@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace eilang;
+﻿namespace eilang;
 
 // TODO: implement arguments as numbered locals in the call frame
 // TODO:  so that they do not require checking a dictionary to find a value

@@ -135,6 +135,7 @@ public class DoubleValue : ValueBase<double>, IValueWithMathOperands, IEilangCom
         // I'm not sure if I like eilang making predictions on what accuracy is fine for the user
         // so for now, I'm leaving it up to the user to make such checks
         // update 3 years later: no decision yet, maybe in 3 more years
+        // update after 2 more years: no decision yet, maybe in another year
         return other.Type switch
         {
             EilangType.Integer => (int)Item == other.Get<int>(),

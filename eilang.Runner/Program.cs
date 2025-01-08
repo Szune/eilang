@@ -2,18 +2,13 @@
 //#define TESTING
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using eilang.Exceptions;
-using eilang.Extensions;
 using eilang.Helpers;
-using eilang.Interpreting;
 using eilang.Modules;
-using eilang.Values;
 
-namespace eilang;
+namespace eilang.Runner;
 
 public static class Program
 {
@@ -44,42 +39,7 @@ public static class Program
         var first = args.FirstOrDefault()?.Trim().ToUpperInvariant();
         if (!string.IsNullOrWhiteSpace(first))
         {
-            if (first == "-S")
-            {
-                if (args.Length < 2)
-                {
-                    Console.WriteLine("-s takes a script name as the second argument.");
-                    return;
-                }
-
-                var exeDirectory = PathHelper.GetEilangBinaryDirectory();
-                var fullPath = Path.Combine(exeDirectory, args[1]);
-
-                EnvModule.RemoveSelfArgument();
-                try
-                {
-                    Eilang.RunFile(fullPath);
-                }
-                catch (ErrorMessageException e)
-                {
-                    LogLine(ConsoleColor.Red, e.Message);
-                }
-            }
-            else if (first == "-E")
-            {
-                Eilang.ReplMode();
-            }
-            else
-            {
-                try
-                {
-                    Eilang.RunFile(args.First());
-                }
-                catch (ErrorMessageException e)
-                {
-                    LogLine(ConsoleColor.Red, e.Message);
-                }
-            }
+            ProcessArgs(args, first);
             return;
         }
 
@@ -173,7 +133,55 @@ public static class Program
 #endif
     }
 
-    public static void LogLine(ConsoleColor color, string text)
+    private static void ProcessArgs(string[] args, string first)
+    {
+        if (first == "-S")
+        {
+            if (args.Length < 2)
+            {
+                Console.WriteLine("-s takes a script name as the second argument.");
+                return;
+            }
+
+            var exeDirectory = PathHelper.GetEilangBinaryDirectory();
+            var fullPath = Path.Combine(exeDirectory, args[1]);
+
+            EnvModule.RemoveSelfArgument();
+            try
+            {
+                Eilang.RunFile(fullPath);
+            }
+            catch (ErrorMessageException e)
+            {
+                LogLine(ConsoleColor.Red, e.Message);
+            }
+        }
+        else if (first == "-E")
+        {
+            Eilang.ReplMode();
+        }
+        else if (first == "-H")
+        {
+            Console.WriteLine("Usage:");
+            Console.WriteLine("ei.exe [<script>] [-s <script>] [-e] [-h]");
+            Console.WriteLine("  -s <script>  Runs the specified script from the eilang binary directory");
+            Console.WriteLine("  -e           Starts the REPL");
+            Console.WriteLine("  -h           Prints this help message");
+        }
+        else
+        {
+            try
+            {
+                Eilang.RunFile(args.First());
+            }
+            catch (ErrorMessageException e)
+            {
+                LogLine(ConsoleColor.Red, e.Message);
+            }
+        }
+    }
+
+    private static void LogLine(ConsoleColor color, string text)
     {
         var old = Console.ForegroundColor;
         Console.ForegroundColor = color;

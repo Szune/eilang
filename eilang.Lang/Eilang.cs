@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using eilang.ArgumentBuilders;
 using eilang.Compiling;
 using eilang.Exceptions;
@@ -51,8 +47,7 @@ public static class Eilang
             var scriptsInFolder = new DirectoryInfo(folder).GetFiles("*.ei")
                 .Select(f => f.Name).Where(f => Math.Abs(f.Length - file.Length) < 3);
 
-            Program.LogLine(ConsoleColor.Red, $"Could not find '{file}'. Did you mean:\n{string.Join('\n', scriptsInFolder)}");
-            return new VoidValue();
+            throw new FileNotFoundException($"Could not find '{file}'. Did you mean:\n{string.Join('\n', scriptsInFolder)}", e.FileName);
         }
 
         var code = new ImportMerger().Merge(imports);
@@ -172,9 +167,9 @@ public static class Eilang
                 }
                 Environment.Exit(e.ExitCode);
             }
-            catch (ErrorMessageException e)
+            catch (ErrorMessageException)
             {
-                Program.LogLine(ConsoleColor.Red, e.Message);
+                throw;
             }
             catch (Exception e)
             {

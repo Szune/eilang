@@ -10,10 +10,12 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <AssemblyTitle>eilang</AssemblyTitle>
         <AssemblyVersion>0.3</AssemblyVersion>
+        <RootNamespace>eilang.Runner</RootNamespace>
     </PropertyGroup>
 
-    <ItemGroup>
-<!--        <Content Include="..\scripts\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />-->
+    <ItemGroup><!--        <Content Include="..\scripts\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />-->
 <!--        <Content Include="..\std\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />-->
+    
+      <ProjectReference Include="..\eilang.Lang\eilang.Lang.csproj" />
     </ItemGroup>
 </Project>

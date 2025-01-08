@@ -1,83 +1,26 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using eilang.ArgumentBuilders;
-using eilang.Classes;
 using eilang.Exceptions;
 using eilang.Exporting;
 using eilang.Extensions;
 using eilang.Interpreting;
-using eilang.OperationCodes;
 using eilang.Values;
 
 namespace eilang;
 
 public static class ExportedFunctions
 {
-    private static Lazy<Class> _typeInfoClass = new(
-        () => new Class("type_info", SpecialVariables.Global),
-        LazyThreadSafetyMode.ExecutionAndPublication);
-
     [ExportFunction("exit")]
     public static ValueBase Exit(State state, Arguments args)
     {
         var value = args.EilangValue();
-        switch (value.Type)
+        throw value.Type switch
         {
-            case EilangType.String:
-                throw new ExitException(value.To<string>());
-            case EilangType.Integer:
-                throw new ExitException(value.To<int>());
-            default:
-                throw new ExitException();
-        }
-    }
-
-    [ExportFunction("type")]
-    public static ValueBase Type(State state, Arguments arg)
-    {
-        var type = arg.EilangValue(EilangType.Instance | EilangType.Map | EilangType.List | EilangType.String, "value");
-        var typeClass = GetClass(type);
-        var typeScope = GetScope(type);
-        // .As<InstanceValue>();
-        var fac = state.ValueFactory;
-        var scope = new Scope();
-        scope.DefineVariable("name", fac.String(typeClass.Name));
-        scope.DefineVariable("module", fac.String(typeClass.Module));
-        scope.DefineVariable("full_name", fac.String(typeClass.FullName));
-        scope.DefineVariable("variables",
-            fac.List(typeScope.GetAllVariables().Keys
-                .Where(k => !string.Equals(k, SpecialVariables.Me))
-                .Select(k => fac.String(k)).ToList()));
-        scope.DefineVariable("functions",
-            fac.List(typeClass.Functions
-                .Select(k => fac.String(k.Name)).ToList()));
-        return fac.Instance(new Instance(scope, _typeInfoClass.Value));
-    }
-
-    private static Scope GetScope(ValueBase type)
-    {
-        return type switch
-        {
-            InstanceValue instanceValue => instanceValue.Item.Scope,
-            ListValue _ => new Scope(),
-            MapValue _ => new Scope(),
-            StringValue _ => new Scope(),
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
-        };
-    }
-
-    private static Class GetClass(ValueBase type)
-    {
-        var _ = new OperationCodeFactory();
-        return type switch
-        {
-            InstanceValue instanceValue => instanceValue.Item.Owner,
-            ListValue _ => new ListClass(_),
-            MapValue _ => new MapClass(_),
-            StringValue _ => new StringClass(_),
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
+            EilangType.String => new ExitException(value.To<string>()),
+            EilangType.Integer => new ExitException(value.To<int>()),
+            _ => new ExitException()
         };
     }
 

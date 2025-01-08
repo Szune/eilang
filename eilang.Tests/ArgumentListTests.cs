@@ -173,7 +173,7 @@ public class ArgumentBuilderTests
         }
 
         [Fact]
-        public void ListWithArgumentConstraintsDoesNotThrowsIfOptionalArgumentsAreNotSupplied()
+        public void ListWithArgumentConstraintsDoesNotThrowIfOptionalArgumentsAreNotSupplied()
         {
             var args = GetArgumentList(_fac.String("testo"), _fac.String("presto"), _fac.Integer(-1));
             var sut = Arguments.Create(_fac.List(args), "test");
@@ -191,6 +191,24 @@ public class ArgumentBuilderTests
                 argList.Get<long>(3)
             };
             Assert.Equal(new List<object>{ "testo", "presto", -1, 150L}, values);
+        }
+
+        [Fact]
+        public void ListWithArgumentConstraintsThrowsIfRequiredArgumentsMissingAndOptionalArgumentsNotSupplied()
+        {
+            var args = GetArgumentList();
+            var sut = Arguments.Create(_fac.List(args), "test");
+
+            void Act()
+            {
+                var argList = sut.List().With
+                    .Argument(EilangType.String, "old")
+                    .OptionalArgument(EilangType.String, "new", "")
+                    .OptionalArgument(EilangType.Integer, "oh_no", 100)
+                    .OptionalArgument(EilangType.Long, "oh_no_ok", 150L)
+                    .Build();
+            }
+            Assert.Throws<ArgumentMismatchException>(Act);
         }
 
         [Fact]

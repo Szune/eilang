@@ -19,7 +19,7 @@ public class CompilerTests
         {
             const string name = "test";
             var funcAst = new AstFunction(name, new List<Parameter>(), new Position(0, 0));
-            var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            var env = new ScriptEnvironment(new OperationCodeFactory());
             Compiler.Compile(env,
                 new AstRoot(new Position(0, 0)) {Functions = {funcAst}});
             Assert.Equal(typeof(Return), env.Functions[GetGlobalName(name)].Code.Last().Op.GetType());
@@ -45,7 +45,7 @@ public class CompilerTests
                 }, null)
             );
 
-            var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            var env = new ScriptEnvironment(new OperationCodeFactory());
             Compiler.Compile(env,
                 new AstRoot(new Position(0, 0)) {Functions = {funcAst}});
             Assert.Equal(typeof(Return), env.Functions[GetGlobalName(name)].Code.Last().Op.GetType());
@@ -58,7 +58,7 @@ public class CompilerTests
         public void ShouldBeAppliedIfFunctionIsEmpty()
         {
             var lambdaAst = new AstParameterlessLambda(new AstBlock(null), null);
-            var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            var env = new ScriptEnvironment(new OperationCodeFactory());
             Compiler.Compile(env,
                 new AstRoot(new Position(0, 0)) {Expressions = {lambdaAst}});
             Assert.Equal(typeof(Return),
@@ -85,7 +85,7 @@ public class CompilerTests
                 }, null)
             );
 
-            var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            var env = new ScriptEnvironment(new OperationCodeFactory());
             Compiler.Compile(env,
                 new AstRoot(new Position(0, 0)) {Expressions = { lambdaAst }});
             Assert.Equal(typeof(Return),
@@ -102,7 +102,7 @@ public class CompilerTests
             var funcAst = new AstMemberFunction(name, new List<Parameter>(), new Position(0, 0));
             var klass = new AstClass(name, null);
             klass.Functions.Add(funcAst);
-            var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            var env = new ScriptEnvironment(new OperationCodeFactory());
             Compiler.Compile(env,
                 new AstRoot(new Position(0, 0))
                 {
@@ -133,7 +133,7 @@ public class CompilerTests
             );
             var klass = new AstClass(name, null);
             klass.Functions.Add(funcAst);
-            var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            var env = new ScriptEnvironment(new OperationCodeFactory());
             Compiler.Compile(env,
                 new AstRoot(new Position(0, 0))
                 {
@@ -151,7 +151,7 @@ public class CompilerTests
         {
             const string name = "test";
             var funcAst = new AstExtensionFunction(name, name, new List<Parameter>(), new Position(0, 0));
-            var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            var env = new ScriptEnvironment(new OperationCodeFactory());
             Compiler.Compile(env,
                 new AstRoot(new Position(0, 0))
                 {
@@ -179,7 +179,7 @@ public class CompilerTests
                     new AstStringConstant("hello world", null)
                 }, null)
             );
-            var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            var env = new ScriptEnvironment(new OperationCodeFactory());
             Compiler.Compile(env,
                 new AstRoot(new Position(0, 0))
                 {

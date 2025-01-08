@@ -33,7 +33,7 @@ public interface IOperationCodeFactory
     Initialize Initialize(ValueBase className);
     CallExported CallExported(ValueBase functionName);
     TypeGet TypeGet();
-    CallMember CallMember(string functionName, int argumentCount);
+    IOperationCode CallMember(string functionName, int argumentCount);
     MemberReference MemberReference(string memberName);
     MemberSet MemberSet(ValueBase memberName);
     And And();

@@ -9,7 +9,7 @@ namespace eilang
 {
     public class ReplEnvironment : ScriptEnvironment
     {
-        public ReplEnvironment(IOperationCodeFactory operationCodeFactory, IValueFactory valueFactory) : base(operationCodeFactory, valueFactory)
+        public ReplEnvironment(IOperationCodeFactory operationCodeFactory) : base(operationCodeFactory)
         {
             
         }

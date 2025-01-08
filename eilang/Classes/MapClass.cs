@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using eilang.Compiling;
+using eilang.Interfaces;
 using eilang.OperationCodes;
 using eilang.Parsing;
 using eilang.Values;
@@ -14,7 +15,7 @@ public class MapClass : Class
         new("int", EilangType.Integer),
         new("long", EilangType.Long)
     };
-    public MapClass(IOperationCodeFactory factory) : base(SpecialVariables.Map, SpecialVariables.Global)
+    public MapClass(IOperationCodeFactory factory, IValueFactory valueFactory) : base(SpecialVariables.Map, SpecialVariables.Global)
     {
         CtorForMembersWithValues.Write(factory.Return());
         AddMethod(new MemberFunction("len", Module,  new List<string>(), this)

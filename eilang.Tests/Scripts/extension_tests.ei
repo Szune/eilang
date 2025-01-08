@@ -1,0 +1,41 @@
+fun string->contains(find: string) { # extends string class with contains() function
+    ret me.index_of(find, 0) > -1;
+}
+
+fun string->ends_with(find: string) {
+    var len_str = me.len();
+    var len_find = find.len();
+    if len_find > len_str {
+        ret false;
+    }
+
+    var c = 0;
+    for(len_str - len_find..len_str) {
+        if me[ix] != find[c] {
+            ret false;
+        }
+        c++;
+    }
+    ret true;
+}
+
+fun string->starts_with(find: string) {
+    var len_str = me.len();
+    var len_find = find.len();
+    if len_find > len_str {
+        ret false;
+    }
+
+    var c = 0;
+    for(0..len_find) {
+        if me[ix] != find[c] {
+            ret false;
+        }
+        c++;
+    }
+    ret true;
+}
+
+fun main() {
+    assert('hello world'.contains('lo worl'), $"'hello world'.contains('lo worl') should be true, but was false.");
+}

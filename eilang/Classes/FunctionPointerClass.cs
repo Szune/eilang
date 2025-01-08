@@ -8,7 +8,7 @@ namespace eilang.Classes;
 public class FunctionPointerClass : Class
 {
 
-    public FunctionPointerClass(IOperationCodeFactory opFactory, IValueFactory factory) : base(SpecialVariables.Function, SpecialVariables.Global)
+    public FunctionPointerClass(IOperationCodeFactory opFactory, IValueFactory valueFactory) : base(SpecialVariables.Function, SpecialVariables.Global)
     {
         CtorForMembersWithValues.Write(opFactory.Pop()); // pop self instance used for 'me' variable
         CtorForMembersWithValues.Write(opFactory.Return());

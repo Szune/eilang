@@ -11,6 +11,7 @@ namespace eilang.Interfaces;
 public delegate ValueBase ExportedFunction(State state, Arguments args);
 public interface IEnvironment
 {
+    void AddClass(Class clas, bool delayIdAssignment);
     IOperationCodeFactory OperationCodeFactory { get; }
     IValueFactory ValueFactory { get; }
     IDictionary<string, Function> Functions { get; }

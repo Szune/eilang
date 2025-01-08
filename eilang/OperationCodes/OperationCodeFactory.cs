@@ -206,9 +206,16 @@ public class OperationCodeFactory : IOperationCodeFactory
         return _typeGet;
     }
 
-    public CallMember CallMember(string functionName, int argumentCount)
+    public IOperationCode CallMember(string functionName, int argumentCount)
     {
-        return new CallMember(functionName, argumentCount);
+        return argumentCount switch
+        {
+            0 => new CallMemberWithoutArguments(functionName),
+            1 => new CallMemberWithArgumentCount1(functionName),
+            2 => new CallMemberWithArgumentCount2(functionName),
+            3 => new CallMemberWithArgumentCount3(functionName),
+            _ => new CallMember(functionName, argumentCount)
+        };
     }
 
     public MemberReference MemberReference(string memberName)

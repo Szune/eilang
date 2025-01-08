@@ -1,4 +1,5 @@
 ﻿//#define LOGGING
+//#define TESTING
 
 using System;
 using System.Diagnostics;
@@ -18,9 +19,27 @@ public static class Program
 {
     static void Main(string[] args)
     {
-        //Eilang.RunFile("json_perf_test.ei");
+#if TESTING
+        // TODO: stop using the parent scope in any of the Call operation codes
+        // TODO: they should not have access to outer variables
+        // TODO: rewrite extension functions, it is possible to know at compile time
+        // TODO:  whether or not a function is an extension function or member function
+        // TODO:  so they should take advantage of that and reduce unnecessary lookups
+
+        // TODO: maybe remove the TODOs from this file and track them somewhere more reasonable
+
+        //var env = Eilang.CompileWithImports(@"D:\eilang\latest-test.ei");
+        //Eilang.DumpBytecode(env, @"D:\eilang\latest-test.ei.bc.txt");
+        //Eilang.RunFile(@"D:\eilang\latest-test.ei");
+        Eilang.RunFile(@"D:\eilang\json_perf_test.ei");
+
+
+        //Eilang.RunFile(@"D:\eilang\json_perf_test.ei");
+        //var env = Eilang.CompileWithImports(@"D:\eilang\json_perf_test.ei");
+        //Eilang.DumpBytecode(env, @"D:\eilang\json_perf_test.ei.bc.txt");
         ////Console.WriteLine($"Fetch counts:\n{string.Join("\n",Scope._fetchCount.Where(kvp => kvp.Key.StartsWith(".")).OrderByDescending(kvp => kvp.Value).Select(kvp => kvp.Key + ": " + kvp.Value))}");
-        //return;
+        return;
+#endif
 #if !DEBUG
         var first = args.FirstOrDefault()?.Trim().ToUpperInvariant();
         if (!string.IsNullOrWhiteSpace(first))

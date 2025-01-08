@@ -71,7 +71,7 @@ public static class ArgumentListBuilderHelper
             case RequiredArgumentValidator _:
                 return $"{argument.Type.ToString().ToLower()} {argument.Name}";
             case OptionalArgumentValidator opt:
-                return $"[{argument.Type.ToString().ToLower()} {argument.Name} = {opt.ToValue()}]";
+                return $"[{argument.Type.ToString().ToLower()} {argument.Name} = {opt.Default.ToValueForExceptions()}]";
             default:
                 throw new ArgumentOutOfRangeException(nameof(argument));
         }

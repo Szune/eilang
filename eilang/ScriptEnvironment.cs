@@ -7,6 +7,7 @@ using eilang.Compiling;
 using eilang.Exporting;
 using eilang.Interfaces;
 using eilang.OperationCodes;
+using eilang.Values;
 
 namespace eilang
 {
@@ -16,10 +17,10 @@ namespace eilang
         public IOperationCodeFactory OperationCodeFactory { get; }
         public IValueFactory ValueFactory { get; }
 
-        public ScriptEnvironment(IOperationCodeFactory operationCodeFactory, IValueFactory valueFactory)
+        public ScriptEnvironment(IOperationCodeFactory operationCodeFactory)
         {
             OperationCodeFactory = operationCodeFactory;
-            ValueFactory = valueFactory;
+            ValueFactory = new ValueFactory(this);
         }
 
         public virtual IDictionary<string, Function> Functions { get; } = new Dictionary<string, Function>();
@@ -32,36 +33,47 @@ namespace eilang
         public virtual IDictionary<string, Struct> Structs { get; } = new Dictionary<string, Struct>();
 
         #region Exporting classes
-        
+
         public void AddClassesDerivedFromClassInAssembly(Type type)
         {
             var classes = type.Assembly
                 .GetTypes()
-                .Where(t => t.IsSubclassOf(typeof(Class)));
+                .Where(t => t.IsSubclassOf(typeof(Class)) && !ValueFactory.InternalClasses.Contains(t));
             foreach (var c in classes)
             {
-                var constructor = c.GetConstructor(new[] {typeof(IOperationCodeFactory), typeof(IValueFactory)});
-                Class instance;
+                var constructor = c.GetConstructor([typeof(IOperationCodeFactory), typeof(IValueFactory)]);
+                Class classInstance;
                 if (constructor != null)
                 {
-                    instance = (Class) constructor.Invoke(new object[] {OperationCodeFactory, ValueFactory});
+                    classInstance = (Class) constructor.Invoke([OperationCodeFactory, ValueFactory]);
                 }
                 else
                 {
-                    instance = (Class) c.GetConstructor(new[] {typeof(IOperationCodeFactory)})
-                        .Invoke(new object[] {OperationCodeFactory});
+                    throw new InvalidOperationException($"Bug: no valid constructor found for class '{c.FullName}'. Expected constructor: (IOperationCodeFactory, IValueFactory)");
                 }
 
-                Classes.Add(instance.FullName, instance);
+                AddClass(classInstance, false);
             }
         }
-        
+
+        public void AddClass(Class clas, bool delayIdAssignment)
+        {
+            var classValue = new ClassValue(clas);
+            ValueFactory.DefineClass(classValue);
+            if (!delayIdAssignment)
+            {
+                ValueFactory.AssignClassId(classValue);
+            }
+
+            Classes.Add(clas.FullName, clas);
+        }
+
         public void AddClassesDerivedFromClassInAssembly<T>() where T : Class
         {
             AddClassesDerivedFromClassInAssembly(typeof(T));
         }
         #endregion
-        
+
         #region Exporting functions
         public void AddExportedFunctionsFromClass(Type type)
         {
@@ -82,43 +94,67 @@ namespace eilang
         {
             AddExportedFunctionsFromClass(typeof(T));
         }
-        
+
         public void AddExportedFunctionsFromAssembly(Type type)
         {
             var classesContainingExportedFunctions = type.Assembly.GetTypes()
-                .Where(t => !t.GetCustomAttributes<ExportModuleAttribute>().Any() 
+                .Where(t => !t.GetCustomAttributes<ExportModuleAttribute>().Any()
                             && t.GetMethods().Any(m => m.GetCustomAttributes<ExportFunctionAttribute>().Any()));
             foreach (var c in classesContainingExportedFunctions)
             {
                 AddExportedFunctionsFromClass(c);
             }
         }
-        
+
         public void AddExportedFunctionsFromAssembly<T>()
         {
             AddExportedFunctionsFromAssembly(typeof(T));
         }
         #endregion
-        
+
         #region Exporting modules
         public void AddExportedModule(Type type)
         {
-            var moduleName = type.GetCustomAttribute<ExportModuleAttribute>().ModuleName;
-            var functions = type.GetMethods()
-                .Where(m => m.CustomAttributes.Any(a =>
-                    ReferenceEquals(a.AttributeType, typeof(ExportFunctionAttribute))));
-            foreach (var func in functions)
+            var methods = type.GetMethods();
+            for (var i = 0; i < methods.Length; i++)
             {
-                var names = func.GetCustomAttributes<ExportFunctionAttribute>();
+                if (!methods[i].GetCustomAttributes<ModuleInitializerAttribute>().Any())
+                {
+                    continue;
+                }
+
+                try
+                {
+                    // has to be a static method
+                    methods[i].Invoke(null, [this]);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Bug: Failed to run module initializer for type '{type.FullName}'. Expected a static method with the signature: void (IEnvironment)", ex);
+                }
+
+                break; // only one initializer is allowed
+            }
+
+            var moduleName =
+                type.GetCustomAttribute<ExportModuleAttribute>()?.ModuleName ??
+                throw new InvalidOperationException(
+                    "Bug: this method should only be called with a type that has an ExportModuleAttribute");
+
+            for (var methodIndex = 0; methodIndex < methods.Length; methodIndex++)
+            {
+                var method = methods[methodIndex];
+                // get all exported function names, or none if the method wasn't exported
+                var names = method.GetCustomAttributes<ExportFunctionAttribute>();
                 foreach (var name in names)
                 {
                     var nameWithModule = $"{moduleName}::{name.FunctionName}";
                     ExportedFunctions.Add(nameWithModule,
-                        (ExportedFunction) func.CreateDelegate(typeof(ExportedFunction)));
+                        (ExportedFunction)method.CreateDelegate(typeof(ExportedFunction)));
                 }
             }
         }
-        
+
         public void AddExportedModule<T>()
         {
             AddExportedModule(typeof(T));
@@ -133,7 +169,7 @@ namespace eilang
                 AddExportedModule(module);
             }
         }
-        
+
         public void AddExportedModulesFromAssembly<T>()
         {
             AddExportedModulesFromAssembly(typeof(T));

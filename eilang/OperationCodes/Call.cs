@@ -16,6 +16,8 @@ public class Call : IOperationCode
 
     public void Execute(State state)
     {
+        // this seems bad, if name is null, we try to pop the name from the stack?
+        // do we know in advance when that's the case? if we do, that should probably be a separate op code
         var funcName = _name?.As<StringValue>().Item ??
                        state.Stack.Pop().As<InternalStringValue>().Item;
 
@@ -35,8 +37,7 @@ public class Call : IOperationCode
             throw ThrowHelper.FunctionNotFound(funcName);
         }
 
-        var currentScope = state.Scopes.Peek();
-        state.Scopes.Push(new Scope(currentScope));
+        state.Scopes.Push(new Scope());
     }
 
     private void VerifyArgumentCount(Function func, int argumentCount)

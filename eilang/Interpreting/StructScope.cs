@@ -26,14 +26,8 @@ public class StructScope : IScope
             return (ValueBase)_variables[name];
         }
 
-        if (_parent != null)
-        {
-            var variable = _parent.GetVariable(name);
-            if (variable != null)
-                return variable;
-        }
-
-        return null;
+        var variable = _parent?.GetVariable(name);
+        return variable;
     }
 
     private StructScope GetContainingScope(string name)
@@ -41,14 +35,8 @@ public class StructScope : IScope
 
         if (_variables.Contains(name))
             return this;
-        if (_parent != null)
-        {
-            var variable = _parent.GetVariable(name);
-            if (variable != null)
-                return _parent;
-        }
-
-        return null;
+        var variable = _parent?.GetVariable(name);
+        return variable != null ? _parent : null;
     }
 
     public void SetVariable(string name, ValueBase value)

@@ -4,7 +4,7 @@ using eilang.Values;
 
 namespace eilang.Interpreting;
 
-public ref struct State
+public readonly ref struct State
 {
     public readonly IEnvironment Environment;
     public readonly StackWithoutNullItems<ValueBase> Stack;
@@ -16,14 +16,14 @@ public ref struct State
     public readonly BoolWrapper FinishedExecution; // BoolWrapper is used to make it mutable
 
     public State(IEnvironment environment, Stack<CallFrame> frames, StackWithoutNullItems<ValueBase> stack, Stack<Scope> scopes,
-        Stack<LoneScope> temporaryVariables, IValueFactory valueFactory)
+        Stack<LoneScope> temporaryVariables)
     {
         Environment = environment;
         Frames = frames;
         Stack = stack;
         Scopes = scopes;
         TemporaryVariables = temporaryVariables;
-        ValueFactory = valueFactory;
+        ValueFactory = environment.ValueFactory;
         FinishedExecution = false;
     }
 

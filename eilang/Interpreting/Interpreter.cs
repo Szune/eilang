@@ -1,12 +1,19 @@
+//#define INTERPRETER_TIMER
+//#undef INTERPRETER_TIMER
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+#if INTERPRETER_TIMER
+using System.Linq;
+#endif
 using eilang.Compiling;
 using eilang.Exceptions;
 using eilang.Interfaces;
 using eilang.OperationCodes;
 using eilang.Values;
+
 
 namespace eilang.Interpreting;
 
@@ -21,12 +28,12 @@ public class Interpreter
     private readonly Stack<LoneScope> _tmpVars = new Stack<LoneScope>(32);
     private readonly TextWriter _logger;
 
-    public Interpreter(IEnvironment scriptEnvironment, IValueFactory valueFactory = null, IOperationCodeFactory opFactory = null,
+    public Interpreter(IEnvironment scriptEnvironment, IOperationCodeFactory opFactory = null,
         TextWriter logger = null)
     {
         _scriptEnvironment = scriptEnvironment;
         _opFactory = opFactory ?? new OperationCodeFactory();
-        _valueFactory = valueFactory ?? new ValueFactory();
+        _valueFactory = scriptEnvironment.ValueFactory;
         _logger = logger;
     }
 
@@ -38,7 +45,7 @@ public class Interpreter
 
     public ValueBase Interpret()
     {
-        var state = new State(_scriptEnvironment, _frames, _stack, _scopes, _tmpVars, _valueFactory);
+        var state = new State(_scriptEnvironment, _frames, _stack, _scopes, _tmpVars);
         Log("Interpreting...");
         var startFunc = GetStartFunction();
         _frames.Push(new CallFrame(startFunc));
@@ -46,15 +53,32 @@ public class Interpreter
         var bc = new Bytecode(null);
         var frame = new CallFrame(new Function("<FailBeforeStart>", "<FailBeforeStart>", new List<string>()));
 
+        #if INTERPRETER_TIMER
+        var allOps = typeof(IOperationCode)
+            .Assembly
+            .GetTypes()
+            .Where(it => it.IsClass && it.GetInterface(nameof(IOperationCode)) != null)
+            .ToDictionary(key => key, value => new List<TimeSpan>());
+
+        var sw = new Stopwatch();
+        #endif
         try
         {
             while (_frames.Count > 0)
             {
                 frame = _frames.Peek();
                 bc = frame.Function[frame.Address];
+                #if INTERPRETER_TIMER
+                sw.Restart();
+                #endif
                 bc.Op.Execute(state);
+                #if INTERPRETER_TIMER
+                sw.Stop();
+                allOps[bc.Op.GetType()].Add(sw.Elapsed);
+                #endif
                 frame.Address++;
             }
+
             if (state.FinishedExecution.Value)
                 return _stack.TryPop(out var result)
                     ? result
@@ -73,9 +97,18 @@ public class Interpreter
                         $"\nNear code (line {bc.Metadata.Ast.Position.Line}, col {bc.Metadata.Ast.Position.Col}): {previous}\n{current}";
                 }
 
-                throw new InterpreterException(
-                    $"{e.Message}\nFailure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}\nPrevious bytecode was '{frame.Function[frame.Address - 1]}'",
-                    e);
+                if (frame.Address - 1 < 0 || frame.Address - 1 < frame.Function.Length || frame.Address - 1 > frame.Function.Length)
+                {
+                    throw new InterpreterException(
+                        $"{e.Message}\nFailure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}",
+                        e);
+                }
+                else
+                {
+                    throw new InterpreterException(
+                        $"{e.Message}\nFailure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}\nPrevious bytecode was '{frame.Function[frame.Address - 1]}'",
+                        e);
+                }
             }
             else
             {
@@ -86,10 +119,29 @@ public class Interpreter
                     code =
                         $"\nNear code (line {bc.Metadata.Ast.Position.Line}, col {bc.Metadata.Ast.Position.Col}): {current}";
                 }
+
                 throw new InterpreterException(
                     $"{e.Message}\nFailure at bytecode '{bc}' in function '{frame.Function.FullName}', address {frame.Address}.{code}",
                     e);
             }
+        }
+        finally
+        {
+            #if INTERPRETER_TIMER
+            Console.WriteLine("===Timings===");
+            foreach (var op in allOps.Where(x => x.Value.Count > 0).OrderBy(x => x.Value.Min()))
+            {
+                Console.WriteLine($"[{op.Key.Name}] Best time: {op.Value.Min().TotalMilliseconds:G17}ms | Worst time: {op.Value.Max().TotalMilliseconds:G17}ms | Total time: {op.Value.Sum(x => x.TotalMilliseconds):G17}ms | Avg. time: {op.Value.Average(x => x.TotalMilliseconds):G17}ms");
+            }
+
+            Console.WriteLine();
+
+            Console.WriteLine("===Calls===");
+            foreach (var op in allOps.Where(x => x.Value.Count > 0).OrderBy(x => x.Value.Count))
+            {
+                Console.WriteLine($"[{op.Key.Name}] {op.Value.Count} times");
+            }
+            #endif
         }
 
         return _valueFactory.Void();

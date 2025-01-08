@@ -1,10 +1,99 @@
-# probably the worst json implementation in the world
+# maybe the worst json implementation in the world
 modu json {
-	fun serialize(m: map) {
-		exit("not implemented yet");
-		var json = "";
-		ret json;
+	fun serialize_map(m: map) {
+        var sb = "{";
+        var first_prop = true;
+        for(m.items()) {
+            if !first_prop {
+                sb += ", ";
+            } else {
+                first_prop = false;
+            }
+            var map_value = it.value;
+            var kind = reflection::kind(map_value);
+            sb += $'"{it.key}": ';
+            if kind == 'instance' {
+                sb += json::serialize(map_value);
+            } elif kind == 'string' {
+                sb += $'"{map_value}"';
+            } elif kind == 'list' {
+                sb += "[";
+                var first_item = true;
+                for(map_value) {
+                    if !first_item {
+                        sb += ", ";
+                    } else {
+                        first_item = false;
+                    }
+                    sb += it;
+                }
+                sb += "]";
+            } elif kind == 'map' {
+                sb += json::serialize_map(map_value);
+            } elif kind == 'bool' {
+                sb += map_value ? 'true' : 'false';
+            } else {
+                sb += map_value;
+            }
+        }
+
+        sb += "}";
+        ret sb;
 	}
+
+    # N.B.: does not work with reference cycles
+    fun serialize(instance: any) {
+        var all_props = reflection::type(instance);
+        if all_props.kind == 'map' {
+            ret json::serialize_map(instance);
+        } elif all_props.kind == 'integer' ||
+			   all_props.kind == 'long'    ||
+			   all_props.kind == 'double'  ||
+			   all_props.kind == 'byte'    ||
+			   all_props.kind == 'bool' {
+			ret $"{instance}";
+		}
+
+        var sb = "{";
+
+        var first_prop = true;
+        for(all_props.variables) {
+            if !first_prop {
+                sb += ", ";
+            } else {
+                first_prop = false;
+            }
+            var value = reflection::property_get(instance, it);
+            var kind = reflection::kind(value);
+            sb += $'"{it}": ';
+            if kind == 'instance' {
+                sb += json::serialize(value);
+            } elif kind == 'string' {
+                sb += $'"{value}"';
+            } elif kind == 'list' {
+                sb += "[";
+                var first_item = true;
+                for(value) {
+                    # need to do json::serialize here
+                    if !first_item {
+                        sb += ", ";
+                    } else {
+                        first_item = false;
+                    }
+                    #sb += it;
+                    sb += json::serialize(it);
+                }
+                sb += "]";
+            } elif kind == 'map' {
+                sb += json::serialize_map(value);
+            } else {
+                sb += value;
+            }
+        }
+
+        sb += "}";
+        ret sb;
+    }
 
 	fun deserialize(json: string) {
 		ret *json::JsonDeserializer(json).deserialize();
@@ -27,6 +116,7 @@ modu json {
 				if me.buffer[0] == '{' {
 					me.deserialize_root_object();
 				}
+
 				# TODO: allow deserializing standalone json arrays, maps, properties also
 			}
 

@@ -25,7 +25,7 @@ public static class Eilang
         var args = arguments.ToList();
         foreach(var arg in args)
         {
-            main.Write(compiledEnvironment.OperationCodeFactory.Push(arg.ToValue(compiledEnvironment.ValueFactory)));
+            main.Write(compiledEnvironment.OperationCodeFactory.Push(arg.ToValue(compiledEnvironment)));
         }
         main.Write(compiledEnvironment.OperationCodeFactory.Push(compiledEnvironment.ValueFactory.Integer(args.Count)));
         main.Write(compiledEnvironment.OperationCodeFactory.Call(compiledEnvironment.ValueFactory.String(functionName)));
@@ -82,7 +82,7 @@ public static class Eilang
 
         if (environment == null)
         {
-            environment = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            environment = new ScriptEnvironment(new OperationCodeFactory());
             environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
             environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
             environment.AddExportedModulesFromAssembly(typeof(Eilang));
@@ -111,7 +111,7 @@ public static class Eilang
 
         if (environment == null)
         {
-            environment = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            environment = new ScriptEnvironment(new OperationCodeFactory());
             environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
             environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
             environment.AddExportedModulesFromAssembly(typeof(Eilang));
@@ -133,7 +133,7 @@ public static class Eilang
 
     public static void ReplMode()
     {
-        var environment = new ReplEnvironment(new OperationCodeFactory(), new ValueFactory());
+        var environment = new ReplEnvironment(new OperationCodeFactory());
         var interpreter = new ReplInterpreter();
         environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
         environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
@@ -158,7 +158,7 @@ public static class Eilang
                 var eval = interpreter.Interpret(environment);
                 if (eval.Type != EilangType.Void)
                 {
-                    ExportedFunctions.PrintLine(new State(environment, null, null, null, null, new ValueFactory()), Arguments.Create(eval, "eval"));
+                    ExportedFunctions.PrintLine(new State(environment, null, null, null, null), Arguments.Create(eval, "eval"));
                 }
             }
             catch (ExitException e)
@@ -212,7 +212,7 @@ public static class Eilang
 
         if (environment == null)
         {
-            var env = new ScriptEnvironment(new OperationCodeFactory(), new ValueFactory());
+            var env = new ScriptEnvironment(new OperationCodeFactory());
             // TODO: turn the following methods into extension methods on IEnvironment
             env.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
             env.AddExportedFunctionsFromAssembly(typeof(Eilang));
@@ -224,4 +224,111 @@ public static class Eilang
 
         return environment;
     }
+
+    public static IEnvironment CompileWithImports(string path, ScriptEnvironment environment = null)
+    {
+        var imports = new ImportResolver().ResolveImportsFromFile(path);
+        var code = new ImportMerger().Merge(imports);
+
+        ILexer finalLexer;
+        if (code.Count > 1)
+        {
+            var lexers = new List<ILexer>();
+            foreach (var imported in code)
+            {
+                var reader = new ScriptReader(imported.Code, imported.Path, imported.LineOffset);
+                var lexer = new ScriptLexer(reader, new CommonLexer(reader));
+                lexers.Add(lexer);
+            }
+
+            finalLexer = new MultifileLexer(lexers);
+        }
+        else
+        {
+            var imported = code.First();
+            var reader = new ScriptReader(imported.Code, imported.Path, imported.LineOffset);
+            finalLexer = new ScriptLexer(reader, new CommonLexer(reader));
+        }
+
+        var parser = new Parser(finalLexer);
+        var ast = parser.Parse();
+
+        if (environment == null)
+        {
+            environment = new ScriptEnvironment(new OperationCodeFactory());
+            environment.AddClassesDerivedFromClassInAssembly(typeof(Eilang));
+            environment.AddExportedFunctionsFromAssembly(typeof(Eilang));
+            environment.AddExportedModulesFromAssembly(typeof(Eilang));
+        }
+
+        Compiler.Compile(environment, ast
+        #if LOGGING
+            ,logger: Console.Out
+        #endif
+        );
+        return environment;
+    }
+
+    public static void DumpBytecode(IEnvironment environment, string path, bool skipExportedModules = true)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"Classes ({environment.Classes.Count} in total)");
+        sb.AppendLine("-----------------------------------------------");
+
+        foreach (var c in environment.Classes.Values)
+        {
+            if (skipExportedModules && c.Name.StartsWith("."))
+            {
+                continue;
+            }
+            sb.AppendLine($"typ {c.FullName} {{");
+            var ind = 1;
+            foreach (var ctor in c.Constructors)
+            {
+                sb.AppendIndentedLine(ind, $"ctor({string.Join(", ", ctor.Arguments)}) {{");
+                ind++;
+                foreach (var bc in ctor.Code)
+                {
+                    sb.AppendIndentedLine(ind, bc.ToString());
+                }
+
+                ind--;
+                sb.AppendIndentedLine(ind, "}");
+            }
+
+            foreach (var f in c.Functions)
+            {
+                sb.AppendIndentedLine(ind, $"fun {f.Name}({string.Join(", ", f.Arguments)}) {{");
+                ind++;
+                foreach (var bc in f.Code)
+                {
+                    sb.AppendIndentedLine(ind, bc.ToString());
+                }
+
+                ind--;
+                sb.AppendIndentedLine(ind, "}");
+            }
+
+            sb.AppendLine("}");
+        }
+
+        sb.AppendLine("Global functions");
+        sb.AppendLine("-----------------------------------------------");
+        foreach (var f in environment.Functions.Values)
+        {
+            var ind = 0;
+            sb.AppendIndentedLine(ind, $"fun {f.Name}({string.Join(", ", f.Arguments)}) {{");
+            ind++;
+            foreach (var bc in f.Code)
+            {
+                sb.AppendIndentedLine(ind, bc.ToString());
+            }
+
+            ind--;
+            sb.AppendIndentedLine(ind, "}");
+        }
+
+        File.WriteAllText(path, sb.ToString());
+    }
+
 }

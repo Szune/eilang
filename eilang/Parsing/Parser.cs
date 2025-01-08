@@ -575,10 +575,11 @@ public class Parser
     /// <returns></returns>
     private AstExpression ParseLeftLocalOrGlobalVariableExpression(AstExpression references)
     {
-        if (references is AstFunctionCall ||
-            references is AstClassInitialization ||
-            references is AstUnaryMathOperation ||
-            references is AstAssignment)
+        if (references is
+            AstFunctionCall or
+            AstClassInitialization or
+            AstUnaryMathOperation or
+            AstAssignment)
         {
             Require(TokenType.Semicolon);
             return references;

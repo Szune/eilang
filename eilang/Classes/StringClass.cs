@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using eilang.Compiling;
+using eilang.Interfaces;
 using eilang.OperationCodes;
 
 namespace eilang.Classes;
 
 public class StringClass : Class
 {
-    public StringClass(IOperationCodeFactory factory) : base(SpecialVariables.String, SpecialVariables.Global)
+    public StringClass(IOperationCodeFactory factory, IValueFactory valueFactory) : base(SpecialVariables.String, SpecialVariables.Global)
     {
         CtorForMembersWithValues.Write(factory.Return());
         AddMethod(new MemberFunction("len", Module, new List<string>(), this)

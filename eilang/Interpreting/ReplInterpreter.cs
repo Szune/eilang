@@ -37,7 +37,7 @@ public class ReplInterpreter
     public ValueBase Interpret(ScriptEnvironment scriptEnvironment)
     {
         _scriptEnvironment = scriptEnvironment;
-        var state = new State(_scriptEnvironment, _frames, _stack, _scopes, _tmpVars, _valueFactory);
+        var state = new State(_scriptEnvironment, _frames, _stack, _scopes, _tmpVars);
         Log("Interpreting...");
         var startFunc = GetStartFunction();
         _frames.Push(new CallFrame(startFunc));

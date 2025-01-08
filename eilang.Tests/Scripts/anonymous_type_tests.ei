@@ -1,0 +1,14 @@
+fun testPrint(anon) {
+    println($"{anon.one} -> {anon.two}");
+}
+
+
+fun {one,two}->test() {
+    println(reflection::type(me));
+    println("test: " + me.one + " | " + me.two);
+}
+
+fun main() {
+    var oneTwo = *{one = "1", two = "2"};
+    testPrint(oneTwo);
+}

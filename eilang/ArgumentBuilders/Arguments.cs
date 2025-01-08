@@ -53,7 +53,7 @@ public class Arguments
 
     public ValueBase EilangValue(EilangType typeFlags, string argumentName)
     {
-        if ((_value.Type & typeFlags) != 0)
+        if ((_value.Type & typeFlags) != 0 || typeFlags == EilangType.Any)
             return _value;
 
         throw new InvalidValueException(

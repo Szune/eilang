@@ -21,35 +21,25 @@ public class CallMember : IOperationCode
 
     public void Execute(State state)
     {
-        Class callingClass;
-        Instance callingInstance;
-        if (_argumentCount > 0)
+        var tmpValues = ArrayPool<ValueBase>.Shared.Rent(_argumentCount);
+        for (int i = _argumentCount - 1; i >= 0; i--)
         {
-            var tmpValues = ArrayPool<ValueBase>.Shared.Rent(_argumentCount);
-            for (int i = _argumentCount - 1; i >= 0; i--)
-            {
-                var val = state.Stack.Pop();
-                tmpValues[i] = val;
-            }
-
-            callingClass = (Class)state.Stack.Pop()._value;
-            callingInstance = (Instance)state.Stack.Pop()._value;
-            for (int i = 0; i < _argumentCount; i++)
-            {
-                state.Stack.Push(tmpValues[i]);
-            }
-
-            ArrayPool<ValueBase>.Shared.Return(tmpValues);
-        }
-        else
-        {
-            callingClass = (Class)state.Stack.Pop()._value;
-            callingInstance = (Instance)state.Stack.Pop()._value;
+            var val = state.Stack.Pop();
+            tmpValues[i] = val;
         }
 
-        if (callingClass.TryGetFunction(_functionName, out var membFunc))
+        var callingClass = (Class)state.Stack.Pop()._value;
+        var callingInstance = (Instance)state.Stack.Pop()._value;
+        for (int i = 0; i < _argumentCount; i++)
         {
-            PushCall(state, _argumentCount, membFunc, callingInstance);
+            state.Stack.Push(tmpValues[i]);
+        }
+
+        ArrayPool<ValueBase>.Shared.Return(tmpValues);
+
+        if (callingClass.TryGetFunction(_functionName, out var memberFunc))
+        {
+            PushCall(state, _argumentCount, memberFunc, callingInstance);
         }
         else if(state.Environment.ExtensionFunctions.TryGetValue(
                     $"{callingClass.FullName}->{_functionName}", out var extensionFunc))

@@ -11,7 +11,7 @@ namespace eilang.Extensions;
 
 public static class ValueExtensions
 {
-    public static ValueBase ToValue(this object obj, IValueFactory factory = default)
+    public static ValueBase ToValueForExceptions(this object obj, IValueFactory factory = default)
     {
         if (factory == null)
         {
@@ -26,26 +26,84 @@ public static class ValueExtensions
             double d => factory.Double(d),
             bool b => factory.Bool(b),
             IntPtr ptr => factory.IntPtr(ptr),
-            _ => ConvertToEilangInstance(obj, factory)
+            _ => ConvertToEilangInstanceForExceptions(obj, factory)
         };
     }
 
-    private static ValueBase ConvertToEilangInstance(object obj, IValueFactory factory)
+    private static ValueBase ConvertToEilangInstanceForExceptions(object obj, IValueFactory factory)
     {
         var type = obj.GetType();
         if (type.IsAbstract || type.IsPrimitive) // probably going to need more guards here
             throw new NotImplementedException();
         var members = type.GetMemberInfos();
         var name = type.Name;
-        var clas = new Class(name, SpecialVariables.Global);
+
+        const string classScope = SpecialVariables.Global;
+        var fullName = $"{classScope}::{name}";
+        Class clas;
+        // see if class has already been defined
+        if (factory.TryGetClass(fullName, out var classValue))
+        {
+            clas = classValue.Item;
+        }
+        else
+        {
+            // otherwise, create a temporary class for just this message, expecting it to never be used again
+            clas = new Class(name, classScope);
+        }
+
         var scope = new Scope();
         foreach (var member in members)
         {
-            var value = member.GetValue(obj).ToValue(factory);
+            var value = member.GetValue(obj).ToValueForExceptions(factory);
             scope.DefineVariable(member.Name, value);
         }
 
         return factory.Instance(new Instance(scope, clas));
+    }
+
+    public static ValueBase ToValue(this object obj, IEnvironment environment)
+    {
+        return obj switch
+        {
+            string s => environment.ValueFactory.String(s),
+            int i => environment.ValueFactory.Integer(i),
+            long l => environment.ValueFactory.Long(l),
+            double d => environment.ValueFactory.Double(d),
+            bool b => environment.ValueFactory.Bool(b),
+            IntPtr ptr => environment.ValueFactory.IntPtr(ptr),
+            _ => ConvertToEilangInstance(obj, environment)
+        };
+    }
+
+    private static ValueBase ConvertToEilangInstance(object obj, IEnvironment environment)
+    {
+        var type = obj.GetType();
+        if (type.IsAbstract || type.IsPrimitive) // probably going to need more guards here
+            throw new NotImplementedException();
+        var members = type.GetMemberInfos();
+        var name = type.Name;
+
+        // TODO: maybe use namespace as module name?
+        const string classScope = SpecialVariables.Global;
+        var fullName = $"{classScope}::{name}";
+
+        // see if class has already been defined
+        if (!environment.Classes.TryGetValue(fullName, out var clas))
+        {
+            // otherwise, define the class and add it to the environment
+            clas = new Class(name, classScope);
+            environment.AddClass(clas, false);
+        }
+
+        var scope = new Scope();
+        foreach (var member in members)
+        {
+            var value = member.GetValue(obj).ToValue(environment);
+            scope.DefineVariable(member.Name, value);
+        }
+
+        return environment.ValueFactory.Instance(new Instance(scope, clas));
     }
 
     public static T To<T>(this ValueBase value)
@@ -73,6 +131,8 @@ public static class ValueExtensions
                     return Convert.ChangeType(value.As<BoolValue>()?.Item, type);
                 case var _ when type == typeof(TypeValue):
                     return value.As<TypeValue>();
+                case var _ when type == typeof(Instance):
+                    return value.As<InstanceValue>().Item;
                 case var _ when !type.IsAbstract && !type.IsPrimitive: // probably going to need more guards here
                     var instance = value.As<InstanceValue>();
                     if (instance == null)

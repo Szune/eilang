@@ -264,7 +264,7 @@ public static class InteropHelper
 
     private static ValueBase ConvertReturnValue(object? result, State state)
     {
-        return result?.ToValue(state.ValueFactory);
+        return result?.ToValue(state.Environment);
     }
 
 

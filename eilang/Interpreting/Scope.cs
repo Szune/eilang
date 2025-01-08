@@ -18,7 +18,7 @@ public class Scope : IScope
             Name = name;
             Value = value;
         }
-    };
+    }
     private readonly Scope _parent;
     //private readonly Dictionary<string, ValueBase> _variables = new();
     private ValueBase _str = null;

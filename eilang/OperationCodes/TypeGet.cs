@@ -8,6 +8,6 @@ public class TypeGet : IOperationCode
     public void Execute(State state)
     {
         var type = ((Instance)state.Stack.Peek()._value).Owner;
-        state.Stack.Push(state.ValueFactory.Class(type));
+        state.Stack.Push(state.ValueFactory.Class(type.Id));
     }
 }

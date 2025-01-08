@@ -49,12 +49,19 @@ public class Compiler : IVisitor
         Logger?.WriteLine(msg);
     }
 
-    public static void Compile(IEnvironment scriptEnvironment, AstRoot root, IValueFactory valueFactory = null,
+    public const string KeyValuePairClassName = "KeyValuePair";
+    public const string KeyValuePairScope = SpecialVariables.Internal;
+    public const string KeyValuePairFullName = $"{KeyValuePairScope}::{KeyValuePairClassName}";
+
+    public static void Compile(IEnvironment scriptEnvironment, AstRoot root,
         IOperationCodeFactory opFactory = null, TextWriter logger = null)
     {
-        var compiler = new Compiler(scriptEnvironment, logger, valueFactory ?? new ValueFactory(),
+        var compiler = new Compiler(scriptEnvironment, logger, scriptEnvironment.ValueFactory,
             opFactory ?? new OperationCodeFactory());
+        var kvpClass = new Class(KeyValuePairClassName, KeyValuePairScope);
+        scriptEnvironment.AddClass(kvpClass, true);
         compiler.Visit(root);
+        compiler.ValueFactory.AssignClassIds();
     }
 
     public void Visit(AstRoot root)
@@ -561,8 +568,11 @@ public class Compiler : IVisitor
     public void Visit(AstAnonymousTypeInitialization anon, Function function, Module mod)
     {
         var className = $"{SpecialVariables.Global}::{anon.Name}";
+        Log($"Compiling anonymous type '{className}'");
+
         if (!ScriptEnvironment.Classes.ContainsKey(className))
         {
+            // first time encountering this anonymous type
             var clas = new Class(anon.Name, SpecialVariables.Global);
             clas.CtorForMembersWithValues.Write(OpFactory.Define(SpecialVariables.Me));
             clas.CtorForMembersWithValues.Write(OpFactory.Return());
@@ -578,7 +588,7 @@ public class Compiler : IVisitor
 
             ctor.Write(OpFactory.Return());
             clas.Constructors.Add(ctor);
-            ScriptEnvironment.Classes[className] = clas;
+            ScriptEnvironment.AddClass(clas, true);
         }
 
         foreach (var member in anon.Members)
@@ -889,7 +899,7 @@ public class Compiler : IVisitor
         clas.Functions.Accept(this, newClass, mod);
         clas.Constructors.Accept(this, newClass, mod);
         InsertMemberValueInitializationInConstructors(newClass, clas);
-        ScriptEnvironment.Classes.Add(newClass.FullName, newClass);
+        ScriptEnvironment.AddClass(newClass, true);
     }
 
     private void InsertMemberValueInitializationInConstructors(Class clas, AstClass ast)
@@ -1036,6 +1046,17 @@ public class Compiler : IVisitor
         else
         {
             extendingFullName = $"{extendingModule}::{memberFunc.Extending}";
+        }
+
+        if (mod.Name == SpecialVariables.Global)
+        {
+            extendingFullName = extendingFullName switch
+            {
+                $"{SpecialVariables.Global}::string" => $"{SpecialVariables.Global}::{SpecialVariables.String}",
+                $"{SpecialVariables.Global}::list" => $"{SpecialVariables.Global}::{SpecialVariables.List}",
+                $"{SpecialVariables.Global}::map" => $"{SpecialVariables.Global}::{SpecialVariables.Map}",
+                _ => extendingFullName
+            };
         }
 
         var func = new ExtensionFunction(memberFunc.Name,

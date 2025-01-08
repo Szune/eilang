@@ -8,6 +8,15 @@ fun list->filter(filtering: fp) {
 	ret l;
 }
 
+fun list->contains(selector: fp, thing) {
+	for(me) {
+		if selector.call(it, thing) {
+			ret true;
+		}
+	}
+	ret false;
+}
+
 fun list->map(mapping: fp) {
 	var l = [];
 	for(me) {

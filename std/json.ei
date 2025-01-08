@@ -74,13 +74,11 @@ modu json {
                 sb += "[";
                 var first_item = true;
                 for(value) {
-                    # need to do json::serialize here
                     if !first_item {
                         sb += ", ";
                     } else {
                         first_item = false;
                     }
-                    #sb += it;
                     sb += json::serialize(it);
                 }
                 sb += "]";
